@@ -14,7 +14,8 @@ new class extends Component {
     #[On('cart-updated')]
     public function updateCount()
     {
-        $cart = session()->get('cart', []);
+        $cartService = app(\App\Services\CartService::class);
+        $cart = $cartService->getCartItemsArray();
         $this->count = array_sum($cart);
     }
 }; ?>

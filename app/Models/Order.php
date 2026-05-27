@@ -13,7 +13,11 @@ class Order extends Model
         'user_id',
         'status',
         'total',
-        'shipping_address',
+        'address_street',
+        'address_number',
+        'city',
+        'state',
+        'zip_code',
         'role_applied'
     ];
 

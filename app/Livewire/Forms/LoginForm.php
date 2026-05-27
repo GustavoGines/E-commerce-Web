@@ -39,6 +39,8 @@ class LoginForm extends Form
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart(Auth::user());
     }
 
     /**

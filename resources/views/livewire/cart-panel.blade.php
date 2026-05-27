@@ -17,7 +17,8 @@ new class extends Component {
     #[On('cart-updated')]
     public function loadCart()
     {
-        $this->cart = session()->get('cart', []);
+        $cartService = app(\App\Services\CartService::class);
+        $this->cart = $cartService->getCartItemsArray();
         
         if (count($this->cart) > 0) {
             $this->products = Product::whereIn('id', array_keys($this->cart))->get()->keyBy('id');
@@ -44,40 +45,21 @@ new class extends Component {
 
     public function updateQuantity($productId, $action)
     {
-        $cart = session()->get('cart', []);
+        $cartService = app(\App\Services\CartService::class);
+        $success = $cartService->updateQuantity($productId, $action);
         
-        if (!isset($cart[$productId])) return;
-        
-        $product = Product::find($productId);
-        if (!$product) return;
-
-        if ($action === 'increment') {
-            if ($cart[$productId] < $product->stock) {
-                $cart[$productId]++;
-            } else {
-                $this->dispatch('notify', message: 'Límite de stock alcanzado', type: 'error');
-                return;
-            }
-        } elseif ($action === 'decrement') {
-            if ($cart[$productId] > 1) {
-                $cart[$productId]--;
-            } else {
-                unset($cart[$productId]);
-            }
+        if (!$success && $action === 'increment') {
+            $this->dispatch('notify', message: 'Límite de stock alcanzado', type: 'error');
+        } else {
+            $this->dispatch('cart-updated');
         }
-
-        session()->put('cart', $cart);
-        $this->dispatch('cart-updated');
     }
 
     public function removeItem($productId)
     {
-        $cart = session()->get('cart', []);
-        if (isset($cart[$productId])) {
-            unset($cart[$productId]);
-            session()->put('cart', $cart);
-            $this->dispatch('cart-updated');
-        }
+        $cartService = app(\App\Services\CartService::class);
+        $cartService->removeItem($productId);
+        $this->dispatch('cart-updated');
     }
 }; ?>
 

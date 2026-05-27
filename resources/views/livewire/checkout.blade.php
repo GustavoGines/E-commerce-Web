@@ -12,11 +12,16 @@ new #[Layout('layouts.app')] class extends Component {
     public $products = [];
     public $subtotal = 0;
     
-    public $shipping_address = '';
+    public $address_street = '';
+    public $address_number = '';
+    public $city = '';
+    public $state = '';
+    public $zip_code = '';
 
     public function mount()
     {
-        $this->cart = session()->get('cart', []);
+        $cartService = app(\App\Services\CartService::class);
+        $this->cart = $cartService->getCartItemsArray();
         
         if (empty($this->cart)) {
             return redirect()->route('home');
@@ -43,7 +48,11 @@ new #[Layout('layouts.app')] class extends Component {
     public function placeOrder()
     {
         $this->validate([
-            'shipping_address' => 'required|string|min:5|max:500'
+            'address_street' => 'required|string|max:255',
+            'address_number' => 'required|string|max:50',
+            'city' => 'required|string|max:255',
+            'state' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:20',
         ]);
 
         if (empty($this->cart)) {
@@ -60,7 +69,11 @@ new #[Layout('layouts.app')] class extends Component {
                 'user_id' => auth()->id(),
                 'status' => 'pendiente',
                 'total' => $this->subtotal,
-                'shipping_address' => $this->shipping_address,
+                'address_street' => $this->address_street,
+                'address_number' => $this->address_number,
+                'city' => $this->city,
+                'state' => $this->state,
+                'zip_code' => $this->zip_code,
                 'role_applied' => $isMayorista ? 'mayorista' : 'minorista',
             ]);
 
@@ -91,10 +104,10 @@ new #[Layout('layouts.app')] class extends Component {
             DB::commit();
 
             // Clear Cart
-            session()->forget('cart');
+            app(\App\Services\CartService::class)->clear();
             $this->dispatch('cart-updated');
 
-            session()->flash('success', '¡Orden realizada con éxito! Nos contactaremos a la brevedad para coordinar el pago.');
+            session()->flash('success', '¡Orden realizada con éxito! Nos contactaremos a la brevedad para coordinar el pago y envío.');
             return redirect()->route('my-orders');
 
         } catch (\Exception $e) {
@@ -158,15 +171,39 @@ new #[Layout('layouts.app')] class extends Component {
             <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl sm:rounded-3xl p-8" :style="darkMode ? 'box-shadow: 0 10px 30px -10px var(--color-primary-glow);' : ''">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Detalles de Envío</h3>
                 <form wire:submit="placeOrder">
-                    <div class="mb-6">
-                        <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Dirección Completa y Teléfono</label>
-                        <textarea wire:model="shipping_address" rows="4" placeholder="Ej: Av. Siempre Viva 123, Ciudad. Tel: 555-1234" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none"></textarea>
-                        @error('shipping_address') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Calle</label>
+                            <input wire:model="address_street" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="Av. Siempre Viva">
+                            @error('address_street') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Número/Piso</label>
+                            <input wire:model="address_number" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="123 Piso 4">
+                            @error('address_number') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Ciudad</label>
+                            <input wire:model="city" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="Rosario">
+                            @error('city') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Provincia</label>
+                            <input wire:model="state" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="Santa Fe">
+                            @error('state') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">C. Postal</label>
+                            <input wire:model="zip_code" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="2000">
+                            @error('zip_code') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     
                     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4 mb-8">
                         <p class="text-sm text-blue-800 dark:text-blue-300">
-                            <strong>Nota:</strong> Al confirmar, generarás una solicitud de reserva. Nos pondremos en contacto contigo para coordinar el pago (Transferencia o Efectivo) y el envío.
+                            <strong>Nota:</strong> Al confirmar, generarás una solicitud de reserva. Nos pondremos en contacto contigo para coordinar el pago y el envío.
                         </p>
                     </div>
 

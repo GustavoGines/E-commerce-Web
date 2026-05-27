@@ -8,17 +8,10 @@ new class extends Component {
 
     public function addToCart()
     {
-        $cart = session()->get('cart', []);
+        $cartService = app(\App\Services\CartService::class);
         
-        // If product already in cart, check stock limits before incrementing
-        $currentQuantity = $cart[$this->product->id] ?? 0;
-        
-        if ($currentQuantity + $this->quantity <= $this->product->stock) {
-            $cart[$this->product->id] = $currentQuantity + $this->quantity;
-            session()->put('cart', $cart);
+        if ($cartService->addItem($this->product->id, $this->quantity)) {
             $this->dispatch('cart-updated');
-            
-            // Show success message or feedback
             $this->dispatch('notify', message: 'Producto añadido al carrito');
         } else {
             $this->dispatch('notify', message: 'No hay stock suficiente', type: 'error');
