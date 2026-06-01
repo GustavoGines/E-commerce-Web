@@ -32,12 +32,11 @@ new class extends Component {
     public function calculateSubtotal()
     {
         $this->subtotal = 0;
-        $isMayorista = auth()->check() && auth()->user()->role === 'mayorista';
 
         foreach ($this->cart as $productId => $quantity) {
             if (isset($this->products[$productId])) {
                 $product = $this->products[$productId];
-                $price = $isMayorista ? $product->wholesale_price : $product->retail_price;
+                $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
                 $this->subtotal += $price * $quantity;
             }
         }
@@ -63,10 +62,15 @@ new class extends Component {
     }
 }; ?>
 
-<div x-data="{ open: false }" @open-cart.window="open = true" @keydown.escape.window="open = false" class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" x-cloak>
+<div x-data="{}"
+     x-show="$store.cart.open"
+     @open-cart.window="$store.cart.show()"
+     @keydown.escape.window="$store.cart.hide()"
+     class="relative z-[100]"
+     aria-labelledby="slide-over-title" role="dialog" aria-modal="true" x-cloak>
     
     <!-- Backdrop -->
-    <div x-show="open" 
+    <div x-show="$store.cart.open" 
          x-transition:enter="ease-in-out duration-500" 
          x-transition:enter-start="opacity-0" 
          x-transition:enter-end="opacity-100" 
@@ -74,7 +78,7 @@ new class extends Component {
          x-transition:leave-start="opacity-100" 
          x-transition:leave-end="opacity-0" 
          class="fixed inset-0 bg-gray-900/60 dark:bg-[#0b0f19]/80 backdrop-blur-sm transition-opacity" 
-         @click="open = false">
+         @click="$store.cart.hide()">
     </div>
 
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
@@ -82,7 +86,7 @@ new class extends Component {
             <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
                 
                 <!-- Slide-over panel -->
-                <div x-show="open" 
+                <div x-show="$store.cart.open" 
                      x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700" 
                      x-transition:enter-start="translate-x-full" 
                      x-transition:enter-end="translate-x-0" 
@@ -91,12 +95,12 @@ new class extends Component {
                      x-transition:leave-end="translate-x-full" 
                      class="pointer-events-auto w-screen max-w-md">
                      
-                    <div class="flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl transition-colors duration-300 border-l border-gray-200 dark:border-gray-800" :style="darkMode ? 'box-shadow: -10px 0 30px -10px var(--color-primary-glow);' : ''">
+                    <div class="flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl transition-colors duration-300 border-l border-gray-200 dark:border-gray-800" :style="$store.theme.dark ? 'box-shadow: -10px 0 30px -10px var(--color-primary-glow);' : ''">
                         <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
                             <div class="flex items-start justify-between">
                                 <h2 class="text-xl font-bold text-gray-900 dark:text-white" id="slide-over-title">Carrito de Compras</h2>
                                 <div class="ml-3 flex h-7 items-center">
-                                    <button type="button" @click="open = false" class="relative -m-2 p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
+                                    <button type="button" @click="$store.cart.hide()" class="relative -m-2 p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
                                         <span class="absolute -inset-0.5"></span>
                                         <span class="sr-only">Cerrar panel</span>
                                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -113,7 +117,7 @@ new class extends Component {
                                             @if(isset($products[$productId]))
                                                 @php
                                                     $product = $products[$productId];
-                                                    $price = (auth()->check() && auth()->user()->role === 'mayorista') ? $product->wholesale_price : $product->retail_price;
+                                                    $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
                                                 @endphp
                                                 <li class="flex py-6 transition-all">
                                                     <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
@@ -132,13 +136,26 @@ new class extends Component {
                                                                 </h3>
                                                                 <p class="ml-4 text-[var(--color-primary)] whitespace-nowrap">${{ number_format($price * $quantity, 2) }}</p>
                                                             </div>
-                                                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">${{ number_format($price, 2) }} c/u</p>
+                                                            <div class="mt-1 flex items-center flex-wrap gap-2">
+                                                                @if($quantity >= $product->wholesale_min_quantity)
+                                                                    <p class="text-xs text-gray-400 dark:text-gray-500 line-through">${{ number_format($product->retail_price, 2) }} c/u</p>
+                                                                    <p class="text-sm font-black text-emerald-600 dark:text-emerald-400">${{ number_format($price, 2) }} c/u</p>
+                                                                    <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-transparent border border-emerald-200 dark:border-emerald-500/50 px-1.5 py-0.5 rounded shadow-sm">
+                                                                        🔥 Precio Mayorista
+                                                                    </span>
+                                                                @else
+                                                                    <p class="text-sm text-gray-500 dark:text-gray-400">${{ number_format($price, 2) }} c/u</p>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm">
                                                             <div class="flex items-center border border-gray-300 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-                                                                <button wire:click="updateQuantity({{ $productId }}, 'decrement')" class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">-</button>
-                                                                <span class="px-2 font-bold text-gray-900 dark:text-white">{{ $quantity }}</span>
-                                                                <button wire:click="updateQuantity({{ $productId }}, 'increment')" class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">+</button>
+                                                                <button wire:click="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">-</button>
+                                                                <span class="px-2 font-bold text-gray-900 dark:text-white min-w-[2rem] text-center">
+                                                                    <span wire:loading.remove wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')">{{ $quantity }}</span>
+                                                                    <span wire:loading wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')" class="inline-block animate-pulse w-3 h-3 bg-gray-400 rounded-full"></span>
+                                                                </span>
+                                                                <button wire:click="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" @if($quantity >= $product->stock) disabled @endif>+</button>
                                                             </div>
 
                                                             <div class="flex">
@@ -169,16 +186,20 @@ new class extends Component {
                             </div>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Impuestos y envío calculados en el checkout.</p>
                             <div class="mt-6">
-                                <a href="{{ route('checkout') }}" wire:navigate class="flex items-center justify-center w-full rounded-full px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5 {{ empty($cart) ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">
+                                <a href="{{ route('checkout') }}"
+                                   wire:navigate
+                                   @click="$store.cart.hide()"
+                                   class="flex items-center justify-center w-full rounded-full px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5 {{ empty($cart) ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}"
+                                   style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">
                                     Proceder al Pago
                                 </a>
                             </div>
-                            <div class="mt-6 flex justify-center text-center text-sm text-gray-500 dark:text-gray-400">
-                                <p>
-                                    o
-                                    <button type="button" @click="open = false" class="font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity">
+                            <div class="mt-6 flex justify-center text-center text-sm">
+                                <p class="text-gray-500 dark:text-gray-400">
+                                    o&nbsp;
+                                    <button type="button" @click="$store.cart.hide()" class="font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white underline underline-offset-2 transition-colors">
                                         Seguir Comprando
-                                        <span aria-hidden="true"> &rarr;</span>
+                                        <span aria-hidden="true">&rarr;</span>
                                     </button>
                                 </p>
                             </div>

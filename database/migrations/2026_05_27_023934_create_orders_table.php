@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('status')->default('pendiente'); // pendiente, pagado, completado
             $table->decimal('total', 10, 2);
+            $table->string('phone');
             $table->text('shipping_address')->nullable();
             $table->string('role_applied')->default('minorista');
             $table->timestamps();

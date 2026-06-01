@@ -14,11 +14,16 @@ class Product extends Model
         'slug',
         'description',
         'technical_specs',
+        'cost_price',
+        'profit_margin',
+        'wholesale_discount',
+        'wholesale_min_quantity',
         'retail_price',
         'wholesale_price',
         'stock',
         'image_url',
-        'category_id'
+        'category_id',
+        'brand_id'
     ];
 
     protected $casts = [
@@ -45,5 +50,10 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
 }

@@ -118,9 +118,9 @@ class CartService
     /**
      * Merge guest cart into user cart upon login.
      */
-    public function mergeGuestCartIntoUserCart($user)
+    public function mergeGuestCartIntoUserCart($user, $sessionId = null)
     {
-        $sessionId = Session::getId();
+        $sessionId = $sessionId ?: Session::getId();
         $guestCart = Cart::where('session_id', $sessionId)->whereNull('user_id')->first();
 
         if (!$guestCart || $guestCart->items()->count() === 0) {

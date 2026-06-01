@@ -30,100 +30,155 @@ new class extends Component {
         }
 
         return [
-            'products' => $query->paginate(12),
-            'isMayorista' => auth()->check() && auth()->user()->role === 'mayorista'
+            'products' => $query->paginate(12)
         ];
     }
 }; ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24" x-show="showGrid" x-cloak x-transition:enter="transition ease-out duration-700 delay-200" x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0">
-    
-    <!-- Category Filters -->
-    <div class="mb-12 flex flex-wrap justify-center gap-3">
-        <button wire:click="setCategory(null)" class="px-5 py-2.5 rounded-full text-sm font-bold transition-all {{ $selectedCategory === null ? 'text-white shadow-lg shadow-[var(--color-primary-glow)] bg-[var(--color-primary)]' : 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700' }}">
-            Todos los Productos
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    {{-- Encabezado del catálogo --}}
+    <div class="text-center mb-10">
+        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            Nuestro Catálogo
+        </h2>
+        <p class="mt-2 text-slate-500 dark:text-slate-400 text-sm">Encontrá el componente perfecto para tu build</p>
+    </div>
+
+    {{-- Category Filters --}}
+    <div class="mb-10 flex flex-wrap justify-center gap-2.5">
+        <button wire:click="setCategory(null)"
+                class="filter-pill px-5 py-2 rounded-xl text-sm font-semibold border transition-all
+                {{ $selectedCategory === null
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-lg'
+                    : 'bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500' }}">
+            Todos
         </button>
         @foreach($categories as $category)
-            <button wire:click="setCategory({{ $category->id }})" class="px-5 py-2.5 rounded-full text-sm font-bold transition-all {{ $selectedCategory == $category->id ? 'text-white shadow-lg shadow-[var(--color-primary-glow)] bg-[var(--color-primary)]' : 'bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm' }}">
-                {{ $category->name }} <span class="ml-1 opacity-60 font-normal text-xs">({{ $category->products_count }})</span>
+            <button wire:click="setCategory({{ $category->id }})"
+                    class="filter-pill px-5 py-2 rounded-xl text-sm font-semibold border transition-all
+                    {{ $selectedCategory == $category->id
+                        ? 'text-white border-transparent shadow-lg'
+                        : 'bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500' }}"
+                    @if($selectedCategory == $category->id) style="background-color: var(--color-primary);" @endif>
+                {{ $category->name }}
+                <span class="ml-1.5 text-[10px] opacity-60 font-normal">({{ $category->products_count }})</span>
             </button>
         @endforeach
     </div>
 
-    <!-- Products Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    {{-- Products Grid --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         @forelse ($products as $index => $product)
-            <div wire:key="product-{{ $product->id }}" class="group relative bg-white dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 card-hover flex flex-col shadow-sm dark:shadow-none hover:shadow-xl" style="animation-delay: {{ $index * 50 }}ms;">
-                
-                <!-- Image Container -->
-                <a href="{{ route('product.detail', $product->slug) }}" wire:navigate class="relative aspect-video bg-gray-100 dark:bg-gray-900/80 overflow-hidden border-b border-gray-200 dark:border-gray-700/50 block">
+            <article wire:key="product-{{ $product->id }}"
+                     class="card-hover group relative flex flex-col rounded-2xl overflow-hidden border
+                            bg-white dark:bg-slate-800/50
+                            border-slate-200/80 dark:border-slate-700/50
+                            shadow-sm dark:shadow-none">
+
+                {{-- Imagen --}}
+                <a href="{{ route('product.detail', $product->slug) }}" wire:navigate
+                   class="relative block aspect-[4/3] bg-slate-100 dark:bg-slate-900/70 overflow-hidden">
                     @if($product->image_url)
-                        <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500">
+                        <img src="{{ asset('storage/' . $product->image_url) }}"
+                             alt="{{ $product->name }}"
+                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
-                            <svg class="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            <svg class="h-12 w-12 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
                     @endif
-                    <!-- Stock Overlay -->
-                    @if($product->stock > 0)
-                        <span class="absolute top-3 right-3 bg-white/80 dark:bg-gray-900/60 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/30 text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full backdrop-blur-md shadow-sm">Stock: {{ $product->stock }}</span>
-                    @else
-                        <span class="absolute top-3 right-3 bg-white/80 dark:bg-gray-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full backdrop-blur-md shadow-sm">Agotado</span>
+
+                    {{-- Stock Badge --}}
+                    @if($product->stock <= 0)
+                        <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
+                                     px-2 py-1 rounded-lg backdrop-blur-md
+                                     bg-rose-500/90 text-white shadow-sm">
+                            Agotado
+                        </span>
+                    @elseif(auth()->check() && auth()->user()->role === 'admin')
+                        <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
+                                     px-2 py-1 rounded-lg backdrop-blur-md
+                                     bg-emerald-500/90 text-white shadow-sm" title="Solo visible para Administradores">
+                            Stock: {{ $product->stock }}
+                        </span>
                     @endif
+
+                    {{-- Overlay on hover --}}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </a>
 
-                <!-- Content -->
-                <div class="p-6 flex flex-col flex-grow justify-between">
-                    <div>
-                        <a href="{{ route('product.detail', $product->slug) }}" wire:navigate>
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-snug group-hover:text-[var(--color-primary)] dark:group-hover:text-white transition-colors">{{ $product->name }}</h3>
-                        </a>
-                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">{{ $product->description }}</p>
-                    </div>
-                    
-                    <div class="mt-6 space-y-3">
-                        @if($isMayorista)
-                            <!-- Vista Mayorista -->
-                            <div class="flex justify-between items-center opacity-60">
-                                <span class="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400 line-through">Retail</span>
-                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400 line-through">${{ number_format($product->retail_price, 2) }}</span>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <span class="text-xs font-bold uppercase tracking-wider text-[var(--color-primary)]">Mayorista</span>
-                                <span class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">${{ number_format($product->wholesale_price, 2) }}</span>
-                            </div>
-                        @else
-                            <!-- Vista Minorista -->
-                            <div class="flex justify-between items-end">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Precio</span>
-                                <span class="text-2xl font-black tracking-tighter text-gray-900 dark:text-white">${{ number_format($product->retail_price, 2) }}</span>
-                            </div>
-                            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                                <span class="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 px-2 py-1 rounded backdrop-blur-sm uppercase tracking-wider">Mayorista</span>
-                                <span class="text-sm font-bold text-green-600 dark:text-green-400">${{ number_format($product->wholesale_price, 2) }}</span>
-                            </div>
+                {{-- Contenido --}}
+                <div class="flex flex-col flex-grow p-5">
+                    <div class="flex-grow">
+                        @if($product->category)
+                            <span class="text-[10px] font-bold uppercase tracking-widest
+                                         text-slate-400 dark:text-slate-500 mb-1.5 block">
+                                {{ $product->category->name }}
+                            </span>
                         @endif
-                        
-                        <!-- Add to Cart Button -->
-                        <livewire:add-to-cart :product="$product" wire:key="add-cart-{{ $product->id }}" />
+                        <a href="{{ route('product.detail', $product->slug) }}" wire:navigate>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100
+                                       leading-snug group-hover:text-[var(--color-primary)]
+                                       dark:group-hover:text-white transition-colors line-clamp-2">
+                                {{ $product->name }}
+                            </h3>
+                        </a>
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                            {{ $product->description }}
+                        </p>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-3">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Precio Unitario</p>
+                                    <p class="text-xl font-black text-slate-900 dark:text-white leading-none">${{ number_format($product->retail_price, 2) }}</p>
+                                </div>
+                                <div class="text-right flex flex-col items-end">
+                                    <span class="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+                                        <span class="relative flex h-2 w-2">
+                                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        </span>
+                                        Precio Mayorista
+                                    </span>
+                                    <div class="relative group cursor-help mt-0.5" title="Descuento automático al llevar {{ $product->wholesale_min_quantity }} o más unidades">
+                                        <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-lg blur opacity-30 group-hover:opacity-70 transition duration-500"></div>
+                                        <span class="relative flex items-center gap-1 text-xs font-black text-emerald-900 dark:text-emerald-100 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-slate-800 dark:to-slate-900 border border-emerald-200/50 dark:border-emerald-700/50 px-2.5 py-1 rounded-lg shadow-sm">
+                                            ${{ number_format($product->wholesale_price, 2) }} 
+                                            <span class="opacity-75 font-bold text-[9px] bg-emerald-200/50 dark:bg-emerald-900/50 px-1 py-0.5 rounded">C/U</span>
+                                        </span>
+                                    </div>
+                                    <span class="text-[8px] font-semibold text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-wider">
+                                        Llevando {{ $product->wholesale_min_quantity }} o más
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <livewire:add-to-cart :product="$product" :compact="true" wire:key="add-cart-{{ $product->id }}" />
                     </div>
                 </div>
-            </div>
+            </article>
         @empty
-            <div class="col-span-full py-20 text-center">
-                <svg class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <div class="col-span-full py-24 text-center">
+                <svg class="mx-auto h-16 w-16 text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Sin productos</h3>
-                <p class="mt-1 text-gray-500 dark:text-gray-400">No hay productos disponibles en esta categoría actualmente.</p>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sin productos</h3>
+                <p class="mt-1 text-slate-500 dark:text-slate-400 text-sm">No hay productos en esta categoría.</p>
             </div>
         @endforelse
     </div>
 
-    <!-- Pagination -->
+    {{-- Pagination --}}
     <div class="mt-12">
         {{ $products->links() }}
     </div>
+
 </div>

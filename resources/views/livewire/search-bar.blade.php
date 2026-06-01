@@ -42,9 +42,9 @@ new class extends Component {
             class="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-full leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all sm:text-sm shadow-sm"
         >
         
-        <!-- Loading Indicator -->
-        <div wire:loading class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <svg class="animate-spin h-4 w-4 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <!-- Loading Indicator — solo se activa al buscar, no con otras acciones de la página -->
+        <div wire:loading wire:target="search" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <svg class="animate-spin h-4 w-4 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -79,7 +79,7 @@ new class extends Component {
                                     </p>
                                 </div>
                                 <div class="ml-2 text-right">
-                                    <span class="text-sm font-black text-gray-900 dark:text-white">${{ number_format(auth()->check() && auth()->user()->role === 'mayorista' ? $product->wholesale_price : $product->retail_price, 2) }}</span>
+                                    <span class="text-sm font-black text-gray-900 dark:text-white">${{ number_format($product->retail_price, 2) }}</span>
                                 </div>
                             </a>
                         </li>

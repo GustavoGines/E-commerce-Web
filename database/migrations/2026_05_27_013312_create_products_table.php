@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->decimal('cost_price', 10, 2)->default(0);
+            $table->integer('profit_margin')->default(0);
+            $table->integer('wholesale_discount')->default(0);
+            $table->integer('wholesale_min_quantity')->default(3);
             $table->decimal('retail_price', 10, 2);
             $table->decimal('wholesale_price', 10, 2);
             $table->integer('stock')->default(0);

@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Http\Controllers\CheckoutReturnController;
+use App\Http\Controllers\MercadoPagoWebhookController;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -21,11 +23,20 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth'])->group(function () {
     Volt::route('checkout', 'checkout')->name('checkout');
     Volt::route('mis-ordenes', 'my-orders')->name('my-orders');
+
+    // URLs de retorno de MercadoPago (requieren usuario autenticado)
+    Route::get('checkout/success/{order}', [CheckoutReturnController::class, 'success'])->name('checkout.success');
+    Route::get('checkout/failure/{order}', [CheckoutReturnController::class, 'failure'])->name('checkout.failure');
+    Route::get('checkout/pending/{order}', [CheckoutReturnController::class, 'pending'])->name('checkout.pending');
 });
 
 Route::middleware(['auth', 'is_admin'])->group(function () {
     Volt::route('admin/settings', 'admin.manage-settings')->name('admin.settings');
     Volt::route('admin/products', 'admin.manage-products')->name('admin.products');
-    Volt::route('admin/categories', 'admin.manage-categories')->name('admin.categories');
+
     Volt::route('admin/orders', 'admin.manage-orders')->name('admin.orders');
 });
+
+// Webhook de MercadoPago — sin auth, sin CSRF (se maneja en bootstrap/app.php)
+Route::post('webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handle'])
+    ->name('webhook.mercadopago');

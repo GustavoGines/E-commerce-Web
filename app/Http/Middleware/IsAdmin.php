@@ -19,6 +19,6 @@ class IsAdmin
             return $next($request);
         }
 
-        return redirect('/')->with('error', 'No tienes permisos para acceder al panel de administración.');
+        return redirect()->route('home')->with('error', 'No tienes permisos para acceder al panel de administración.');
     }
 }

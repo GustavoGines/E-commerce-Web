@@ -30,6 +30,8 @@ class LoginForm extends Form
     {
         $this->ensureIsNotRateLimited();
 
+        $oldSessionId = \Illuminate\Support\Facades\Session::getId();
+
         if (! Auth::attempt($this->only(['email', 'password']), $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
@@ -40,7 +42,7 @@ class LoginForm extends Form
 
         RateLimiter::clear($this->throttleKey());
 
-        app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart(Auth::user());
+        app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart(Auth::user(), $oldSessionId);
     }
 
     /**
