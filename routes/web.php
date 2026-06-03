@@ -31,9 +31,6 @@ Route::get('/shop', function () {
     return view("themes.{$theme}.shop");
 })->name('shop');
 
-Volt::route('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
 
 Volt::route('producto/{slug}', 'product-detail')
     ->name('product.detail');
