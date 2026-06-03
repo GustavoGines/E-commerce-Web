@@ -8,10 +8,15 @@ new class extends Component {
     public $cart = [];
     public $products = [];
     public $subtotal = 0;
+    public $theme = 'stealth';
     
     public function mount()
     {
         $this->loadCart();
+        $settings = \App\Models\StoreSetting::first();
+        if ($settings) {
+            $this->theme = $settings->theme_name ?? 'stealth';
+        }
     }
 
     #[On('cart-updated')]
@@ -29,6 +34,22 @@ new class extends Component {
         }
     }
 
+    public function getPrice($product, $quantity)
+    {
+        if ($this->theme === 'modern-light') {
+            $hasPreviousOrders = auth()->check() && auth()->user()->orders()->where('status', '!=', 'cancelada')->exists();
+            $totalItems = array_sum($this->cart);
+            
+            if ($hasPreviousOrders || $totalItems >= 10) {
+                return $product->wholesale_price;
+            } else {
+                return $product->retail_price;
+            }
+        }
+
+        return ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+    }
+
     public function calculateSubtotal()
     {
         $this->subtotal = 0;
@@ -36,7 +57,7 @@ new class extends Component {
         foreach ($this->cart as $productId => $quantity) {
             if (isset($this->products[$productId])) {
                 $product = $this->products[$productId];
-                $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                $price = $this->getPrice($product, $quantity);
                 $this->subtotal += $price * $quantity;
             }
         }
@@ -77,7 +98,7 @@ new class extends Component {
          x-transition:leave="ease-in-out duration-500" 
          x-transition:leave-start="opacity-100" 
          x-transition:leave-end="opacity-0" 
-         class="fixed inset-0 bg-gray-900/60 dark:bg-[#0b0f19]/80 backdrop-blur-sm transition-opacity" 
+         class="fixed inset-0 transition-opacity {{ $theme === 'luxury' ? 'bg-[#030712]/80 backdrop-blur-md' : 'bg-gray-900/60 dark:bg-[#0b0f19]/80 backdrop-blur-sm' }}" 
          @click="$store.cart.hide()">
     </div>
 
@@ -95,7 +116,7 @@ new class extends Component {
                      x-transition:leave-end="translate-x-full" 
                      class="pointer-events-auto w-screen max-w-md">
                      
-                    <div class="flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl transition-colors duration-300 border-l border-gray-200 dark:border-gray-800" :style="$store.theme.dark ? 'box-shadow: -10px 0 30px -10px var(--color-primary-glow);' : ''">
+                     <div class="flex h-full flex-col shadow-2xl transition-colors duration-300 {{ $theme === 'luxury' ? 'bg-[#0a0f1c]/90 backdrop-blur-3xl border-l border-white/5' : 'bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800' }}" :style="('{{ $theme }}' === 'stealth' && $store.theme.dark) ? 'box-shadow: -10px 0 30px -10px var(--color-primary-glow);' : ''">
                         <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
                             <div class="flex items-start justify-between">
                                 <h2 class="text-xl font-bold text-gray-900 dark:text-white" id="slide-over-title">Carrito de Compras</h2>
@@ -117,7 +138,7 @@ new class extends Component {
                                             @if(isset($products[$productId]))
                                                 @php
                                                     $product = $products[$productId];
-                                                    $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                                                    $price = $this->getPrice($product, $quantity);
                                                 @endphp
                                                 <li class="flex py-6 transition-all">
                                                     <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
@@ -130,14 +151,14 @@ new class extends Component {
 
                                                     <div class="ml-4 flex flex-1 flex-col justify-between">
                                                         <div>
-                                                            <div class="flex justify-between text-base font-bold text-gray-900 dark:text-white">
-                                                                <h3 class="line-clamp-2 leading-tight">
+                                                            <div class="flex flex-col sm:flex-row sm:justify-between text-base font-bold text-gray-900 dark:text-white gap-1 sm:gap-4">
+                                                                <h3 class="line-clamp-2 leading-tight flex-1">
                                                                     {{ $product->name }}
                                                                 </h3>
-                                                                <p class="ml-4 text-[var(--color-primary)] whitespace-nowrap">${{ number_format($price * $quantity, 2) }}</p>
+                                                                <p class="text-[var(--color-primary)] whitespace-nowrap">${{ number_format($price * $quantity, 2) }}</p>
                                                             </div>
                                                             <div class="mt-1 flex items-center flex-wrap gap-2">
-                                                                @if($quantity >= $product->wholesale_min_quantity)
+                                                                @if($price == $product->wholesale_price)
                                                                     <p class="text-xs text-gray-400 dark:text-gray-500 line-through">${{ number_format($product->retail_price, 2) }} c/u</p>
                                                                     <p class="text-sm font-black text-emerald-600 dark:text-emerald-400">${{ number_format($price, 2) }} c/u</p>
                                                                     <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-transparent border border-emerald-200 dark:border-emerald-500/50 px-1.5 py-0.5 rounded shadow-sm">
@@ -148,14 +169,14 @@ new class extends Component {
                                                                 @endif
                                                             </div>
                                                         </div>
-                                                        <div class="flex flex-1 items-end justify-between text-sm">
-                                                            <div class="flex items-center border border-gray-300 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-                                                                <button wire:click="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">-</button>
-                                                                <span class="px-2 font-bold text-gray-900 dark:text-white min-w-[2rem] text-center">
+                                                        <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
+                                                            <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
+                                                                <button wire:click="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
+                                                                <span class="px-2 font-bold min-w-[2rem] text-center {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
                                                                     <span wire:loading.remove wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')">{{ $quantity }}</span>
-                                                                    <span wire:loading wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')" class="inline-block animate-pulse w-3 h-3 bg-gray-400 rounded-full"></span>
+                                                                    <span wire:loading wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')" class="inline-block animate-pulse w-3 h-3 rounded-full {{ $theme === 'luxury' ? 'bg-white/50' : 'bg-gray-400' }}"></span>
                                                                 </span>
-                                                                <button wire:click="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" @if($quantity >= $product->stock) disabled @endif>+</button>
+                                                                <button wire:click="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
                                                             </div>
 
                                                             <div class="flex">
@@ -179,8 +200,8 @@ new class extends Component {
                             </div>
                         </div>
 
-                        <div class="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 px-4 py-6 sm:px-6 transition-colors duration-300">
-                            <div class="flex justify-between text-base font-black text-gray-900 dark:text-white text-xl">
+                        <div class="border-t px-4 py-6 sm:px-6 transition-colors duration-300 {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50' }}">
+                            <div class="flex justify-between text-base font-black text-xl {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
                                 <p>Subtotal</p>
                                 <p>${{ number_format($subtotal, 2) }}</p>
                             </div>

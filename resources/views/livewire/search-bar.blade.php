@@ -24,6 +24,12 @@ new class extends Component {
         $this->search = '';
         $this->results = [];
     }
+
+    public function getThemeProperty()
+    {
+        $settings = \App\Models\StoreSetting::first();
+        return $settings ? ($settings->theme_name ?? 'stealth') : 'stealth';
+    }
 }; ?>
 
 <div class="relative flex-1 max-w-lg mx-auto" x-data="{ open: false }" @click.away="open = false; $wire.clearSearch()">
@@ -39,7 +45,7 @@ new class extends Component {
             @focus="open = true"
             type="text" 
             placeholder="Buscar componentes, marcas, etc..." 
-            class="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-full leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all sm:text-sm shadow-sm"
+            class="block w-full pl-10 pr-3 py-2 rounded-full leading-5 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all sm:text-sm shadow-sm {{ $this->theme === 'luxury' ? 'bg-[#0a0f1c] border border-white/10 text-white placeholder-gray-500' : 'border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500' }}"
         >
         
         <!-- Loading Indicator — solo se activa al buscar, no con otras acciones de la página -->
@@ -60,14 +66,14 @@ new class extends Component {
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-1"
-             class="absolute z-50 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/50 rounded-2xl shadow-xl dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-md">
+             class="absolute z-50 mt-2 w-full rounded-2xl shadow-xl dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-md {{ $this->theme === 'luxury' ? 'bg-[#0a0f1c]/95 border border-white/10' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/50' }}">
             
             @if(count($results) > 0)
-                <ul class="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700/50">
+                <ul class="max-h-96 overflow-y-auto divide-y {{ $this->theme === 'luxury' ? 'divide-white/5' : 'divide-gray-100 dark:divide-gray-700/50' }}">
                     @foreach($results as $product)
                         <li>
-                            <a href="{{ route('product.detail', $product->slug) }}" wire:navigate class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                                <div class="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                            <a href="{{ route('product.detail', $product->slug) }}" wire:navigate class="flex items-center px-4 py-3 transition-colors group {{ $this->theme === 'luxury' ? 'hover:bg-white/5' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50' }}">
+                                <div class="flex-shrink-0 h-10 w-10 rounded flex items-center justify-center overflow-hidden {{ $this->theme === 'luxury' ? 'bg-[#030712] border border-white/5' : 'bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700' }}">
                                     @if($product->image_url)
                                         <img src="{{ asset('storage/' . $product->image_url) }}" alt="" class="h-full object-contain">
                                     @endif

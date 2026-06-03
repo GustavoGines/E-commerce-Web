@@ -3,10 +3,13 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use App\Models\Product;
+use App\Models\StoreSetting;
 
 new #[Layout('layouts.app')] class extends Component {
     public Product $product;
     public $relatedProducts;
+    public $recentlyViewedProducts;
+    public $theme = 'stealth';
 
     public function mount($slug)
     {
@@ -16,15 +19,290 @@ new #[Layout('layouts.app')] class extends Component {
                                         ->where('id', '!=', $this->product->id)
                                         ->take(4)
                                         ->get();
+                                        
+        $settings = StoreSetting::first();
+        if ($settings && $settings->theme_name) {
+            $this->theme = $settings->theme_name;
+        }
+        
+        // Track recently viewed products
+        $recentlyViewed = session()->get('recently_viewed', []);
+        
+        // Remove if it exists to put it at the beginning
+        if (($key = array_search($this->product->id, $recentlyViewed)) !== false) {
+            unset($recentlyViewed[$key]);
+        }
+        
+        array_unshift($recentlyViewed, $this->product->id);
+        
+        // Keep only last 5 (so we can display 4 excluding current)
+        $recentlyViewed = array_slice($recentlyViewed, 0, 5);
+        session()->put('recently_viewed', $recentlyViewed);
+        
+        // Fetch recently viewed products (excluding the current one)
+        $this->recentlyViewedProducts = Product::whereIn('id', $recentlyViewed)
+                                               ->where('id', '!=', $this->product->id)
+                                               ->take(4)
+                                               ->get()
+                                               ->sortBy(function($model) use ($recentlyViewed) {
+                                                   return array_search($model->id, $recentlyViewed);
+                                               });
     }
 }; ?>
 
 <div>
+@if($theme === 'luxury')
+    {{-- =========================================================
+         LUXURY THEME: PRODUCT DETAIL (Apple/Turnstime Style)
+         ========================================================= --}}
+    <div class="bg-[#030712] min-h-screen text-white pb-24 -mt-16 pt-24" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 50)">
+        
+        {{-- Custom Breadcrumbs & Top Navigation --}}
+        <div class="sticky top-16 z-40 bg-[#030712]/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300" :class="{'shadow-lg shadow-[var(--color-primary-glow)]': scrolled}">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-gray-500">
+                    <a href="{{ route('shop') }}" wire:navigate class="hover:text-white transition-colors">Tienda</a>
+                    <span class="text-white/20">/</span>
+                    @if($product->category)
+                        <a href="{{ route('shop', ['categoria' => $product->category->name]) }}" wire:navigate class="hover:text-white transition-colors cursor-pointer">{{ $product->category->name }}</a>
+                    @else
+                        <span class="text-gray-400">General</span>
+                    @endif
+                </div>
+                {{-- Quick title on scroll --}}
+                <div class="hidden md:block opacity-0 transition-opacity duration-500 font-bold tracking-widest uppercase text-sm" :class="{'opacity-100': scrolled}">
+                    {{ $product->name }}
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 mt-12">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 relative">
+                
+                {{-- Left: Immersive Image Gallery (Col-span 7) --}}
+                <div class="lg:col-span-7">
+                    <div class="sticky top-32">
+                        {{-- Main Image Area with Glass & Zoom --}}
+                        <div class="relative w-full aspect-[4/3] rounded-3xl bg-[#0a0f1c] border border-white/5 overflow-hidden group flex items-center justify-center p-12 cursor-crosshair"
+                             x-data="{ zoom: false, x: 0, y: 0 }"
+                             @mousemove="x = $event.offsetX; y = $event.offsetY"
+                             @mouseenter="zoom = true"
+                             @mouseleave="zoom = false">
+                            {{-- Ambient glow --}}
+                            <div class="absolute inset-0 bg-gradient-to-tr from-[var(--color-primary)]/10 to-transparent opacity-50 pointer-events-none"></div>
+                            
+                            @if($product->image_url)
+                                {{-- Base Image --}}
+                                <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="relative z-10 w-full h-full object-contain transition-opacity duration-300 drop-shadow-2xl mix-blend-lighten pointer-events-none" :class="zoom ? 'opacity-0' : 'opacity-100'">
+                                
+                                {{-- Zoomed Image --}}
+                                <div class="absolute inset-0 z-20 mix-blend-lighten"
+                                     x-show="zoom"
+                                     :style="`background-image: url('{{ asset('storage/' . $product->image_url) }}'); background-position: ${(x / $el.offsetWidth) * 100}% ${(y / $el.offsetHeight) * 100}%; background-size: 200%; background-repeat: no-repeat;`"
+                                     style="display: none;"></div>
+                            @else
+                                <svg class="h-32 w-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            @endif
+                        </div>
+                        
+                        {{-- Below Image: Description --}}
+                        <div class="mt-16">
+                            <h3 class="text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-4">Resumen de Diseño</h3>
+                            <p class="text-xl text-gray-400 font-light leading-relaxed">
+                                {{ $product->description }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Right: Sticky Sidebar (Col-span 5) --}}
+                <div class="lg:col-span-5">
+                    <div class="sticky top-32 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        
+                        @if($product->stock <= 0)
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Agotado
+                            </div>
+                        @elseif(auth()->check() && auth()->user()->role === 'admin')
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Stock Administrador: {{ $product->stock }}
+                            </div>
+                        @endif
+
+                        <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight leading-none mb-4">{{ $product->name }}</h1>
+                        
+                        {{-- Price Section --}}
+                        <div class="mt-10 mb-10 pb-10 border-b border-white/10">
+                            <p class="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">Precio de Lista</p>
+                            <div class="flex items-end gap-4">
+                                <span class="text-5xl font-black tracking-tighter text-white">${{ number_format($product->retail_price, 2) }}</span>
+                                <span class="text-gray-500 mb-2 font-medium">Final</span>
+                            </div>
+
+                            <div class="mt-6 group cursor-help p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-[var(--color-primary)]/50 transition-all duration-300">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                                        <span class="relative flex h-2 w-2">
+                                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        </span>
+                                        Precio Mayorista
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <span class="text-xs text-gray-400 uppercase tracking-wider">Mínimo {{ $product->wholesale_min_quantity }} uds.</span>
+                                    <span class="text-2xl font-black text-emerald-400">${{ number_format($product->wholesale_price, 2) }} <span class="text-[10px] opacity-70">c/u</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Add to Cart livewire component (needs to be adapted to luxury context but we'll use the existing one, it has generic tailwind) --}}
+                        <div class="add-to-cart-luxury">
+                            <livewire:add-to-cart :product="$product" wire:key="detail-cart-luxury-{{ $product->id }}" />
+                        </div>
+
+                        {{-- Trust Badges --}}
+                        <div class="mt-10 grid grid-cols-2 gap-4 mb-10">
+                            <div class="flex items-center gap-3 text-gray-400">
+                                <svg class="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span class="text-xs font-bold uppercase tracking-wider">12 Meses Garantía</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-gray-400">
+                                <svg class="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                <span class="text-xs font-bold uppercase tracking-wider">Pago Seguro</span>
+                            </div>
+                        </div>
+                        
+                        {{-- Accordions --}}
+                        <div class="border-t border-white/10" x-data="{ active: null }">
+                            {{-- Accordion 1 --}}
+                            <div class="border-b border-white/10">
+                                <button @click="active = (active === 1 ? null : 1)" class="w-full flex justify-between items-center py-5 text-left transition-colors hover:text-[var(--color-primary)]">
+                                    <span class="text-sm font-bold tracking-widest uppercase">Envíos y Entregas</span>
+                                    <svg class="w-5 h-5 transform transition-transform duration-300" :class="{'rotate-180': active === 1}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div x-show="active === 1" x-collapse x-cloak>
+                                    <div class="pb-5 text-sm text-gray-400 font-light leading-relaxed">
+                                        Realizamos envíos a todo el país a través de correos certificados. Los tiempos de entrega oscilan entre 24 y 72 horas hábiles tras la confirmación del pago. Todos nuestros paquetes cuentan con seguro a todo riesgo.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {{-- Accordion 2 --}}
+                            <div class="border-b border-white/10">
+                                <button @click="active = (active === 2 ? null : 2)" class="w-full flex justify-between items-center py-5 text-left transition-colors hover:text-[var(--color-primary)]">
+                                    <span class="text-sm font-bold tracking-widest uppercase">Políticas de Garantía</span>
+                                    <svg class="w-5 h-5 transform transition-transform duration-300" :class="{'rotate-180': active === 2}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div x-show="active === 2" x-collapse x-cloak>
+                                    <div class="pb-5 text-sm text-gray-400 font-light leading-relaxed">
+                                        Este componente está cubierto por 12 meses de garantía oficial directamente con la marca, gestionable a través de nuestra plataforma. Cubre defectos de fábrica y fallas prematuras.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Technical Specs Full Width --}}
+            @if($product->technical_specs && count($product->technical_specs) > 0)
+            <div class="mt-32 pt-24 border-t border-white/5">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div>
+                        <h3 class="text-3xl font-black text-white tracking-tight mb-4">Especificaciones<br><span class="text-gray-600">Técnicas</span></h3>
+                        <p class="text-gray-400 font-light">Diseñado con precisión milimétrica para ofrecer el máximo rendimiento sin compromisos térmicos.</p>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="divide-y divide-white/5 border-t border-b border-white/5">
+                            @foreach($product->technical_specs as $key => $value)
+                                <div class="py-6 grid grid-cols-1 md:grid-cols-3 gap-4 group hover:bg-white/5 transition-colors px-4 -mx-4 rounded-xl">
+                                    <dt class="text-xs font-bold text-gray-500 uppercase tracking-widest">{{ $key }}</dt>
+                                    <dd class="text-base text-gray-200 font-medium md:col-span-2 group-hover:text-white transition-colors">{{ $value }}</dd>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- Related Products --}}
+            @if($relatedProducts->count() > 0)
+            <div class="mt-32 pt-24 border-t border-white/5">
+                <h3 class="text-2xl font-black text-white tracking-tight mb-10 flex items-center justify-between">
+                    Completá tu Setup
+                    <a href="{{ route('home') }}#catalog" class="text-[10px] uppercase tracking-widest text-gray-500 hover:text-[var(--color-primary)] transition-colors">Ver Todo</a>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    @foreach ($relatedProducts as $related)
+                        <a href="{{ route('product.detail', $related->slug) }}" wire:navigate class="group relative flex flex-col bg-white/5 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden transition-all duration-500 hover:border-[var(--color-primary)]/50 hover:shadow-[0_20px_40px_-15px_var(--color-primary-glow)] hover:-translate-y-2">
+                            <div class="relative aspect-[4/3] bg-[#0a0f1c] p-6 flex items-center justify-center border-b border-white/5 overflow-hidden">
+                                @if($related->image_url)
+                                    <img src="{{ asset('storage/' . $related->image_url) }}" class="object-contain w-full h-full transform group-hover:scale-110 transition-transform duration-700 drop-shadow-xl" onerror="this.src='https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=400&auto=format&fit=crop'; this.classList.add('mix-blend-lighten')">
+                                @endif
+                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                    <span class="text-xs font-bold text-white uppercase tracking-widest bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">Ver Detalles</span>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-bold text-white truncate transition-colors">{{ $related->name }}</h4>
+                                <div class="mt-2 text-gray-400 font-bold">
+                                    ${{ number_format($related->retail_price, 2) }}
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+            
+            {{-- Recently Viewed Products --}}
+            @if($recentlyViewedProducts && $recentlyViewedProducts->count() > 0)
+            <div class="mt-24 pt-24 border-t border-white/5">
+                <h3 class="text-2xl font-black text-white tracking-tight mb-10 flex items-center justify-between">
+                    Recientemente Vistos
+                    <a href="{{ route('shop') }}" wire:navigate class="text-[10px] uppercase tracking-widest text-gray-500 hover:text-[var(--color-primary)] transition-colors">Ir al Catálogo</a>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    @foreach ($recentlyViewedProducts as $viewed)
+                        <a href="{{ route('product.detail', $viewed->slug) }}" wire:navigate class="group relative flex flex-col bg-white/5 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden transition-all duration-500 hover:border-[var(--color-primary)]/50 hover:shadow-[0_20px_40px_-15px_var(--color-primary-glow)] hover:-translate-y-2">
+                            <div class="relative aspect-[4/3] bg-[#0a0f1c] p-6 flex items-center justify-center border-b border-white/5 overflow-hidden">
+                                @if($viewed->image_url)
+                                    <img src="{{ asset('storage/' . $viewed->image_url) }}" class="object-contain w-full h-full transform group-hover:scale-110 transition-transform duration-700 drop-shadow-xl" onerror="this.src='https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=400&auto=format&fit=crop'; this.classList.add('mix-blend-lighten')">
+                                @endif
+                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                    <span class="text-xs font-bold text-white uppercase tracking-widest bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">Ver Detalles</span>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-bold text-white truncate transition-colors">{{ $viewed->name }}</h4>
+                                <div class="mt-2 text-gray-400 font-bold">
+                                    ${{ number_format($viewed->retail_price, 2) }}
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+@else
+    {{-- =========================================================
+         STEALTH THEME: PRODUCT DETAIL (Original Design)
+         ========================================================= --}}
     <x-slot name="header">
         <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-            <a href="{{ route('home') }}" wire:navigate class="hover:text-[var(--color-primary)] transition-colors">Tienda</a>
+            <a href="{{ route('shop') }}" wire:navigate class="hover:text-[var(--color-primary)] transition-colors">Tienda</a>
             <span>/</span>
-            <span>{{ $product->category ? $product->category->name : 'General' }}</span>
+            @if($product->category)
+                <a href="{{ route('shop', ['categoria' => $product->category->name]) }}" wire:navigate class="hover:text-[var(--color-primary)] transition-colors">{{ $product->category->name }}</a>
+            @else
+                <span>General</span>
+            @endif
             <span>/</span>
             <span class="text-gray-900 dark:text-gray-100 font-medium">{{ $product->name }}</span>
         </div>
@@ -42,7 +320,7 @@ new #[Layout('layouts.app')] class extends Component {
                             <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain w-full h-full transform group-hover:scale-105 transition-transform duration-500">
                         @else
                             <svg class="h-32 w-32 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         @endif
                     </div>
@@ -140,4 +418,5 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
         @endif
     </div>
+@endif
 </div>

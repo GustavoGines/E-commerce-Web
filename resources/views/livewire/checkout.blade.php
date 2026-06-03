@@ -20,9 +20,14 @@ new #[Layout('layouts.app')] class extends Component {
     public $state = '';
     public $zip_code = '';
     public $phone = '';
+    public $theme = 'stealth';
 
     public function mount()
     {
+        $settings = \App\Models\StoreSetting::first();
+        if ($settings) {
+            $this->theme = $settings->theme_name ?? 'stealth';
+        }
         $cartService = app(\App\Services\CartService::class);
         $this->cart = $cartService->getCartItemsArray();
         
@@ -34,6 +39,22 @@ new #[Layout('layouts.app')] class extends Component {
         $this->calculateSubtotal();
     }
 
+    public function getPrice($product, $quantity)
+    {
+        if ($this->theme === 'modern-light') {
+            $hasPreviousOrders = auth()->check() && auth()->user()->orders()->where('status', '!=', 'cancelada')->exists();
+            $totalItems = array_sum($this->cart);
+            
+            if ($hasPreviousOrders || $totalItems >= 10) {
+                return $product->wholesale_price;
+            } else {
+                return $product->retail_price;
+            }
+        }
+
+        return ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+    }
+
     public function calculateSubtotal()
     {
         $this->subtotal = 0;
@@ -41,7 +62,7 @@ new #[Layout('layouts.app')] class extends Component {
         foreach ($this->cart as $productId => $quantity) {
             if (isset($this->products[$productId])) {
                 $product = $this->products[$productId];
-                $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                $price = $this->getPrice($product, $quantity);
                 $this->subtotal += $price * $quantity;
             }
         }
@@ -77,16 +98,22 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function placeOrder()
     {
-        $this->validate([
-            'address_street' => 'required|string|max:255',
-            'address_number' => 'required|string|max:50',
-            'city'           => 'required|string|max:255',
-            'state'          => 'required|string|max:255',
-            'zip_code'       => 'required|string|max:20',
-            'phone'          => 'required|string|min:8|max:25',
-        ], [
-            'phone.required' => 'El número de celular/WhatsApp es obligatorio para poder contactarte.'
-        ]);
+        $rules = [];
+
+        if ($this->theme !== 'modern-light') {
+            $rules = [
+                'phone'          => 'required|string|min:8|max:25',
+                'address_street' => 'required|string|max:255',
+                'address_number' => 'required|string|max:50',
+                'city'           => 'required|string|max:255',
+                'state'          => 'required|string|max:255',
+                'zip_code'       => 'required|string|max:20',
+            ];
+            
+            $this->validate($rules, [
+                'phone.required' => 'El número de celular/WhatsApp es obligatorio para poder contactarte.'
+            ]);
+        }
 
         if (empty($this->cart)) {
             return;
@@ -100,12 +127,12 @@ new #[Layout('layouts.app')] class extends Component {
                 'user_id'        => auth()->id(),
                 'status'         => 'pendiente',
                 'total'          => $this->subtotal,
-                'phone'          => $this->phone,
-                'address_street' => $this->address_street,
-                'address_number' => $this->address_number,
-                'city'           => $this->city,
-                'state'          => $this->state,
-                'zip_code'       => $this->zip_code,
+                'phone'          => $this->theme === 'modern-light' ? '-' : $this->phone,
+                'address_street' => $this->theme === 'modern-light' ? 'Retiro en Local' : $this->address_street,
+                'address_number' => $this->theme === 'modern-light' ? '-' : $this->address_number,
+                'city'           => $this->theme === 'modern-light' ? '-' : $this->city,
+                'state'          => $this->theme === 'modern-light' ? '-' : $this->state,
+                'zip_code'       => $this->theme === 'modern-light' ? '-' : $this->zip_code,
                 'role_applied'   => 'por_volumen',
             ]);
 
@@ -118,7 +145,7 @@ new #[Layout('layouts.app')] class extends Component {
                         throw new \Exception("Sin stock suficiente para: " . $product->name);
                     }
 
-                    $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                    $price = $this->getPrice($product, $quantity);
                     
                     OrderItem::create([
                         'order_id'   => $order->id,
@@ -131,6 +158,33 @@ new #[Layout('layouts.app')] class extends Component {
                 }
             }
 
+            // Limpiar carrito
+            app(\App\Services\CartService::class)->clear();
+            $this->dispatch('cart-updated');
+
+            if ($this->theme === 'modern-light') {
+                DB::commit();
+                
+                $sellerPhone = '5493704787285';
+                $message = "Hola JCG Electrónica! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
+                
+                foreach ($this->cart as $productId => $quantity) {
+                    if (isset($this->products[$productId])) {
+                        $product = $this->products[$productId];
+                        $price = $this->getPrice($product, $quantity);
+                        $message .= "• {$quantity}x {$product->name} (\$" . number_format($price * $quantity, 0, ',', '.') . ")\n";
+                    }
+                }
+                
+                $message .= "\n*Total a abonar:* $" . number_format($this->subtotal, 0, ',', '.') . "\n\n";
+                $message .= "Mi nombre es: *" . auth()->user()->name . "*\n\n";
+                $message .= "Paso a retirarlo por el local. ¡Aguardamos confirmación!";
+                
+                $waUrl = "https://wa.me/{$sellerPhone}?text=" . urlencode($message);
+                
+                return redirect()->away($waUrl);
+            }
+
             // 3. Generar Preferencia de Pago en MercadoPago
             $mpService  = app(MercadoPagoService::class);
             $preference = $mpService->createPreference($order, $this->cart);
@@ -139,10 +193,6 @@ new #[Layout('layouts.app')] class extends Component {
             $order->update(['mp_preference_id' => $preference['preference_id']]);
 
             DB::commit();
-
-            // 5. Limpiar el carrito
-            app(\App\Services\CartService::class)->clear();
-            $this->dispatch('cart-updated');
 
             // 6. Redirigir a MercadoPago en la misma pestaña
             $redirectUrl = app()->isProduction()
@@ -164,6 +214,265 @@ new #[Layout('layouts.app')] class extends Component {
 
 
 <div>
+@if($theme === 'luxury')
+    {{-- =========================================================
+         LUXURY THEME: CHECKOUT
+         ========================================================= --}}
+    <div class="bg-[#030712] min-h-screen text-white pt-24 pb-32">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            
+            <div class="mb-12">
+                <h1 class="text-4xl font-black tracking-tight mb-2">Finalizar Compra</h1>
+                <p class="text-gray-400">Completa tus datos para proceder al pago seguro.</p>
+                
+                @if (session()->has('error'))
+                    <div class="mt-6 bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-2xl flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {{ session('error') }}
+                    </div>
+                @endif
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+                <!-- Shipping Form (Col-span 7) -->
+                <div class="lg:col-span-7">
+                    <form wire:submit="placeOrder">
+                        
+                        <div class="space-y-8">
+                            {{-- Section: Shipping --}}
+                            <div>
+                                <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-sm">1</span> Datos de Envío</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Calle</label>
+                                        <input wire:model="address_street" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-colors placeholder-gray-700" placeholder="Ej: Av. Libertador">
+                                        @error('address_street') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Número / Piso</label>
+                                        <input wire:model="address_number" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-colors placeholder-gray-700" placeholder="Ej: 1234 Piso 5">
+                                        @error('address_number') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="md:col-span-1">
+                                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">C. Postal</label>
+                                        <input wire:model="zip_code" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-colors placeholder-gray-700" placeholder="Ej: 1000">
+                                        @error('zip_code') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="md:col-span-1">
+                                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Ciudad</label>
+                                        <input wire:model="city" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-colors placeholder-gray-700" placeholder="CABA">
+                                        @error('city') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="md:col-span-1">
+                                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Provincia</label>
+                                        <input wire:model="state" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-colors placeholder-gray-700" placeholder="Buenos Aires">
+                                        @error('state') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="border-white/5">
+
+                            {{-- Section: Contact --}}
+                            <div>
+                                <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-sm">2</span> Contacto</h3>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Celular / WhatsApp</label>
+                                    <input wire:model="phone" type="tel" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-colors placeholder-gray-700" placeholder="Ej: 11 1234-5678">
+                                    <p class="text-[11px] text-gray-500 mt-2">Lo utilizaremos para enviarte notificaciones sobre el estado de tu orden.</p>
+                                    @error('phone') <span class="text-red-400 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <button type="submit"
+                                    wire:loading.attr="disabled"
+                                    class="w-full inline-flex items-center justify-center gap-3 py-5 px-8 rounded-2xl text-white font-bold text-lg tracking-wide transition-all bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 shadow-[0_0_20px_var(--color-primary-glow)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                                
+                                <svg wire:loading.remove wire:target="placeOrder" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+
+                                <svg wire:loading wire:target="placeOrder" class="animate-spin w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+
+                                <span wire:loading.remove wire:target="placeOrder">Pagar con MercadoPago</span>
+                                <span wire:loading wire:target="placeOrder">Generando pago seguro...</span>
+                            </button>
+                            <div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                                <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Pago 100% encriptado
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Order Summary (Col-span 5) -->
+                <div class="lg:col-span-5">
+                    <div class="sticky top-32 bg-white/5 backdrop-blur-3xl border border-white/5 rounded-3xl p-8">
+                        <h3 class="text-lg font-bold mb-6">Tu Pedido</h3>
+                        
+                        <div class="space-y-6">
+                            @foreach($cart as $productId => $quantity)
+                                @if(isset($products[$productId]))
+                                    @php
+                                        $product = $products[$productId];
+                                        $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                                    @endphp
+                                    <div class="flex gap-4">
+                                        <div class="w-20 h-20 bg-[#0a0f1c] rounded-xl border border-white/5 flex items-center justify-center p-2 flex-shrink-0">
+                                            @if($product->image_url)
+                                                <img src="{{ asset('storage/' . $product->image_url) }}" class="w-full h-full object-contain">
+                                            @endif
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-sm leading-tight line-clamp-2 mb-1">{{ $product->name }}</h4>
+                                            <div class="flex items-center justify-between mt-2">
+                                                <span class="text-xs text-gray-400">{{ $quantity }} x ${{ number_format($price, 2) }}</span>
+                                                <span class="font-bold">${{ number_format($price * $quantity, 2) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                        
+                        <hr class="my-6 border-white/5">
+                        
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-gray-400">Subtotal</span>
+                            <span class="font-medium">${{ number_format($subtotal, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-gray-400">Envío</span>
+                            <span class="text-emerald-400 font-bold text-sm uppercase tracking-widest">Gratis</span>
+                        </div>
+                        
+                        <hr class="my-6 border-white/5">
+
+                        <div class="flex justify-between items-end">
+                            <span class="text-xl font-bold">Total</span>
+                            <span class="text-4xl font-black">${{ number_format($subtotal, 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+@elseif($theme === 'modern-light')
+    {{-- =========================================================
+         MODERN-LIGHT THEME: CHECKOUT (WhatsApp)
+         ========================================================= --}}
+    <x-slot name="header">
+        <h2 class="font-bold text-2xl text-gray-900 tracking-tight">
+            {{ __('Checkout: Confirmar Pedido') }}
+        </h2>
+    </x-slot>
+
+    <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        @if (session()->has('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl relative shadow-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Order Summary -->
+            <div class="bg-white border border-gray-200 shadow-sm rounded-3xl p-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Tu Pedido</h3>
+                <ul class="divide-y divide-gray-100">
+                    @foreach($cart as $productId => $quantity)
+                        @if(isset($products[$productId]))
+                            @php
+                                $product = $products[$productId];
+                                $price = $this->getPrice($product, $quantity);
+                            @endphp
+                            <li class="py-4 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 mr-4 p-1">
+                                        @if($product->image_url)
+                                            <img src="{{ asset('storage/' . $product->image_url) }}" class="h-full w-full object-contain mix-blend-multiply">
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-gray-900 line-clamp-2 text-sm">{{ $product->name }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">${{ number_format($price, 2) }} c/u</p>
+                                        <div class="flex items-center gap-3 mt-2">
+                                            <div class="flex items-center border border-gray-200 rounded-lg bg-gray-50 p-1">
+                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="w-6 h-6 flex items-center justify-center rounded-md bg-white text-gray-600 hover:bg-gray-100 shadow-sm transition-colors">
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
+                                                </button>
+                                                <span class="w-8 text-center text-xs font-bold text-gray-900">
+                                                    <span wire:loading.remove wire:target="updateQuantity">{{ $quantity }}</span>
+                                                    <span wire:loading wire:target="updateQuantity" class="inline-block animate-pulse w-2 h-2 bg-gray-400 rounded-full"></span>
+                                                </span>
+                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="w-6 h-6 flex items-center justify-center rounded-md bg-white text-gray-600 hover:bg-gray-100 shadow-sm transition-colors" @if($quantity >= $product->stock) disabled @endif>
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                                                </button>
+                                            </div>
+                                            <button wire:click.prevent="removeItem({{ $productId }})" wire:loading.attr="disabled" type="button" class="text-xs text-red-500 hover:text-red-700 font-bold transition-colors inline-flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-black text-gray-900 text-lg">
+                                        ${{ number_format($price * $quantity, 2) }}
+                                    </div>
+                                    @if($price == $product->wholesale_price)
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-[var(--color-primary)] mt-1 block">Mayorista</span>
+                                    @endif
+                                </div>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+                <div class="mt-6 pt-6 border-t border-gray-100 flex justify-between items-center">
+                    <span class="text-xl font-bold text-gray-500">Total</span>
+                    <span class="text-3xl font-black text-gray-900">${{ number_format($subtotal, 2) }}</span>
+                </div>
+            </div>
+
+            <!-- WhatsApp Form -->
+            <div class="bg-white border border-gray-200 shadow-sm rounded-3xl p-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.663-2.06-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Confirmar por WhatsApp
+                </h3>
+                
+                <div class="bg-red-50 border border-red-100 rounded-xl p-5 mb-6 text-sm text-red-900">
+                    <p class="font-bold mb-1">Paso a retirar por el local</p>
+                    <p>No realizamos envíos. Una vez confirmado tu pedido, nos comunicaremos por WhatsApp para coordinar el pago y el retiro de tu compra.</p>
+                </div>
+
+                <form wire:submit="placeOrder">
+                    <div class="mb-8">
+                        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase tracking-wider">Tu Nombre</label>
+                        <input type="text" value="{{ auth()->user()->name }}" disabled class="w-full py-3 px-4 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 shadow-sm cursor-not-allowed">
+                    </div>
+
+                    <button type="submit"
+                            wire:loading.attr="disabled"
+                            class="w-full inline-flex items-center justify-center gap-2 py-4 px-8 rounded-xl text-white font-bold text-lg tracking-wide transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed bg-green-500 hover:bg-green-600">
+                        <span wire:loading.remove wire:target="placeOrder">Enviar Pedido y Abrir WhatsApp</span>
+                        <span wire:loading wire:target="placeOrder">Procesando...</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+@else
+    {{-- =========================================================
+         STEALTH THEME: CHECKOUT
+         ========================================================= --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-100 leading-tight">
             {{ __('Checkout: Confirmar Reserva') }}
@@ -237,7 +546,7 @@ new #[Layout('layouts.app')] class extends Component {
             </div>
 
             <!-- Shipping Form -->
-            <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl sm:rounded-3xl p-8" :style="darkMode ? 'box-shadow: 0 10px 30px -10px var(--color-primary-glow);' : ''">
+            <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl sm:rounded-3xl p-8" :style="$store.theme.dark ? 'box-shadow: 0 10px 30px -10px var(--color-primary-glow);' : ''">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Detalles de Envío</h3>
                 <form wire:submit="placeOrder">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -282,8 +591,8 @@ new #[Layout('layouts.app')] class extends Component {
                         @error('phone') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     
-                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4 mb-8">
-                        <p class="text-sm text-blue-800 dark:text-blue-300">
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 mb-8">
+                        <p class="text-sm text-emerald-800 dark:text-emerald-300">
                             <strong>Pago seguro:</strong> Al confirmar, serás redirigido a MercadoPago para completar tu pago de forma segura.
                         </p>
                     </div>
@@ -317,4 +626,5 @@ new #[Layout('layouts.app')] class extends Component {
             </div>
         </div>
     </div>
+@endif
 </div>

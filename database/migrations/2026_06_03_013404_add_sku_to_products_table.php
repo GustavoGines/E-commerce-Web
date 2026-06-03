@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('store_settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('store_name')->default('Mi Tienda');
-            $table->string('logo_url')->nullable();
-            $table->timestamps();
+        Schema::table('products', function (Blueprint $table) {
+            $table->string('sku')->nullable()->after('name');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('store_settings');
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropColumn('sku');
+        });
     }
 };

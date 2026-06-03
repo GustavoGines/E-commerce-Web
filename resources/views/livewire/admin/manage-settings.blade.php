@@ -10,7 +10,7 @@ new #[Layout('layouts.app')] class extends Component {
     use WithFileUploads;
 
     public $store_name = '';
-    public $primary_color = '#3b82f6';
+    public $theme_name = 'stealth';
     public $logo;
     public $current_logo_url;
 
@@ -19,7 +19,7 @@ new #[Layout('layouts.app')] class extends Component {
         $settings = StoreSetting::first();
         if ($settings) {
             $this->store_name = $settings->store_name;
-            $this->primary_color = $settings->primary_color;
+            $this->theme_name = $settings->theme_name ?? 'stealth';
             $this->current_logo_url = $settings->logo_url;
         }
     }
@@ -41,13 +41,13 @@ new #[Layout('layouts.app')] class extends Component {
     {
         $this->validate([
             'store_name'    => 'required|string|max:255',
-            'primary_color' => 'required|string|max:7',
-            'logo'          => 'nullable|image|max:2048',
+            'theme_name'    => 'required|string|in:stealth,luxury,modern-light',
+            'logo'          => 'nullable|image|max:10240',
         ]);
 
         $settings = StoreSetting::first() ?? new StoreSetting();
         $settings->store_name    = $this->store_name;
-        $settings->primary_color = $this->primary_color;
+        $settings->theme_name    = $this->theme_name;
 
         if ($this->logo) {
             // Eliminar el logo viejo del disco antes de subir el nuevo
@@ -62,6 +62,9 @@ new #[Layout('layouts.app')] class extends Component {
 
         $settings->save();
         session()->flash('message', 'Configuración guardada exitosamente.');
+        
+        // Redirigir (recargar) la página sin 'navigate' para que los cambios de layout se apliquen instantáneamente.
+        $this->redirect(route('admin.settings'), navigate: false);
     }
 }; ?>
 
@@ -73,7 +76,7 @@ new #[Layout('layouts.app')] class extends Component {
     </x-slot>
 
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-        <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl overflow-hidden sm:rounded-3xl p-8 transition-colors duration-300" :style="darkMode ? 'box-shadow: 0 10px 30px -10px var(--color-primary-glow);' : ''">
+        <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl overflow-hidden sm:rounded-3xl p-8 transition-colors duration-300" :style="$store.theme.dark ? 'box-shadow: 0 10px 30px -10px var(--color-primary-glow);' : ''">
             @if (session()->has('message'))
                 <div class="mb-6 bg-green-100 dark:bg-green-500/20 border border-green-400 dark:border-green-500/30 text-green-700 dark:text-green-400 px-4 py-3 rounded relative backdrop-blur-sm transition-colors duration-300">
                     {{ session('message') }}
@@ -90,11 +93,15 @@ new #[Layout('layouts.app')] class extends Component {
                 </div>
 
                 <div class="mb-5">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="primary_color">
-                        Color Primario
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="theme_name">
+                        Tema de la Tienda
                     </label>
-                    <input wire:model="primary_color" id="primary_color" type="color" class="w-full h-14 p-1 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all cursor-pointer shadow-sm dark:shadow-none">
-                    @error('primary_color') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <select wire:model="theme_name" id="theme_name" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none">
+                        <option value="stealth">Stealth (Tema Claro Predeterminado)</option>
+                        <option value="luxury">Luxury (Tema Premium Oscuro)</option>
+                        <option value="modern-light">Modern Light (Tema Limpio y Claro)</option>
+                    </select>
+                    @error('theme_name') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- SECCIÓN LOGO --}}

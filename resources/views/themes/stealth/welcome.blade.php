@@ -1,9 +1,7 @@
 @php
     $settings = \App\Models\StoreSetting::first();
-    $primaryColor = $settings && $settings->primary_color != '#111827' ? $settings->primary_color : '#3b82f6';
     $storeName = $settings ? $settings->store_name : 'E-commerce Web';
 @endphp
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -27,7 +25,7 @@
 
     <style>
         :root {
-            --color-primary: {{ $primaryColor }};
+            --color-primary: #3b82f6;
             --color-primary-glow: color-mix(in srgb, var(--color-primary) 30%, transparent);
             --color-primary-subtle: color-mix(in srgb, var(--color-primary) 10%, transparent);
         }
@@ -158,7 +156,7 @@
                     </p>
 
                     <div class="flex flex-wrap gap-4">
-                        <button onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})"
+                        <a href="{{ route('shop') }}"
                                 class="group px-8 py-4 rounded-2xl text-white font-bold text-sm tracking-wide
                                        shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-8px_var(--color-primary-glow)]"
                                 style="background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 70%, #7c3aed));">
@@ -168,7 +166,7 @@
                                 </svg>
                                 Explorar Catálogo
                             </span>
-                        </button>
+                        </a>
                         <button class="px-8 py-4 rounded-2xl text-white font-bold text-sm tracking-wide
                                        bg-white/10 hover:bg-white/20 border border-white/25 backdrop-blur-sm
                                        transition-all duration-300 hover:-translate-y-1">
@@ -203,11 +201,9 @@
         </section>
 
         {{-- ════════════════════════════════════════════════════════
-             CATÁLOGO DE PRODUCTOS
+             CATÁLOGO DE PRODUCTOS -> MOVED TO SHOP.BLADE.PHP
         ════════════════════════════════════════════════════════ --}}
-        <main id="catalog" class="relative flex-grow pt-10 pb-20">
-            <livewire:product-grid />
-        </main>
+
 
     </div>
 

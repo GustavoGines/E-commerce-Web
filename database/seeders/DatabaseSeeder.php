@@ -30,8 +30,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         StoreSetting::create([
-            'store_name' => 'E-commerce Web',
-            'primary_color' => '#111827',
+            'store_name' => 'TechStore Premium',
             'logo_url' => null,
         ]);
 

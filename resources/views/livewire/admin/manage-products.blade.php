@@ -16,6 +16,7 @@ new #[Layout('layouts.app')] class extends Component {
     public $category_id = '';
     public $brand_id = '';
     public $name = '';
+    public $sku = '';
     public $description = '';
     public $cost_price = 0;
     public $profit_margin = 0;
@@ -123,6 +124,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->category_id = $product->category_id;
         $this->brand_id = $product->brand_id;
         $this->name = $product->name;
+        $this->sku = $product->sku;
         $this->description = $product->description;
         $this->cost_price = $product->cost_price;
         $this->profit_margin = $product->profit_margin;
@@ -153,6 +155,7 @@ new #[Layout('layouts.app')] class extends Component {
 
         $data = [
             'name' => $this->name,
+            'sku' => empty($this->sku) ? null : $this->sku,
             'category_id' => $this->category_id,
             'brand_id' => $this->brand_id ?: null,
             'description' => $this->description,
@@ -196,6 +199,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->category_id = '';
         $this->brand_id = '';
         $this->name = '';
+        $this->sku = '';
         $this->description = '';
         $this->cost_price = 0;
         $this->profit_margin = 0;
@@ -670,6 +674,11 @@ new #[Layout('layouts.app')] class extends Component {
                                 <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Nombre</label>
                                 <input wire:model="name" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                 @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">SKU / Código</label>
+                                <input wire:model="sku" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="Ej: RM-304">
+                                @error('sku') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <div class="flex justify-between items-center mb-2">

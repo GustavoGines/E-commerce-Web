@@ -5,7 +5,31 @@ use Livewire\Volt\Volt;
 use App\Http\Controllers\CheckoutReturnController;
 use App\Http\Controllers\MercadoPagoWebhookController;
 
-Route::view('/', 'welcome')->name('home');
+use App\Models\StoreSetting;
+
+Route::get('/', function () {
+    $settings = StoreSetting::first();
+    $theme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
+    
+    // Fallback to stealth if theme view doesn't exist
+    if (!view()->exists("themes.{$theme}.welcome")) {
+        $theme = 'stealth';
+    }
+    
+    return view("themes.{$theme}.welcome");
+})->name('home');
+
+Route::get('/shop', function () {
+    $settings = StoreSetting::first();
+    $theme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
+    
+    // Fallback to stealth if theme view doesn't exist
+    if (!view()->exists("themes.{$theme}.shop")) {
+        $theme = 'stealth';
+    }
+    
+    return view("themes.{$theme}.shop");
+})->name('shop');
 
 Volt::route('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -19,6 +43,11 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 require __DIR__.'/auth.php';
+
+use App\Http\Controllers\GoogleAuthController;
+
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 
 Route::middleware(['auth'])->group(function () {
     Volt::route('checkout', 'checkout')->name('checkout');
