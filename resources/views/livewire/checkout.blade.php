@@ -165,7 +165,7 @@ new #[Layout('layouts.app')] class extends Component {
             if ($this->theme === 'modern-light') {
                 DB::commit();
                 
-                $sellerPhone = '5493704787285';
+                $sellerPhone = '5493705075839';
                 $message = "Hola JCG Electrónica! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
                 
                 foreach ($this->cart as $productId => $quantity) {
