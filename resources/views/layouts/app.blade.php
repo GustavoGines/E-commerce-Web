@@ -8,7 +8,26 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        @php
+            $storeName = $settings->store_name ?? config('app.name', 'JCG Electrónica');
+            $logoUrl = asset('storage/logos/logo-cjg-horizontal.png');
+            $description = 'El mayor catálogo de controles remotos y electrónica. Ventas por mayor y menor.';
+        @endphp
+
+        <title>{{ $storeName }}</title>
+
+        <!-- Open Graph / WhatsApp Preview -->
+        <meta property="og:title" content="{{ $storeName }}">
+        <meta property="og:description" content="{{ $description }}">
+        <meta property="og:image" content="{{ $logoUrl }}">
+        <meta property="og:url" content="{{ url('/') }}">
+        <meta property="og:type" content="website">
+        
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $storeName }}">
+        <meta name="twitter:description" content="{{ $description }}">
+        <meta name="twitter:image" content="{{ $logoUrl }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
