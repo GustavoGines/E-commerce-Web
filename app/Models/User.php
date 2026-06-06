@@ -35,4 +35,27 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Order::class);
     }
+
+    /**
+     * Determine if the user qualifies for global wholesale pricing.
+     * A user qualifies if they have at least one paid/completed order
+     * with an item quantity of 10 or more.
+     */
+    public function isWholesaleCustomer()
+    {
+        // Cache the result for the request lifecycle to avoid repeated queries
+        static $isWholesale = null;
+        if ($isWholesale !== null) {
+            return $isWholesale;
+        }
+
+        $isWholesale = $this->orders()
+            ->whereIn('status', ['pagado', 'completada', 'aprobada'])
+            ->whereHas('items', function ($query) {
+                $query->where('quantity', '>=', 10);
+            })
+            ->exists();
+
+        return $isWholesale;
+    }
 }

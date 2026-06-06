@@ -98,6 +98,25 @@ class CartService
     }
 
     /**
+     * Set exact quantity of an item directly.
+     */
+    public function setQuantity($productId, $quantity)
+    {
+        $cart = $this->getCart();
+        $cartItem = $cart->items()->where('product_id', $productId)->first();
+
+        if (!$cartItem) {
+            return false;
+        }
+
+        $product = $cartItem->product;
+        $qty = max(1, min((int)$quantity, $product->stock));
+
+        $cartItem->update(['quantity' => $qty]);
+        return true;
+    }
+
+    /**
      * Remove an item from the cart.
      */
     public function removeItem($productId)

@@ -15,7 +15,17 @@ class GoogleAuthController extends Controller
      */
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        try {
+            // Store intended URL if not auth pages
+            $previousUrl = url()->previous();
+            if (!\Illuminate\Support\Str::contains($previousUrl, ['/login', '/register', '/auth'])) {
+                session(['url.intended' => $previousUrl]);
+            }
+            
+            return Socialite::driver('google')->redirect();
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'Error de conexión con Google.');
+        }
     }
 
     /**
@@ -30,8 +40,9 @@ class GoogleAuthController extends Controller
             $user = User::where('google_id', $googleUser->id)->first();
 
             if ($user) {
-                // If user exists, log them in
+                $oldSessionId = \Illuminate\Support\Facades\Session::getId();
                 Auth::login($user);
+                app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart($user, $oldSessionId);
             } else {
                 // If user doesn't exist by google_id, check by email
                 $existingUserByEmail = User::where('email', $googleUser->email)->first();
@@ -41,20 +52,24 @@ class GoogleAuthController extends Controller
                     $existingUserByEmail->update([
                         'google_id' => $googleUser->id,
                     ]);
+                    $oldSessionId = \Illuminate\Support\Facades\Session::getId();
                     Auth::login($existingUserByEmail);
+                    app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart($existingUserByEmail, $oldSessionId);
                 } else {
                     // Create new user
                     $newUser = User::create([
                         'name' => $googleUser->name,
                         'email' => $googleUser->email,
                         'google_id' => $googleUser->id,
-                        'password' => null, // or bcrypt(Str::random(16))
+                        'password' => null,
                     ]);
+                    $oldSessionId = \Illuminate\Support\Facades\Session::getId();
                     Auth::login($newUser);
+                    app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart($newUser, $oldSessionId);
                 }
             }
 
-            return redirect()->route('home');
+            return redirect()->intended(route('home'));
 
         } catch (Exception $e) {
             return redirect()->route('login')->with('error', 'Error al iniciar sesión con Google. ' . $e->getMessage());

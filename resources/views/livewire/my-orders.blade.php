@@ -203,16 +203,16 @@ new #[Layout('layouts.app')] class extends Component {
                                 </ul>
                             </div>
 
-                            {{-- Dirección --}}
-                            @if($order->address_street)
+                            {{-- Entrega --}}
                             <div class="pt-3 border-t border-gray-100 dark:border-gray-800">
-                                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Envío a</h3>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $order->address_street }} {{ $order->address_number }},
-                                    {{ $order->city }}, {{ $order->state }} — CP {{ $order->zip_code }}
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Forma de entrega</h3>
+                                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    Retiro en Local
                                 </p>
                             </div>
-                            @endif
 
                             {{-- Acciones --}}
                             <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">

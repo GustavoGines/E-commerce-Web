@@ -110,20 +110,22 @@
                 </div>
             </div>
 
-            {{-- Dirección de envío --}}
+            {{-- Forma de entrega --}}
             <div class="mb-8 pb-8 border-b border-gray-800">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Dirección de envío</h2>
-                <p class="text-white">
-                    {{ $order->address_street }} {{ $order->address_number }},
-                    {{ $order->city }}, {{ $order->state }} — CP {{ $order->zip_code }}
-                </p>
+                <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Forma de entrega</h2>
+                <div class="text-white font-medium flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Retiro en Local
+                </div>
             </div>
 
             {{-- Tabla de productos --}}
             <div class="mb-8">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Productos</h2>
-                <div class="rounded-2xl overflow-hidden border border-gray-800">
-                    <table class="w-full">
+                <div class="rounded-2xl overflow-hidden border border-gray-800 overflow-x-auto">
+                    <table class="w-full min-w-[500px]">
                         <thead>
                             <tr class="bg-gray-800/60 text-xs font-bold uppercase tracking-wider text-gray-400">
                                 <th class="px-4 py-3 text-left">Producto</th>
@@ -169,8 +171,9 @@
 
             {{-- Footer del comprobante --}}
             <div class="text-center text-gray-600 text-xs pt-4 border-t border-gray-800">
+                <p class="font-bold text-gray-400 uppercase tracking-widest mb-2">Documento no válido como factura</p>
                 <p>{{ config('app.name') }} • Comprobante generado el {{ now()->format('d/m/Y H:i') }}</p>
-                <p class="mt-1">Este comprobante es válido como constancia de pago electrónico.</p>
+                <p class="mt-1">Este comprobante es únicamente una constancia interna de tu pedido.</p>
             </div>
         </div>
     </div>

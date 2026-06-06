@@ -14,38 +14,38 @@
         {{-- ════════════════════════════════════════════════════════
              HERO SECTION — Limpio, centrado en Búsqueda
         ════════════════════════════════════════════════════════ --}}
-        <section class="relative bg-gray-50 border-b border-gray-100 overflow-hidden">
+        <section class="relative bg-gray-50 border-b border-gray-100 overflow-hidden" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
             {{-- Elementos decorativos de fondo --}}
-            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-red-50 opacity-50 blur-3xl pointer-events-none"></div>
-            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-gray-100 opacity-50 blur-3xl pointer-events-none"></div>
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-red-50 opacity-50 blur-3xl pointer-events-none transition-all duration-1000 transform" :class="loaded ? 'scale-100 translate-y-0' : 'scale-50 -translate-y-12'"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-gray-100 opacity-50 blur-3xl pointer-events-none transition-all duration-1000 delay-300 transform" :class="loaded ? 'scale-100 translate-x-0' : 'scale-50 -translate-x-12'"></div>
             
             <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-12">
                 
                 {{-- Texto y Búsqueda --}}
-                <div class="flex-1 text-center lg:text-left z-10">
-                    <span class="inline-block py-1 px-3 rounded-full bg-red-100 text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider mb-6">
+                <div class="flex-1 text-center lg:text-left z-10 transition-all duration-1000 transform" :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+                    <span class="inline-block py-1 px-3 rounded-full bg-red-100 text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider mb-6 animate-pulse">
                         Mayorista y Minorista
                     </span>
                     <h1 class="text-5xl lg:text-7xl font-black text-gray-900 tracking-tight leading-[1.1] mb-6">
                         Encuentra tu <br class="hidden lg:block">
-                        <span class="text-[var(--color-primary)]">Control Remoto</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">Control Remoto</span>
                     </h1>
                     <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
                         Tenemos el catálogo más completo de controles remotos para TV, Smart TV, Aire Acondicionado y TV Box. Busca por marca o modelo.
                     </p>
                     
                     {{-- Buscador Hero --}}
-                    <div class="max-w-xl mx-auto lg:mx-0">
-                        <form action="{{ route('shop') }}" method="GET" class="relative flex items-center">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <div class="max-w-xl mx-auto lg:mx-0 transition-all duration-1000 delay-200 transform" :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+                        <form action="{{ route('shop') }}" method="GET" class="relative flex items-center group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:scale-110 group-focus-within:text-[var(--color-primary)]">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
                             <input type="text" name="q" placeholder="Ej: Control Samsung, Noblex, Aire Surrey..." 
-                                   class="block w-full pl-11 pr-32 py-4 border border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-lg shadow-sm transition-shadow hover:shadow-md">
+                                   class="block w-full pl-11 pr-32 py-4 border border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-lg shadow-sm transition-all duration-300 hover:shadow-md focus:shadow-[0_0_20px_rgba(220,38,38,0.2)] bg-white/90 backdrop-blur-sm">
                             <button type="submit" 
-                                    class="absolute right-2 top-2 bottom-2 px-6 rounded-full text-white font-bold transition-transform active:scale-95"
+                                    class="absolute right-2 top-2 bottom-2 px-6 rounded-full text-white font-bold transition-all duration-300 active:scale-95 hover:shadow-lg hover:shadow-red-500/30"
                                     style="background-color: var(--color-primary);">
                                 Buscar
                             </button>
@@ -53,64 +53,131 @@
                     </div>
                     
                     {{-- Marcas --}}
-                    <div class="mt-10 pt-8 border-t border-gray-200">
+                    <div class="mt-10 pt-8 border-t border-gray-200 transition-all duration-1000 delay-300 transform" :class="loaded ? 'opacity-100' : 'opacity-0'">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Trabajamos con todas las marcas</p>
                         <div class="flex flex-wrap justify-center lg:justify-start gap-4 text-gray-500 font-bold text-sm">
-                            <span>SAMSUNG</span>
+                            <span class="hover:text-gray-800 transition-colors cursor-default">SAMSUNG</span>
                             <span>&bull;</span>
-                            <span>LG</span>
+                            <span class="hover:text-gray-800 transition-colors cursor-default">LG</span>
                             <span>&bull;</span>
-                            <span>NOBLEX</span>
+                            <span class="hover:text-gray-800 transition-colors cursor-default">NOBLEX</span>
                             <span>&bull;</span>
-                            <span>PHILIPS</span>
+                            <span class="hover:text-gray-800 transition-colors cursor-default">PHILIPS</span>
                             <span>&bull;</span>
-                            <span>BGH</span>
+                            <span class="hover:text-gray-800 transition-colors cursor-default">BGH</span>
                         </div>
                     </div>
                 </div>
                 
                 {{-- Imagen Destacada --}}
-                <div class="flex-1 w-full max-w-md lg:max-w-full relative z-10 hidden md:block">
+                <div class="flex-1 w-full max-w-md lg:max-w-full relative z-10 hidden md:block transition-all duration-1000 delay-300 transform" :class="loaded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'">
                     <div class="relative w-full aspect-square flex items-center justify-center">
-                        <div class="absolute inset-0 bg-white rounded-full shadow-2xl opacity-80 scale-75"></div>
-                        <img src="{{ asset('storage/banners/tv_remote.png') }}" alt="Control Remoto Moderno" class="relative z-10 w-3/4 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500 hover:rotate-2 mix-blend-multiply">
-                        <img src="{{ asset('storage/banners/ac_remote.png') }}" alt="Control de Aire" class="absolute z-0 w-1/2 object-contain drop-shadow-xl -bottom-10 -right-10 opacity-90 -rotate-12 blur-[1px] mix-blend-multiply">
+                        <div class="absolute inset-0 bg-white rounded-full shadow-2xl opacity-80 scale-75 animate-[pulse_4s_ease-in-out_infinite]"></div>
+                        <img src="{{ asset('storage/banners/tv_remote.png') }}" alt="Control Remoto Moderno" class="relative z-10 w-3/4 object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500 hover:-rotate-6 mix-blend-multiply cursor-crosshair">
+                        <img src="{{ asset('storage/banners/ac_remote.png') }}" alt="Control de Aire" class="absolute z-0 w-1/2 object-contain drop-shadow-xl -bottom-10 -right-10 opacity-90 -rotate-12 blur-[1px] mix-blend-multiply animate-[bounce_5s_infinite]">
                     </div>
                 </div>
             </div>
         </section>
 
         {{-- ════════════════════════════════════════════════════════
+             HERO CAROUSEL (FLYERS PROMOCIONALES)
+        ════════════════════════════════════════════════════════ --}}
+        <section class="w-full bg-gray-950 border-b border-gray-900" x-data="{ activeSlide: 1, slides: [1, 2, 3], autoSlide: null }"
+                 x-init="autoSlide = setInterval(() => { activeSlide = activeSlide === slides.length ? 1 : activeSlide + 1 }, 5000)">
+            <div class="relative w-full h-[400px] md:h-[500px] overflow-hidden">
+                
+                {{-- Slide 1: Mayorista --}}
+                <div class="absolute inset-0 transition-opacity duration-1000"
+                     :class="activeSlide === 1 ? 'opacity-100 z-10' : 'opacity-0 z-0'">
+                    <img src="{{ asset('storage/banners/bg_slider_1.png') }}" class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Precios Mayoristas">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+                    <div class="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+                        <span class="inline-block py-1 px-3 rounded-full bg-red-600/20 text-red-500 border border-red-500/50 text-xs font-bold uppercase tracking-wider mb-4 w-max">Promo Exclusiva</span>
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-4 leading-tight">Llevá más, <br><span class="text-red-500">pagá menos.</span></h2>
+                        <p class="text-gray-300 max-w-lg md:text-lg mb-8">Llevá 10 unidades o más en tu primera compra y accedé al beneficio de <strong>PRECIO MAYORISTA</strong> para siempre, incluso comprando por unidad.</p>
+                        <a href="{{ route('shop') }}" class="inline-flex items-center justify-center px-8 py-3 rounded-full bg-red-600 text-white font-bold hover:bg-red-700 transition-colors w-max shadow-[0_0_20px_rgba(220,38,38,0.3)]">Ver Catálogo</a>
+                    </div>
+                </div>
+
+                {{-- Slide 2: Retiro en Local --}}
+                <div class="absolute inset-0 transition-opacity duration-1000"
+                     :class="activeSlide === 2 ? 'opacity-100 z-10' : 'opacity-0 z-0'">
+                    <img src="{{ asset('storage/banners/bg_slider_2.png') }}" class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Retiro Inmediato">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+                    <div class="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+                        <span class="inline-block py-1 px-3 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 text-xs font-bold uppercase tracking-wider mb-4 w-max">Sin demoras</span>
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-4 leading-tight">Retiro Inmediato <br><span class="text-yellow-400">en Nuestro Local</span></h2>
+                        <p class="text-gray-300 max-w-lg md:text-lg mb-8">Hacé tu pedido online y pasá a buscarlo por nuestra tienda sin hacer filas ni esperar tiempos de envío. ¡Fácil y rápido!</p>
+                        <a href="{{ route('shop') }}" class="inline-flex items-center justify-center px-8 py-3 rounded-full bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition-colors w-max shadow-[0_0_20px_rgba(234,179,8,0.3)]">Comprar Ahora</a>
+                    </div>
+                </div>
+
+                {{-- Slide 3: Accesorios --}}
+                <div class="absolute inset-0 transition-opacity duration-1000"
+                     :class="activeSlide === 3 ? 'opacity-100 z-10' : 'opacity-0 z-0'">
+                    <img src="{{ asset('storage/banners/bg_slider_3.png') }}" class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Accesorios">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+                    <div class="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+                        <span class="inline-block py-1 px-3 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/50 text-xs font-bold uppercase tracking-wider mb-4 w-max">Nuevo Catálogo</span>
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-4 leading-tight">Accesorios <br><span class="text-blue-400">Premium</span></h2>
+                        <p class="text-gray-300 max-w-lg md:text-lg mb-8">Descubrí nuestra nueva línea de fundas, cargadores rápidos, cables reforzados y mucho más para tu celular.</p>
+                        <a href="{{ route('shop', ['categoria' => 'Accesorios']) }}" class="inline-flex items-center justify-center px-8 py-3 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors w-max shadow-[0_0_20px_rgba(37,99,235,0.3)]">Ver Accesorios</a>
+                    </div>
+                </div>
+
+                {{-- Navegación Puntos --}}
+                <div class="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-3">
+                    <template x-for="slide in slides" :key="slide">
+                        <button @click="activeSlide = slide; clearInterval(autoSlide); autoSlide = setInterval(() => { activeSlide = activeSlide === slides.length ? 1 : activeSlide + 1 }, 5000)"
+                                class="w-10 h-1 rounded-full transition-all duration-300"
+                                :class="activeSlide === slide ? 'bg-red-600 scale-y-150' : 'bg-white/30 hover:bg-white/60'"></button>
+                    </template>
+                </div>
+                
+                {{-- Flechas Laterales --}}
+                <button @click="activeSlide = activeSlide === 1 ? slides.length : activeSlide - 1; clearInterval(autoSlide); autoSlide = setInterval(() => { activeSlide = activeSlide === slides.length ? 1 : activeSlide + 1 }, 5000)" 
+                        class="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 lg:opacity-100">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button @click="activeSlide = activeSlide === slides.length ? 1 : activeSlide + 1; clearInterval(autoSlide); autoSlide = setInterval(() => { activeSlide = activeSlide === slides.length ? 1 : activeSlide + 1 }, 5000)" 
+                        class="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 lg:opacity-100">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </section>
+
+        {{-- ════════════════════════════════════════════════════════
              CATEGORÍAS DESTACADAS
         ════════════════════════════════════════════════════════ --}}
-        <section class="py-16 bg-white border-b border-gray-100">
+        <section class="py-16 bg-white border-b border-gray-100" x-data="{ intersecting: false }" x-intersect.once="intersecting = true">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-1000 delay-100 transform" :class="intersecting ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'">
                     
-                    <a href="{{ route('shop', ['categoria' => 'TV']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900">
+                    <a href="{{ route('shop', ['categoria' => 'TV']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900 hover:shadow-[0_8px_30px_rgba(220,38,38,0.2)] transition-all duration-300">
                         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80 z-10"></div>
-                        <img src="{{ asset('storage/banners/cat_tv.png') }}" alt="Controles TV" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500">
+                        <img src="{{ asset('storage/banners/cat_tv.png') }}" alt="Controles TV" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-500">
                         <span class="relative z-20 text-white font-bold text-sm md:text-base text-center px-4 tracking-wide group-hover:-translate-y-1 transition-transform drop-shadow-md">CONTROLES TV / SMART</span>
                     </a>
                     
-                    <a href="{{ route('shop', ['categoria' => 'Aire']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900">
+                    <a href="{{ route('shop', ['categoria' => 'Aire']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900 hover:shadow-[0_8px_30px_rgba(37,99,235,0.2)] transition-all duration-300">
                         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80 z-10"></div>
-                        <img src="{{ asset('storage/banners/cat_ac.png') }}" alt="Aire Acondicionado" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500">
+                        <img src="{{ asset('storage/banners/cat_ac.png') }}" alt="Aire Acondicionado" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-500">
                         <span class="relative z-20 text-white font-bold text-sm md:text-base text-center px-4 tracking-wide group-hover:-translate-y-1 transition-transform drop-shadow-md">AIRE ACONDICIONADO</span>
                     </a>
-                    
-                    <a href="{{ route('shop', ['categoria' => 'Box']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900">
+
+                    <a href="{{ route('shop', ['categoria' => 'TV Box']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900 hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)] transition-all duration-300">
                         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80 z-10"></div>
-                        <img src="{{ asset('storage/banners/cat_box.png') }}" alt="TV Box / Decos" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500">
-                        <span class="relative z-20 text-white font-bold text-sm md:text-base text-center px-4 tracking-wide group-hover:-translate-y-1 transition-transform drop-shadow-md">TV BOX / DECOS</span>
-                    </a>
-                    
-                    <a href="{{ route('shop', ['categoria' => 'Tiras']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900">
-                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80 z-10"></div>
-                        <img src="{{ asset('storage/banners/cat_led.png') }}" alt="Tiras LED y Más" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500">
-                        <span class="relative z-20 text-white font-bold text-sm md:text-base text-center px-4 tracking-wide group-hover:-translate-y-1 transition-transform drop-shadow-md">TIRAS LED Y MÁS</span>
+                        <img src="{{ asset('storage/banners/cat_tvbox.png') }}" alt="TV Box" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-500">
+                        <span class="relative z-20 text-white font-bold text-sm md:text-base text-center px-4 tracking-wide group-hover:-translate-y-1 transition-transform drop-shadow-md">TV BOX</span>
                     </a>
 
+                    <a href="{{ route('shop', ['categoria' => 'Accesorios']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900 hover:shadow-[0_8px_30px_rgba(16,185,129,0.2)] transition-all duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80 z-10"></div>
+                        <img src="{{ asset('storage/banners/cat_accesorios.png') }}" alt="Accesorios Celulares" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-500">
+                        <span class="relative z-20 text-white font-bold text-sm md:text-base text-center px-4 tracking-wide group-hover:-translate-y-1 transition-transform drop-shadow-md">ACCESORIOS Y CELULARES</span>
+                    </a>
+                    
                 </div>
             </div>
         </section>

@@ -124,10 +124,12 @@ new #[Layout('layouts.app')] class extends Component {
                                     
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-1">Dirección de Envío</h4>
-                                            <div class="text-sm text-gray-700 dark:text-gray-300">
-                                                {{ $order->address_street }} {{ $order->address_number }}<br>
-                                                {{ $order->city }}, {{ $order->state }} — CP {{ $order->zip_code }}
+                                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-1">Forma de Entrega</h4>
+                                            <div class="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-2">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                                Retiro en Local
                                             </div>
                                         </div>
                                         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
@@ -138,7 +140,7 @@ new #[Layout('layouts.app')] class extends Component {
                                                     @php
                                                         // Limpiar el número para la API de WhatsApp (solo dejar números)
                                                         $cleanPhone = preg_replace('/[^0-9]/', '', $order->phone);
-                                                        $waMessage = urlencode("Hola {$order->user->name}, te escribo de E-commerce Web por tu orden #".str_pad($order->id, 5, '0', STR_PAD_LEFT).".");
+                                                        $waMessage = urlencode("Hola {$order->user->name}, te escribo de JCG Electrónica por tu orden #".str_pad($order->id, 5, '0', STR_PAD_LEFT).".");
                                                     @endphp
                                                     <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMessage }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs font-bold transition-colors">
                                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">

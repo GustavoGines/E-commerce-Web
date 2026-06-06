@@ -21,28 +21,92 @@ new class extends Component
         $themeName = $settings->theme_name ?? 'stealth';
         $isLuxury = ($themeName === 'luxury');
         $isModernLight = ($themeName === 'modern-light');
+        
+        $pendingOrdersCount = 0;
+        if(auth()->check() && auth()->user()->role === 'admin') {
+            $pendingOrdersCount = \App\Models\Order::where('status', 'pendiente')->count();
+        }
     @endphp
 
-    @if($isLuxury)
-        <div class="bg-[var(--color-primary)] text-white text-[10px] font-bold uppercase tracking-[0.2em] py-2 px-4 text-center flex justify-center items-center gap-4 relative z-[60]">
-            <span class="hidden sm:inline">💎 Hardware Premium Seleccionado</span>
-            <span>Envío Gratis a todo el país superando $50.000</span>
-            <a href="{{ route('shop') }}" wire:navigate class="underline hover:text-white/80 transition-colors">Comprar Ahora</a>
-        </div>
-    @endif
-
-<nav x-data="{ open: false, scrolled: false }"
+    <nav x-data="{ open: false, scrolled: false }"
      @scroll.window="scrolled = (window.pageYOffset > 20)"
      :class="{
          'bg-[#0a0f1c]/90 backdrop-blur-xl border-b border-white/5 shadow-none': {{ $isLuxury ? 'true' : 'false' }} && (!{{ $transparent ? 'true' : 'false' }} || scrolled),
-         'bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm': {{ $isModernLight ? 'true' : 'false' }} && (!{{ $transparent ? 'true' : 'false' }} || scrolled),
+         'bg-gray-950 shadow-lg border-b-2 border-red-600': {{ $isModernLight ? 'true' : 'false' }} && (!{{ $transparent ? 'true' : 'false' }} || scrolled),
          'bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm dark:shadow-none': (!{{ $isLuxury ? 'true' : 'false' }} && !{{ $isModernLight ? 'true' : 'false' }}) && (!{{ $transparent ? 'true' : 'false' }} || scrolled),
          'bg-transparent border-transparent': {{ $transparent ? 'true' : 'false' }} && !scrolled
      }"
-     class="sticky top-0 z-50 transition-all duration-300">
+     class="sticky top-0 z-50 transition-all duration-300 relative overflow-visible">
+    
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16 relative">
+
+    @if($isLuxury)
+        {{-- Top Bar Animada --}}
+        <div class="bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white overflow-hidden relative z-[60] py-1 shadow-lg">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay"></div>
+            <div class="whitespace-nowrap animate-[marquee_20s_linear_infinite] flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest relative z-10">
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-ping"></span> PRECIOS MAYORISTAS DISPONIBLES</span>
+                <span class="text-white/30">&bull;</span>
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> ENVÍOS A TODO EL PAÍS</span>
+                <span class="text-white/30">&bull;</span>
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-ping"></span> PRECIOS MAYORISTAS DISPONIBLES</span>
+                <span class="text-white/30">&bull;</span>
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> ENVÍOS A TODO EL PAÍS</span>
+                <span class="text-white/30">&bull;</span>
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-ping"></span> PRECIOS MAYORISTAS DISPONIBLES</span>
+                <span class="text-white/30">&bull;</span>
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> ENVÍOS A TODO EL PAÍS</span>
+            </div>
+            <style>
+                @keyframes marquee {
+                    0% { transform: translateX(0%); }
+                    100% { transform: translateX(-50%); }
+                }
+            </style>
+        </div>
+    @elseif($isModernLight)
+        {{-- Ticker Animado (Marquesina) para Modern Light --}}
+        <div class="bg-red-600 text-white overflow-hidden relative z-[60] py-1.5 flex shadow-md">
+            {{-- Marca de Agua "JCG" intercalada en el fondo --}}
+            <div class="absolute inset-0 pointer-events-none opacity-[0.5] mix-blend-screen" 
+                 style="background-image: url('{{ asset('storage/logos/watermark-cjg.png') }}'), url('{{ asset('storage/logos/watermark-cjg.png') }}'); background-repeat: repeat, repeat; background-size: 60px, 60px; background-position: 0 0, 30px 30px;">
+            </div>
+
+            <div class="whitespace-nowrap animate-[marquee_25s_linear_infinite] flex items-center gap-10 text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] relative z-10 drop-shadow-md">
+                <span class="flex items-center gap-2 text-white"><span class="animate-pulse text-lg">🔥</span> PRECIOS MAYORISTAS EN TODOS LOS CONTROLES</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-yellow-300"><span class="text-lg">✅</span> RETIRO INMEDIATO EN LOCAL</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-white"><span class="text-lg">🛡️</span> COMPRA 100% SEGURA</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-white"><span class="animate-pulse text-lg">🔥</span> PRECIOS MAYORISTAS EN TODOS LOS CONTROLES</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-yellow-300"><span class="text-lg">✅</span> RETIRO INMEDIATO EN LOCAL</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-white"><span class="text-lg">🛡️</span> COMPRA 100% SEGURA</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-white"><span class="animate-pulse text-lg">🔥</span> PRECIOS MAYORISTAS EN TODOS LOS CONTROLES</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-yellow-300"><span class="text-lg">✅</span> RETIRO INMEDIATO EN LOCAL</span>
+                <span class="text-white/50">&bull;</span>
+                <span class="flex items-center gap-2 text-white"><span class="text-lg">🛡️</span> COMPRA 100% SEGURA</span>
+            </div>
+            <style>
+                @keyframes marquee {
+                    0% { transform: translateX(0%); }
+                    100% { transform: translateX(-50%); }
+                }
+                @keyframes writeReveal {
+                    0% { clip-path: inset(0 100% 0 0); opacity: 0; filter: drop-shadow(0 0 0 rgba(220,38,38,0)); }
+                    30% { opacity: 1; filter: drop-shadow(0 0 10px rgba(220,38,38,0.5)); }
+                    100% { clip-path: inset(0 0 0 0); opacity: 1; filter: drop-shadow(0 10px 20px rgba(220,38,38,0.3)); }
+                }
+            </style>
+        </div>
+    @endif
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="flex justify-between items-center h-20 relative">
 
             @if($isLuxury)
                 {{-- ════════════ LUXURY NAVBAR ════════════ --}}
@@ -66,7 +130,7 @@ new class extends Component
                     <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center">
                         @if(isset($settings) && $settings->logo_url)
                             <img src="{{ asset('storage/' . $settings->logo_url) }}"
-                                 alt="Logo" class="h-8 w-auto object-contain drop-shadow-md">
+                                 alt="Logo" class="h-8 w-auto object-contain drop-shadow-md hover:scale-105 transition-transform duration-300">
                         @else
                             <x-application-logo class="block h-8 w-auto fill-current text-white transition-colors"/>
                         @endif
@@ -77,7 +141,7 @@ new class extends Component
                 <div class="flex sm:hidden flex-1 items-center">
                     <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center">
                         @if(isset($settings) && $settings->logo_url)
-                            <img src="{{ asset('storage/' . $settings->logo_url) }}" alt="Logo" class="h-7 w-auto object-contain">
+                            <img src="{{ asset('storage/' . $settings->logo_url) }}" alt="Logo" class="h-7 w-auto object-contain hover:scale-105 transition-transform duration-300">
                         @else
                             <x-application-logo class="block h-7 w-auto fill-current text-white"/>
                         @endif
@@ -85,51 +149,71 @@ new class extends Component
                 </div>
             @elseif($isModernLight)
                 {{-- ════════════ MODERN-LIGHT NAVBAR ════════════ --}}
-                {{-- Marca de agua (Watermark) --}}
-                <div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='150' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='48' font-family='sans-serif' font-weight='900' fill='%23DC2626' dominant-baseline='middle' text-anchor='middle' transform='rotate(-15, 75, 40)'%3EGJ%3C/text%3E%3C/svg%3E&quot;);"></div>
                 
                 <div class="flex items-center justify-between flex-1 relative z-10">
                     {{-- ── Izquierda: Links ── --}}
                     <div class="hidden sm:flex items-center gap-6 flex-1">
-                        <x-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate class="text-base font-bold text-gray-700 hover:text-[var(--color-primary)]">
+                        <x-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
                             {{ __('Inicio') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate class="text-base font-bold text-gray-700 hover:text-[var(--color-primary)]">
+                        <x-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
                             {{ __('Tienda') }}
                         </x-nav-link>
                         @if(auth()->check() && optional(auth()->user())->role === 'admin')
-                            <x-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate class="text-base font-bold text-gray-700 hover:text-[var(--color-primary)]">
+                            <x-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
                                 {{ __('Productos') }}
                             </x-nav-link>
                         @endif
                     </div>
 
-                    {{-- ── Centro: Logo (Entre links y buscador) ── --}}
-                    <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center justify-center px-6">
-                        @if(isset($settings) && $settings->logo_url)
-                            <img src="{{ asset('storage/' . $settings->logo_url) }}"
-                                 alt="Logo" class="h-16 w-auto object-contain drop-shadow-sm hover:scale-105 transition-transform">
-                        @else
-                            <div class="flex items-center gap-2 text-[var(--color-primary)]">
-                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z"/></svg>
-                                <span class="text-2xl font-black tracking-tight text-gray-900">JCG <span class="text-[var(--color-primary)]">Electrónica</span></span>
-                            </div>
-                        @endif
-                    </a>
+                    {{-- ── Centro: Logo (Centrado dinámico entre links y buscador) ── --}}
+                    <div class="hidden sm:flex items-center justify-center z-[100] px-4">
+                        <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center justify-center relative h-20 w-48 sm:w-64 hover:scale-105 transition-transform pointer-events-auto">
+                            @if(isset($settings) && $settings->logo_url)
+                                <img src="{{ asset('storage/' . $settings->logo_url) }}"
+                                     alt="Logo" class="absolute max-w-none pointer-events-none drop-shadow-[0_10px_20px_rgba(220,38,38,0.3)]" style="top: 68%; left: 20%; width: 280px; height: auto; transform: translate(-50%, -50%); animation: writeReveal 2.5s ease-out 0.5s both;">
+                            @else
+                                <div class="flex items-center gap-2 text-white" style="animation: writeReveal 2.5s ease-out 0.5s both;">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z"/></svg>
+                                    <span class="text-2xl font-black tracking-tight text-white">JCG Electrónica</span>
+                                </div>
+                            @endif
+                        </a>
+                    </div>
+                    
+                    {{-- Logo en Móvil (Visible solo en pantallas chicas) --}}
+                    <div class="flex sm:hidden flex-1 items-center justify-start z-[100]">
+                        <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center justify-center relative h-16 w-48 ml-4">
+                            @if(isset($settings) && $settings->logo_url)
+                                <img src="{{ asset('storage/' . $settings->logo_url) }}"
+                                     alt="Logo" class="absolute max-w-none pointer-events-none drop-shadow-md" style="top: 73%; left: 10%; min-width: 280px; width: 280px !important; height: auto; transform: translate(-20%, -50%); animation: writeReveal 2.5s ease-out 0.5s both;">
+                            @else
+                                <span class="text-lg font-black text-white" style="animation: writeReveal 2.5s ease-out 0.5s both;">JCG</span>
+                            @endif
+                        </a>
+                    </div>
 
                     {{-- ── Derecha: Buscador + Íconos ── --}}
                     <div class="hidden sm:flex items-center gap-4 flex-1 justify-end">
-                        <div class="hidden sm:block w-full max-w-sm mr-2">
+                        <div class="hidden sm:block w-full max-w-[280px] mr-2 text-gray-900">
                             <livewire:search-bar />
                         </div>
-                        <livewire:cart-icon />
+                        <div class="text-white">
+                            <livewire:cart-icon />
+                        </div>
                         @auth
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
-                                    <button class="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-700">
+                                    <button class="relative flex items-center gap-2 p-2 rounded-full hover:bg-white/10 transition-colors">
+                                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-white shadow-sm border border-white/30">
                                             {{ substr(Auth::user()->name, 0, 1) }}
                                         </div>
+                                        @if(optional(auth()->user())->role === 'admin' && $pendingOrdersCount > 0)
+                                            <span class="absolute top-1 right-1 flex h-3 w-3">
+                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-gray-900"></span>
+                                            </span>
+                                        @endif
                                     </button>
                                 </x-slot>
                                 <x-slot name="content">
@@ -137,7 +221,12 @@ new class extends Component
                                         <div class="px-3 py-1.5">
                                             <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500">Administración</p>
                                         </div>
-                                        <x-dropdown-link :href="route('admin.orders')" wire:navigate>📦 &nbsp;Órdenes</x-dropdown-link>
+                                        <x-dropdown-link :href="route('admin.orders')" wire:navigate class="flex items-center justify-between w-full">
+                                            <span>📦 &nbsp;Órdenes</span>
+                                            @if($pendingOrdersCount > 0)
+                                                <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $pendingOrdersCount }}</span>
+                                            @endif
+                                        </x-dropdown-link>
                                         <x-dropdown-link :href="route('admin.settings')" wire:navigate>⚙️ &nbsp;Configuración</x-dropdown-link>
                                         <div class="my-1 border-t border-gray-100"></div>
                                     @else
@@ -151,10 +240,10 @@ new class extends Component
                                 </x-slot>
                             </x-dropdown>
                         @else
-                            <a href="{{ route('login') }}" wire:navigate class="text-sm font-bold text-gray-600 hover:text-[var(--color-primary)] transition-colors">
-                                Iniciar Sesión
+                            <a href="{{ route('login') }}" wire:navigate class="text-sm font-bold text-white/90 hover:text-white transition-colors whitespace-nowrap">
+                                Ingresar
                             </a>
-                            <a href="{{ route('register') }}" wire:navigate class="px-4 py-2 text-sm font-bold text-white rounded-xl transition-all shadow hover:shadow-md hover:-translate-y-0.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90">
+                            <a href="{{ route('register') }}" wire:navigate class="px-4 py-2 text-sm font-bold text-[var(--color-primary)] rounded-xl transition-all shadow hover:shadow-md hover:-translate-y-0.5 bg-white hover:bg-gray-50 whitespace-nowrap">
                                 Registrarse
                             </a>
                         @endauth
@@ -271,12 +360,12 @@ new class extends Component
                     </x-dropdown>
                 @else
                     <a href="{{ route('login') }}" wire:navigate
-                       class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
-                        Iniciar Sesión
+                       class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap">
+                        Ingresar
                     </a>
                     <a href="{{ route('register') }}" wire:navigate
                        class="px-4 py-2 text-sm font-bold text-white rounded-xl transition-all
-                              hover:opacity-90 hover:-translate-y-0.5 shadow-md"
+                              hover:opacity-90 hover:-translate-y-0.5 shadow-md whitespace-nowrap"
                        style="background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #7c3aed))">
                         Registrarse
                     </a>
@@ -304,7 +393,7 @@ new class extends Component
                 @endif
 
                 <button @click="open = !open"
-                        class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                        class="p-2 rounded-xl {{ $isModernLight ? 'text-white hover:bg-white/10' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all"
                         aria-label="Menú">
                     <svg class="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': !open}" class="inline-flex"

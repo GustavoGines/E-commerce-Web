@@ -119,31 +119,23 @@ new class extends Component {
 
 <div id="catalog" class="w-full relative z-10 py-12 lg:py-16 bg-gray-50" x-data="{ intersecting: false, sidebarOpen: false }" x-intersect.once="intersecting = true">
     
-    {{-- Header Banner (Mini-Hero) --}}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 transition-all duration-1000 transform" :class="intersecting ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'">
-        <div class="relative w-full h-auto py-12 md:h-64 md:py-0 rounded-3xl overflow-hidden bg-white border border-gray-200 shadow-sm flex items-center group">
-            
-            {{-- Abstract Shapes --}}
-            <div class="absolute top-[-50%] right-[-10%] w-[50%] h-[200%] rounded-full opacity-10 blur-3xl pointer-events-none transition-all duration-1000 group-hover:scale-110" style="background-color: var(--color-primary);"></div>
-            <div class="absolute bottom-[-50%] left-[-10%] w-[30%] h-[200%] rounded-full bg-red-200 opacity-50 blur-3xl pointer-events-none"></div>
-            
-            {{-- Text Content --}}
-            <div class="relative z-30 px-8 md:px-16 w-full max-w-2xl">
-                <div class="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--color-primary)]/20 bg-red-50 text-[var(--color-primary)] shadow-sm">
-                    <span class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                        Novedad: Precios Mayoristas
-                    </span>
+    {{-- Alerta Minimalista de Precios Mayoristas --}}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 transition-all duration-1000 transform" :class="intersecting ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'">
+        <div class="bg-gray-950 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-800/60 relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-red-600/10 to-transparent pointer-events-none"></div>
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                    <svg class="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                 </div>
-                
-                <h2 class="text-3xl md:text-5xl font-black text-gray-900 tracking-tight mb-3">
-                    Llevá más, pagá menos.
-                </h2>
-                <p class="text-gray-600 text-sm md:text-base max-w-md font-medium leading-relaxed">
-                    Si es tu <strong>primera compra</strong>, llevá 10 unidades o más para acceder al precio mayorista.
-                    <br>
-                    <span class="text-[var(--color-primary)] font-bold">¡Desde tu segunda compra, podés comprar por unidad y mantener el mismo descuento!</span>
-                </p>
+                <div>
+                    <h3 class="text-white font-black text-sm tracking-wide">COMPRÁ MÁS, PAGÁ MENOS</h3>
+                    <p class="text-gray-400 text-xs mt-1 font-medium">Llevá <strong class="text-white">10 unidades</strong> en tu 1ra compra. ¡Desde la 2da compra, obtenés precio mayorista por unidad!</p>
+                </div>
+            </div>
+            <div class="hidden sm:block relative z-10">
+                <span class="px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider">Activo</span>
             </div>
         </div>
     </div>
@@ -326,7 +318,17 @@ new class extends Component {
                                 <div class="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-2">
                                     <div class="flex items-end justify-between">
                                         <div>
-                                            <p class="text-lg font-black text-[var(--color-primary)] leading-none">${{ number_format($product->retail_price, 2) }}</p>
+                                            @if(auth()->check() && auth()->user()->isWholesaleCustomer())
+                                                <div class="flex items-center gap-1.5 mb-0.5">
+                                                    <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-sm">
+                                                        🔥 Precio Mayorista
+                                                    </span>
+                                                </div>
+                                                <p class="text-lg font-black text-emerald-600 leading-none">${{ number_format($product->wholesale_price, 2) }}</p>
+                                            @else
+                                                <p class="text-lg font-black text-[var(--color-primary)] leading-none">${{ number_format($product->retail_price, 2) }}</p>
+                                                <p class="text-[10px] text-gray-500 font-bold leading-tight mt-1">Llevando 10 o más queda en <span class="text-emerald-600">${{ number_format($product->wholesale_price, 2) }}</span></p>
+                                            @endif
                                         </div>
                                     </div>
 

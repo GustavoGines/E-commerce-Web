@@ -36,17 +36,13 @@ new class extends Component {
 
     public function getPrice($product, $quantity)
     {
-        if ($this->theme === 'modern-light') {
-            $hasPreviousOrders = auth()->check() && auth()->user()->orders()->where('status', '!=', 'cancelada')->exists();
-            $totalItems = array_sum($this->cart);
-            
-            if ($hasPreviousOrders || $totalItems >= 10) {
-                return $product->wholesale_price;
-            } else {
-                return $product->retail_price;
-            }
+        // Global Wholesale rule: if user is logged in and is a wholesale customer, 
+        // they get wholesale price on EVERYTHING.
+        if (auth()->check() && auth()->user()->isWholesaleCustomer()) {
+            return $product->wholesale_price;
         }
 
+        // Otherwise, they get wholesale price only if they buy the minimum quantity of THIS product
         return ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
     }
 
@@ -73,6 +69,13 @@ new class extends Component {
         } else {
             $this->dispatch('cart-updated');
         }
+    }
+
+    public function setQuantity($productId, $quantity)
+    {
+        $cartService = app(\App\Services\CartService::class);
+        $cartService->setQuantity($productId, $quantity);
+        $this->dispatch('cart-updated');
     }
 
     public function removeItem($productId)
@@ -140,12 +143,16 @@ new class extends Component {
                                                     $product = $products[$productId];
                                                     $price = $this->getPrice($product, $quantity);
                                                 @endphp
-                                                <li class="flex py-6 transition-all">
-                                                    <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+                                                <li class="flex py-6 transition-all duration-300">
+                                                    <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border {{ $theme === 'luxury' ? 'border-white/10 bg-[#0a0f1c]/50' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800' }} p-2">
                                                         @if($product->image_url)
-                                                            <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="h-full w-full object-cover object-center">
+                                                            <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal">
                                                         @else
-                                                            <div class="h-full w-full flex items-center justify-center text-gray-400 text-xs font-bold uppercase">Sin img</div>
+                                                            <div class="h-full w-full flex items-center justify-center">
+                                                                <svg class="h-8 w-8 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </div>
                                                         @endif
                                                     </div>
 
@@ -171,28 +178,37 @@ new class extends Component {
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
                                                             <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
-                                                                <button wire:click="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
-                                                                <span class="px-2 font-bold min-w-[2rem] text-center {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
-                                                                    <span wire:loading.remove wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')">{{ $quantity }}</span>
-                                                                    <span wire:loading wire:target="updateQuantity({{ $productId }}, 'decrement'), updateQuantity({{ $productId }}, 'increment')" class="inline-block animate-pulse w-3 h-3 rounded-full {{ $theme === 'luxury' ? 'bg-white/50' : 'bg-gray-400' }}"></span>
-                                                                </span>
-                                                                <button wire:click="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
+                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
+                                                                <input type="number" 
+                                                                       value="{{ $quantity }}"
+                                                                       wire:change="setQuantity({{ $productId }}, $event.target.value)"
+                                                                       wire:loading.attr="disabled"
+                                                                       wire:target="updateQuantity, setQuantity, removeItem"
+                                                                       class="px-1 w-10 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}"
+                                                                       min="1" max="{{ $product->stock }}">
+                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
                                                             </div>
 
                                                             <div class="flex">
-                                                                <button wire:click="removeItem({{ $productId }})" type="button" class="font-medium text-red-500 hover:text-red-400 transition-colors">Eliminar</button>
+                                                                <button wire:click.prevent="removeItem({{ $productId }})" wire:loading.attr="disabled" type="button" class="font-medium text-red-500 hover:text-red-400 transition-colors inline-flex items-center gap-1">
+                                                                    <svg wire:loading wire:target="removeItem({{ $productId }})" class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                    </svg>
+                                                                    Eliminar
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </li>
                                             @endif
                                         @empty
-                                            <li class="py-12 flex flex-col items-center justify-center text-center">
-                                                <svg class="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <li class="py-12 flex-col items-center justify-center text-center flex">
+                                                <svg class="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                                 </svg>
                                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Tu carrito está vacío.</p>
-                                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">¡Añade algo de hardware a tu setup!</p>
+                                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">¡Agregá los mejores productos a tu carrito!</p>
                                             </li>
                                         @endforelse
                                     </ul>

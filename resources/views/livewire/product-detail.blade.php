@@ -340,9 +340,20 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 mb-8">
                         <div class="flex justify-between items-end mb-4">
                             <span class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Precio Unitario</span>
-                            <span class="text-4xl sm:text-5xl font-black tracking-tighter text-gray-900 dark:text-white">${{ number_format($product->retail_price, 2) }}</span>
+                            @if(auth()->check() && auth()->user()->isWholesaleCustomer())
+                                <div class="flex flex-col items-end">
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 shadow-sm mb-1">
+                                        🔥 Precio Mayorista VIP
+                                    </span>
+                                    <span class="text-4xl sm:text-5xl font-black tracking-tighter text-emerald-600">${{ number_format($product->wholesale_price, 2) }}</span>
+                                </div>
+                            @else
+                                <span class="text-4xl sm:text-5xl font-black tracking-tighter text-gray-900 dark:text-white">${{ number_format($product->retail_price, 2) }}</span>
+                            @endif
                         </div>
-                        <div class="relative group cursor-help mb-4" title="Descuento automático al llevar {{ $product->wholesale_min_quantity }} o más unidades">
+                        
+                        @if(!(auth()->check() && auth()->user()->isWholesaleCustomer()) && $theme === 'modern-light')
+                        <div class="relative group cursor-help mb-4" title="Descuento automático al llevar 10 o más unidades">
                             <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
                             <div class="relative flex justify-between items-center p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/30 dark:from-slate-800 dark:to-slate-900 border border-emerald-200/50 dark:border-emerald-700/50 shadow-sm">
                                 <div>
@@ -353,7 +364,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         </span>
                                         Precio Mayorista
                                     </span>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1 uppercase tracking-wider">Llevando {{ $product->wholesale_min_quantity }} o más unidades</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1 uppercase tracking-wider">Llevando 10 o más unidades</p>
                                 </div>
                                 <div class="text-right flex flex-col items-end">
                                     <span class="text-2xl sm:text-3xl font-black tracking-tighter text-emerald-900 dark:text-emerald-100">${{ number_format($product->wholesale_price, 2) }}</span>
@@ -361,6 +372,8 @@ new #[Layout('layouts.app')] class extends Component {
                                 </div>
                             </div>
                         </div>
+                        @endif
+                        
                         <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>12 meses de garantía oficial</span>
