@@ -179,13 +179,14 @@ new class extends Component {
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
                                                             <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
                                                                 <button wire:click.prevent="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
-                                                                <input type="number" 
+                                                                <input type="text" 
+                                                                       inputmode="numeric" 
+                                                                       pattern="[0-9]*"
                                                                        value="{{ $quantity }}"
                                                                        wire:change="setQuantity({{ $productId }}, $event.target.value)"
                                                                        wire:loading.attr="disabled"
                                                                        wire:target="updateQuantity, setQuantity, removeItem"
-                                                                       class="px-1 w-10 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}"
-                                                                       min="1" max="{{ $product->stock }}">
+                                                                       class="px-1 w-14 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
                                                                 <button wire:click.prevent="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
                                                             </div>
 
