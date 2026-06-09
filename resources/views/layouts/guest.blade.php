@@ -74,10 +74,10 @@
             }
         </style>
     </head>
-        <body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden selection:bg-[var(--color-primary)] selection:text-white bg-gray-50 text-gray-900 {{ ($settings->theme_name ?? 'stealth') === 'modern-light' ? '' : 'dark:bg-[#0b0f19] dark:text-gray-100' }} transition-colors duration-300">
+        <body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden selection:bg-[var(--color-primary)] selection:text-white bg-[#0f0f11] text-gray-900 transition-colors duration-300">
         
-        <!-- Subtle Background Glow (Dark Mode Only) -->
-        <div x-data="{}" x-show="$store.theme && $store.theme.dark && '{{ $settings->theme_name ?? 'stealth' }}' !== 'modern-light'" x-transition.opacity.duration.500ms class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] opacity-20 pointer-events-none" style="background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%);"></div>
+        <!-- Subtle Background Glow -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] opacity-30 pointer-events-none" style="background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%);"></div>
 
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative z-10 w-full">
             
@@ -92,7 +92,7 @@
             @endif
             
             <div class="flex flex-col items-center w-full animate-fade-in-up z-20">
-                <a href="/" wire:navigate class="-mt-12 sm:-mt-20 -mb-10 sm:-mb-14 block transition-transform hover:scale-105 duration-300 relative z-10">
+                <a href="/" wire:navigate class="-mb-6 sm:-mb-8 block transition-transform hover:scale-105 duration-300 relative z-20">
                     @if($logoUrl)
                         <img src="{{ asset('storage/' . $logoUrl) }}" alt="Logo" class="w-56 sm:w-72 h-auto object-contain drop-shadow-[0_10px_20px_rgba(220,38,38,0.2)]" style="animation: writeReveal 2.5s ease-out 0.2s both;" />
                     @else

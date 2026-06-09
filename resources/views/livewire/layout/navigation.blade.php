@@ -171,7 +171,7 @@ new class extends Component
                         <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center justify-center relative h-20 w-48 sm:w-64 hover:scale-105 transition-transform pointer-events-auto">
                             @if(isset($settings) && $settings->logo_url)
                                 <img src="{{ asset('storage/' . $settings->logo_url) }}"
-                                     alt="Logo" class="absolute max-w-none pointer-events-none drop-shadow-[0_10px_20px_rgba(220,38,38,0.3)]" style="top: 68%; left: 20%; width: 280px; height: auto; transform: translate(-50%, -50%); animation: writeReveal 2.5s ease-out 0.5s both;">
+                                     alt="Logo" class="absolute max-w-none pointer-events-none drop-shadow-[0_10px_20px_rgba(220,38,38,0.3)]" style="top: 72%; left: 50%; width: 220px; height: auto; transform: translate(-50%, -50%); animation: writeReveal 2.5s ease-out 0.5s both;">
                             @else
                                 <div class="flex items-center gap-2 text-white" style="animation: writeReveal 2.5s ease-out 0.5s both;">
                                     <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z"/></svg>
@@ -186,7 +186,7 @@ new class extends Component
                         <a href="{{ url('/') }}" wire:navigate class="shrink-0 flex items-center justify-center relative h-16 w-48 ml-4">
                             @if(isset($settings) && $settings->logo_url)
                                 <img src="{{ asset('storage/' . $settings->logo_url) }}"
-                                     alt="Logo" class="absolute max-w-none pointer-events-none drop-shadow-md" style="top: 73%; left: 10%; min-width: 280px; width: 280px !important; height: auto; transform: translate(-20%, -50%); animation: writeReveal 2.5s ease-out 0.5s both;">
+                                     alt="Logo" class="absolute max-w-none pointer-events-none drop-shadow-md" style="top: 72%; left: 50%; width: 180px; height: auto; transform: translate(-50%, -50%); animation: writeReveal 2.5s ease-out 0.5s both;">
                             @else
                                 <span class="text-lg font-black text-white" style="animation: writeReveal 2.5s ease-out 0.5s both;">JCG</span>
                             @endif
