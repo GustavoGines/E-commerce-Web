@@ -1,5 +1,5 @@
 @php
-    $settings = \App\Models\StoreSetting::first();
+    $settings = \App\Models\StoreSetting::getSettings();
     $logoUrl = $settings ? $settings->logo_url : null;
 @endphp
 <!DOCTYPE html>
@@ -79,7 +79,7 @@
         <!-- Subtle Background Glow -->
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] opacity-30 pointer-events-none" style="background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%);"></div>
 
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative z-10 w-full">
+        <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 relative z-10 w-full">
             
             @if(($settings->theme_name ?? 'stealth') !== 'modern-light' && ($settings->theme_name ?? 'stealth') !== 'luxury')
             <div class="absolute top-6 right-6 z-50">
@@ -91,8 +91,8 @@
             </div>
             @endif
             
-            <div class="flex flex-col items-center w-full animate-fade-in-up z-20">
-                <a href="/" wire:navigate class="-mb-6 sm:-mb-8 block transition-transform hover:scale-105 duration-300 relative z-20">
+            <div class="flex flex-col items-center w-full animate-fade-in-up z-20 my-auto py-12">
+                <a href="/" wire:navigate class="-mb-6 sm:-mb-8 -translate-y-8 sm:-translate-y-10 block transition-transform hover:scale-105 hover:-translate-y-8 sm:hover:-translate-y-10 duration-300 relative z-20">
                     @if($logoUrl)
                         <img src="{{ asset('storage/' . $logoUrl) }}" alt="Logo" class="w-56 sm:w-72 h-auto object-contain drop-shadow-[0_10px_20px_rgba(220,38,38,0.2)]" style="animation: writeReveal 2.5s ease-out 0.2s both;" />
                     @else

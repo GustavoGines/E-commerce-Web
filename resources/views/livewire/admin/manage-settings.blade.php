@@ -16,7 +16,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function mount()
     {
-        $settings = StoreSetting::first();
+        $settings = StoreSetting::getSettings();
         if ($settings) {
             $this->store_name = $settings->store_name;
             $this->theme_name = $settings->theme_name ?? 'stealth';
@@ -26,7 +26,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function removeLogo()
     {
-        $settings = StoreSetting::first();
+        $settings = StoreSetting::getSettings();
         if ($settings && $settings->logo_url) {
             Storage::disk('public')->delete($settings->logo_url);
             $settings->logo_url = null;
@@ -45,7 +45,7 @@ new #[Layout('layouts.app')] class extends Component {
             'logo'          => 'nullable|image|max:10240',
         ]);
 
-        $settings = StoreSetting::first() ?? new StoreSetting();
+        $settings = StoreSetting::getSettings() ?? new StoreSetting();
         $settings->store_name    = $this->store_name;
         $settings->theme_name    = $this->theme_name;
 

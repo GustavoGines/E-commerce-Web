@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -20,6 +19,7 @@ class CartService
         }
 
         $sessionId = Session::getId();
+
         return Cart::firstOrCreate(['session_id' => $sessionId, 'user_id' => null]);
     }
 
@@ -29,6 +29,7 @@ class CartService
     public function getCartItemsArray()
     {
         $cart = $this->getCart();
+
         return $cart->items()->pluck('quantity', 'product_id')->toArray();
     }
 
@@ -40,7 +41,7 @@ class CartService
         $cart = $this->getCart();
         $product = Product::find($productId);
 
-        if (!$product) {
+        if (! $product) {
             return false;
         }
 
@@ -50,17 +51,21 @@ class CartService
             $newQuantity = $cartItem->quantity + $quantity;
             if ($newQuantity <= $product->stock) {
                 $cartItem->update(['quantity' => $newQuantity]);
+
                 return true;
             }
+
             return false; // Not enough stock
         } else {
             if ($quantity <= $product->stock) {
                 $cart->items()->create([
                     'product_id' => $productId,
-                    'quantity' => $quantity
+                    'quantity' => $quantity,
                 ]);
+
                 return true;
             }
+
             return false;
         }
     }
@@ -73,7 +78,7 @@ class CartService
         $cart = $this->getCart();
         $cartItem = $cart->items()->where('product_id', $productId)->first();
 
-        if (!$cartItem) {
+        if (! $cartItem) {
             return;
         }
 
@@ -82,18 +87,23 @@ class CartService
         if ($action === 'increment') {
             if ($cartItem->quantity < $product->stock) {
                 $cartItem->increment('quantity');
+
                 return true;
             }
+
             return false; // Limit reached
         } elseif ($action === 'decrement') {
             if ($cartItem->quantity > 1) {
                 $cartItem->decrement('quantity');
+
                 return true;
             } else {
                 $cartItem->delete();
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -105,14 +115,15 @@ class CartService
         $cart = $this->getCart();
         $cartItem = $cart->items()->where('product_id', $productId)->first();
 
-        if (!$cartItem) {
+        if (! $cartItem) {
             return false;
         }
 
         $product = $cartItem->product;
-        $qty = max(1, min((int)$quantity, $product->stock));
+        $qty = max(1, min((int) $quantity, $product->stock));
 
         $cartItem->update(['quantity' => $qty]);
+
         return true;
     }
 
@@ -142,7 +153,7 @@ class CartService
         $sessionId = $sessionId ?: Session::getId();
         $guestCart = Cart::where('session_id', $sessionId)->whereNull('user_id')->first();
 
-        if (!$guestCart || $guestCart->items()->count() === 0) {
+        if (! $guestCart || $guestCart->items()->count() === 0) {
             return;
         }
 
@@ -156,7 +167,7 @@ class CartService
                 $newQuantity = $userCartItem->quantity + $item->quantity;
                 $maxStock = $item->product->stock;
                 $userCartItem->update([
-                    'quantity' => min($newQuantity, $maxStock)
+                    'quantity' => min($newQuantity, $maxStock),
                 ]);
             } else {
                 // Move item to user cart

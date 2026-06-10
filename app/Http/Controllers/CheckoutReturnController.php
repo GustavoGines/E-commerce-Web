@@ -11,6 +11,7 @@ class CheckoutReturnController extends Controller
     {
         abort_unless($order->user_id === auth()->id(), 403);
         $order->load('items.product', 'user');
+
         return view('checkout.success', compact('order'));
     }
 
@@ -18,6 +19,7 @@ class CheckoutReturnController extends Controller
     {
         abort_unless($order->user_id === auth()->id(), 403);
         $order->load('items.product', 'user');
+
         return view('checkout.failure', compact('order'));
     }
 
@@ -25,6 +27,7 @@ class CheckoutReturnController extends Controller
     {
         abort_unless($order->user_id === auth()->id(), 403);
         $order->load('items.product', 'user');
+
         return view('checkout.pending', compact('order'));
     }
 }

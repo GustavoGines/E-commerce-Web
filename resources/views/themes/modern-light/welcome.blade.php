@@ -1,6 +1,6 @@
 <x-app-layout>
     @php
-        $settings = \App\Models\StoreSetting::first();
+        $settings = \App\Models\StoreSetting::getSettings();
         $storeName = $settings ? $settings->store_name : 'JCG Electrónica';
         
         // Obtenemos los últimos 8 productos para la página de inicio

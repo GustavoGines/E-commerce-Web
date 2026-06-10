@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Forms;
 
+use App\Services\CartService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
@@ -30,7 +32,7 @@ class LoginForm extends Form
     {
         $this->ensureIsNotRateLimited();
 
-        $oldSessionId = \Illuminate\Support\Facades\Session::getId();
+        $oldSessionId = Session::getId();
 
         if (! Auth::attempt($this->only(['email', 'password']), $this->remember)) {
             RateLimiter::hit($this->throttleKey());
@@ -42,7 +44,7 @@ class LoginForm extends Form
 
         RateLimiter::clear($this->throttleKey());
 
-        app(\App\Services\CartService::class)->mergeGuestCartIntoUserCart(Auth::user(), $oldSessionId);
+        app(CartService::class)->mergeGuestCartIntoUserCart(Auth::user(), $oldSessionId);
     }
 
     /**

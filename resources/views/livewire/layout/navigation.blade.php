@@ -17,7 +17,7 @@ new class extends Component
 <div class="contents">
     {{-- ── Top Announcement Bar (Luxury only, injected via a check) ── --}}
     @php
-        $settings = \App\Models\StoreSetting::first();
+        $settings = \App\Models\StoreSetting::getSettings();
         $themeName = $settings->theme_name ?? 'stealth';
         $isLuxury = ($themeName === 'luxury');
         $isModernLight = ($themeName === 'modern-light');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -24,7 +25,7 @@ class Product extends Model
         'stock',
         'image_url',
         'category_id',
-        'brand_id'
+        'brand_id',
     ];
 
     protected $casts = [
@@ -37,13 +38,13 @@ class Product extends Model
 
         static::creating(function ($product) {
             if (empty($product->slug)) {
-                $product->slug = \Illuminate\Support\Str::slug($product->name);
+                $product->slug = Str::slug($product->name);
             }
         });
 
         static::updating(function ($product) {
             if ($product->isDirty('name') && empty($product->slug)) {
-                $product->slug = \Illuminate\Support\Str::slug($product->name);
+                $product->slug = Str::slug($product->name);
             }
         });
     }

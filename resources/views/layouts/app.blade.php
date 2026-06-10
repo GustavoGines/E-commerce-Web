@@ -1,5 +1,5 @@
 @php
-    $settings = \App\Models\StoreSetting::first();
+    $settings = \App\Models\StoreSetting::getSettings();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">

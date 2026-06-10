@@ -19,7 +19,7 @@ class MercadoPagoWebhookController extends Controller
         // Loggear el payload completo para debugging
         Log::info('MercadoPago Webhook recibido', $request->all());
 
-        $type   = $request->input('type');
+        $type = $request->input('type');
         $dataId = $request->input('data.id'); // ID del pago
 
         // Solo nos interesan las notificaciones de tipo "payment"
@@ -32,14 +32,16 @@ class MercadoPagoWebhookController extends Controller
             $payment = $mpService->getPayment($dataId);
 
             $orderId = $payment->external_reference ?? null;
-            if (!$orderId) {
+            if (! $orderId) {
                 Log::warning('Webhook MP: pago sin external_reference', ['payment_id' => $dataId]);
+
                 return response()->json(['status' => 'no_reference'], 200);
             }
 
             $order = Order::find($orderId);
-            if (!$order) {
+            if (! $order) {
                 Log::warning('Webhook MP: orden no encontrada', ['order_id' => $orderId]);
+
                 return response()->json(['status' => 'order_not_found'], 200);
             }
 
@@ -48,21 +50,21 @@ class MercadoPagoWebhookController extends Controller
 
             // Mapear el estado de MP a nuestros estados internos
             $order->status = match ($payment->status) {
-                'approved'     => 'pagado',
+                'approved' => 'pagado',
                 'pending',
-                'in_process'   => 'pendiente',
+                'in_process' => 'pendiente',
                 'rejected',
-                'cancelled'    => 'cancelado',
-                default        => $order->status, // no cambiar si es estado desconocido
+                'cancelled' => 'cancelado',
+                default => $order->status, // no cambiar si es estado desconocido
             };
 
             $order->save();
 
             Log::info('Webhook MP: orden actualizada', [
-                'order_id'      => $orderId,
-                'payment_id'    => $dataId,
-                'mp_status'     => $payment->status,
-                'new_status'    => $order->status,
+                'order_id' => $orderId,
+                'payment_id' => $dataId,
+                'mp_status' => $payment->status,
+                'new_status' => $order->status,
             ]);
 
         } catch (\Exception $e) {
@@ -70,7 +72,7 @@ class MercadoPagoWebhookController extends Controller
             // El error queda loggeado para revisión manual.
             Log::error('Webhook MP: excepción al procesar pago', [
                 'payment_id' => $dataId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
 

@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\StoreSetting;
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\StoreSetting;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -34,19 +36,19 @@ class DatabaseSeeder extends Seeder
             'logo_url' => null,
         ]);
 
-        $catProcesadores = \App\Models\Category::create(['name' => 'Procesadores', 'slug' => 'procesadores']);
-        $catMotherboards = \App\Models\Category::create(['name' => 'Motherboards', 'slug' => 'motherboards']);
-        $catMemorias = \App\Models\Category::create(['name' => 'Memorias RAM', 'slug' => 'memorias-ram']);
-        $catGabinetes = \App\Models\Category::create(['name' => 'Gabinetes', 'slug' => 'gabinetes']);
-        $catFuentes = \App\Models\Category::create(['name' => 'Fuentes', 'slug' => 'fuentes']);
-        $catTarjetas = \App\Models\Category::create(['name' => 'Placas de Video', 'slug' => 'placas-de-video']);
+        $catProcesadores = Category::create(['name' => 'Procesadores', 'slug' => 'procesadores']);
+        $catMotherboards = Category::create(['name' => 'Motherboards', 'slug' => 'motherboards']);
+        $catMemorias = Category::create(['name' => 'Memorias RAM', 'slug' => 'memorias-ram']);
+        $catGabinetes = Category::create(['name' => 'Gabinetes', 'slug' => 'gabinetes']);
+        $catFuentes = Category::create(['name' => 'Fuentes', 'slug' => 'fuentes']);
+        $catTarjetas = Category::create(['name' => 'Placas de Video', 'slug' => 'placas-de-video']);
 
-        $brandAMD = \App\Models\Brand::create(['name' => 'AMD', 'slug' => 'amd']);
-        $brandASUS = \App\Models\Brand::create(['name' => 'ASUS', 'slug' => 'asus']);
-        $brandCorsair = \App\Models\Brand::create(['name' => 'Corsair', 'slug' => 'corsair']);
-        $brandNZXT = \App\Models\Brand::create(['name' => 'NZXT', 'slug' => 'nzxt']);
-        $brandEVGA = \App\Models\Brand::create(['name' => 'EVGA', 'slug' => 'evga']);
-        $brandNvidia = \App\Models\Brand::create(['name' => 'NVIDIA', 'slug' => 'nvidia']);
+        $brandAMD = Brand::create(['name' => 'AMD', 'slug' => 'amd']);
+        $brandASUS = Brand::create(['name' => 'ASUS', 'slug' => 'asus']);
+        $brandCorsair = Brand::create(['name' => 'Corsair', 'slug' => 'corsair']);
+        $brandNZXT = Brand::create(['name' => 'NZXT', 'slug' => 'nzxt']);
+        $brandEVGA = Brand::create(['name' => 'EVGA', 'slug' => 'evga']);
+        $brandNvidia = Brand::create(['name' => 'NVIDIA', 'slug' => 'nvidia']);
 
         Product::create([
             'category_id' => $catProcesadores->id,

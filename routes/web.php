@@ -1,36 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
 use App\Http\Controllers\CheckoutReturnController;
 use App\Http\Controllers\MercadoPagoWebhookController;
-
 use App\Models\StoreSetting;
+use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
 Route::get('/', function () {
-    $settings = StoreSetting::first();
+    $settings = StoreSetting::getSettings();
     $theme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
-    
+
     // Fallback to stealth if theme view doesn't exist
-    if (!view()->exists("themes.{$theme}.welcome")) {
+    if (! view()->exists("themes.{$theme}.welcome")) {
         $theme = 'stealth';
     }
-    
+
     return view("themes.{$theme}.welcome");
 })->name('home');
 
 Route::get('/shop', function () {
-    $settings = StoreSetting::first();
+    $settings = StoreSetting::getSettings();
     $theme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
-    
+
     // Fallback to stealth if theme view doesn't exist
-    if (!view()->exists("themes.{$theme}.shop")) {
+    if (! view()->exists("themes.{$theme}.shop")) {
         $theme = 'stealth';
     }
-    
+
     return view("themes.{$theme}.shop");
 })->name('shop');
-
 
 Volt::route('producto/{slug}', 'product-detail')
     ->name('product.detail');
@@ -61,24 +59,6 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     Volt::route('admin/products', 'admin.manage-products')->name('admin.products');
 
     Volt::route('admin/orders', 'admin.manage-orders')->name('admin.orders');
-});
-
-Route::get('/migrate-brands', function() {
-    \App\Models\Brand::truncate();
-    $brandNames = ['Samsung', 'LG', 'Sony', 'TCL', 'Philips', 'BGH', 'Noblex', 'Hisense', 'Xiaomi', 'Genérico'];
-    $brands = [];
-    foreach ($brandNames as $name) {
-        $brands[] = \App\Models\Brand::create([
-            'name' => $name,
-            'slug' => \Illuminate\Support\Str::slug($name)
-        ]);
-    }
-    $products = \App\Models\Product::all();
-    foreach ($products as $product) {
-        $product->brand_id = $brands[array_rand($brands)]->id;
-        $product->save();
-    }
-    return "Brands migrated!";
 });
 
 // Webhook de MercadoPago — sin auth, sin CSRF (se maneja en bootstrap/app.php)

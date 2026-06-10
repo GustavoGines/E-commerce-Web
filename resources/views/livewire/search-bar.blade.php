@@ -27,7 +27,7 @@ new class extends Component {
 
     public function getThemeProperty()
     {
-        $settings = \App\Models\StoreSetting::first();
+        $settings = \App\Models\StoreSetting::getSettings();
         return $settings ? ($settings->theme_name ?? 'stealth') : 'stealth';
     }
 }; ?>

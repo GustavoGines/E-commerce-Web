@@ -8,7 +8,7 @@ new class extends Component {
 
     public function mount()
     {
-        $settings = \App\Models\StoreSetting::first();
+        $settings = \App\Models\StoreSetting::getSettings();
         if ($settings) {
             $this->theme = $settings->theme_name ?? 'stealth';
             $this->storeName = $settings->store_name ?? 'Premium Hardware';
@@ -82,7 +82,7 @@ new class extends Component {
                 {{-- Columna 1: Marca --}}
                 <div class="md:col-span-1">
                     <div class="mb-6 relative h-16 w-full flex items-center">
-                        @php $settings = \App\Models\StoreSetting::first(); @endphp
+                        @php $settings = \App\Models\StoreSetting::getSettings(); @endphp
                         @if(isset($settings) && $settings->logo_url)
                             <img src="{{ asset('storage/logos/logo-cjg-horizontal.png') }}" alt="Logo" class="absolute pointer-events-none drop-shadow-sm" style="top: 50%; left: 0; width: 220px; height: auto; transform: translateY(-50%);">
                         @else

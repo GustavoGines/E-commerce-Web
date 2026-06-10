@@ -1,5 +1,5 @@
 @php
-    $settings = \App\Models\StoreSetting::first();
+    $settings = \App\Models\StoreSetting::getSettings();
     $storeName = $settings ? $settings->store_name : 'JCG Electrónica';
 @endphp
 <!DOCTYPE html>

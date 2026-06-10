@@ -24,7 +24,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function mount()
     {
-        $settings = \App\Models\StoreSetting::first();
+        $settings = \App\Models\StoreSetting::getSettings();
         if ($settings) {
             $this->theme = $settings->theme_name ?? 'stealth';
         }

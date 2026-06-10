@@ -20,7 +20,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         ->take(4)
                                         ->get();
                                         
-        $settings = StoreSetting::first();
+        $settings = StoreSetting::getSettings();
         if ($settings && $settings->theme_name) {
             $this->theme = $settings->theme_name;
         }
