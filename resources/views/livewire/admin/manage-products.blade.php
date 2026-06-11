@@ -99,7 +99,12 @@ new #[Layout('layouts.app')] class extends Component {
     }
 
     #[Livewire\Attributes\On('products-imported')]
-    public function getProductsProperty()
+    public function loadProducts()
+    {
+        $this->resetPage();
+    }
+
+    public function with(): array
     {
         // PERF-01: Ordena desde SQL con JOIN en lugar de cargar todo en PHP.
         $query = Product::query()->with(['category', 'brand']);
@@ -123,13 +128,9 @@ new #[Layout('layouts.app')] class extends Component {
         }
 
         // PERF-02: Paginación — solo carga $perPage registros a la vez
-        return $query->paginate($this->perPage);
-    }
-
-    // Alias para compatibilidad con el template existente
-    public function loadProducts()
-    {
-        $this->resetPage();
+        return [
+            'products' => $query->paginate($this->perPage)
+        ];
     }
 
     // --- CRUD DE PRODUCTOS ---
@@ -683,17 +684,17 @@ new #[Layout('layouts.app')] class extends Component {
                     </tbody>
                 </table>
             </div>
-
+            
             {{-- Paginación PERF-02 --}}
-            @if($this->products->hasPages())
+            @if($products->hasPages())
             <div class="mt-6 flex items-center justify-between">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Mostrando {{ $this->products->firstItem() }}–{{ $this->products->lastItem() }}
-                    de <span class="font-bold">{{ $this->products->total() }}</span> productos
+                    Mostrando {{ $products->firstItem() }}–{{ $products->lastItem() }}
+                    de <span class="font-bold">{{ $products->total() }}</span> productos
                 </p>
                 <div class="flex items-center gap-1">
                     {{-- Anterior --}}
-                    @if($this->products->onFirstPage())
+                    @if($products->onFirstPage())
                         <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">‹ Ant.</span>
                     @else
                         <button wire:click="previousPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">‹ Ant.</button>
@@ -701,11 +702,11 @@ new #[Layout('layouts.app')] class extends Component {
 
                     {{-- Página actual --}}
                     <span class="px-3 py-1.5 rounded-lg text-sm font-bold text-white" style="background-color: var(--color-primary);">
-                        {{ $this->products->currentPage() }} / {{ $this->products->lastPage() }}
+                        {{ $products->currentPage() }} / {{ $products->lastPage() }}
                     </span>
 
                     {{-- Siguiente --}}
-                    @if($this->products->hasMorePages())
+                    @if($products->hasMorePages())
                         <button wire:click="nextPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Sig. ›</button>
                     @else
                         <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">Sig. ›</span>
@@ -714,7 +715,7 @@ new #[Layout('layouts.app')] class extends Component {
             </div>
             @else
             <p class="mt-4 text-xs text-gray-400 dark:text-gray-600 text-right">
-                {{ $this->products->total() }} {{ $this->products->total() === 1 ? 'producto' : 'productos' }} en total
+                {{ $products->total() }} {{ $products->total() === 1 ? 'producto' : 'productos' }} en total
             </p>
             @endif
         </div>

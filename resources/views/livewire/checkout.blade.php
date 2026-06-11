@@ -314,7 +314,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 @if(isset($products[$productId]))
                                     @php
                                         $product = $products[$productId];
-                                        {{-- DRY-01 FIX: usa PricingService vía getPrice() — cubre regla VIP mayorista --}}
+                                        // DRY-01 FIX: usa PricingService vía getPrice() — cubre regla VIP mayorista
                                         $price = $this->getPrice($product, $quantity);
                                     @endphp
                                     <div class="flex gap-4">
@@ -491,7 +491,7 @@ new #[Layout('layouts.app')] class extends Component {
                         @if(isset($products[$productId]))
                             @php
                                 $product = $products[$productId];
-                                {{-- DRY-01 FIX: usa PricingService vía getPrice() — cubre regla VIP mayorista --}}
+                                // DRY-01 FIX: usa PricingService vía getPrice() — cubre regla VIP mayorista
                                 $price = $this->getPrice($product, $quantity);
                             @endphp
                             <li class="py-4 flex justify-between items-center">
