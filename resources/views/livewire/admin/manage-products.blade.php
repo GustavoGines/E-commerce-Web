@@ -6,11 +6,13 @@ use App\Models\Brand;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 new #[Layout('layouts.app')] class extends Component {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
-    public $products;
+    // WithPagination necesita que $products NO sea propiedad pública
+    // La paginación se maneja automáticamente via computed / paginate()
     
     public $product_id = null;
     public $category_id = '';
@@ -36,6 +38,8 @@ new #[Layout('layouts.app')] class extends Component {
 
     public $sortField = 'id';
     public $sortDirection = 'desc';
+    public $search = '';
+    public $perPage = 50;
 
     // Selections and Visibility
     public $selectedProducts = [];
@@ -76,7 +80,8 @@ new #[Layout('layouts.app')] class extends Component {
     public function updatedSelectAll($value)
     {
         if ($value) {
-            $this->selectedProducts = $this->products->pluck('id')->map(fn($id) => (string)$id)->toArray();
+            // Solo selecciona los de la página actual
+            $this->selectedProducts = $this->getProductsProperty()->pluck('id')->map(fn($id) => (string)$id)->toArray();
         } else {
             $this->selectedProducts = [];
         }
@@ -90,25 +95,41 @@ new #[Layout('layouts.app')] class extends Component {
             $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
-        $this->loadProducts();
+        $this->resetPage(); // PERF-02: vuelve a página 1 al reordenar
     }
 
     #[Livewire\Attributes\On('products-imported')]
+    public function getProductsProperty()
+    {
+        // PERF-01: Ordena desde SQL con JOIN en lugar de cargar todo en PHP.
+        $query = Product::query()->with(['category', 'brand']);
+
+        // Filtro de búsqueda por nombre
+        if (!empty($this->search)) {
+            $query->where('products.name', 'like', '%' . $this->search . '%');
+        }
+
+        // Ordenamiento: category y brand usan LEFT JOIN para operar en SQL
+        if ($this->sortField === 'category_name') {
+            $query->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+                  ->orderBy('categories.name', $this->sortDirection)
+                  ->select('products.*');
+        } elseif ($this->sortField === 'brand_name') {
+            $query->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
+                  ->orderBy('brands.name', $this->sortDirection)
+                  ->select('products.*');
+        } else {
+            $query->orderBy('products.' . $this->sortField, $this->sortDirection);
+        }
+
+        // PERF-02: Paginación — solo carga $perPage registros a la vez
+        return $query->paginate($this->perPage);
+    }
+
+    // Alias para compatibilidad con el template existente
     public function loadProducts()
     {
-        $query = Product::with(['category', 'brand']);
-        
-        if ($this->sortField === 'category_name') {
-            $this->products = $query->get()->sortBy(function($product) {
-                return $product->category ? $product->category->name : '';
-            }, SORT_REGULAR, $this->sortDirection === 'desc')->values();
-        } elseif ($this->sortField === 'brand_name') {
-            $this->products = $query->get()->sortBy(function($product) {
-                return $product->brand ? $product->brand->name : '';
-            }, SORT_REGULAR, $this->sortDirection === 'desc')->values();
-        } else {
-            $this->products = $query->orderBy($this->sortField, $this->sortDirection)->get();
-        }
+        $this->resetPage();
     }
 
     // --- CRUD DE PRODUCTOS ---
@@ -190,7 +211,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function delete($id)
     {
-        Product::find($id)->delete();
+        Product::findOrFail($id)->delete();
         $this->loadProducts();
     }
 
@@ -464,8 +485,22 @@ new #[Layout('layouts.app')] class extends Component {
         @endif
 
         <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl dark:[box-shadow:0_10px_30px_-10px_var(--color-primary-glow)] overflow-hidden sm:rounded-3xl p-6 transition-colors duration-300">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Catálogo de Hardware</h3>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Catálogo de Hardware</h3>
+                    {{-- Buscador PERF-02: debounce 400ms para no disparar requests en cada tecla --}}
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+                        <input wire:model.live.debounce.400ms="search"
+                               type="search"
+                               placeholder="Buscar producto..."
+                               id="admin-product-search"
+                               class="pl-9 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all w-52">
+                        <div wire:loading wire:target="search" class="absolute right-3 top-1/2 -translate-y-1/2">
+                            <svg class="animate-spin w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </div>
+                    </div>
+                </div>
                 <div class="flex space-x-3 items-center">
                     
                     <button type="button" @click="massUpdateOpen = true" class="group flex items-center justify-center p-2.5 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-800 border border-slate-200 dark:border-gray-700 shadow-sm text-slate-700 dark:text-slate-200 font-bold">
@@ -648,6 +683,40 @@ new #[Layout('layouts.app')] class extends Component {
                     </tbody>
                 </table>
             </div>
+
+            {{-- Paginación PERF-02 --}}
+            @if($this->products->hasPages())
+            <div class="mt-6 flex items-center justify-between">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Mostrando {{ $this->products->firstItem() }}–{{ $this->products->lastItem() }}
+                    de <span class="font-bold">{{ $this->products->total() }}</span> productos
+                </p>
+                <div class="flex items-center gap-1">
+                    {{-- Anterior --}}
+                    @if($this->products->onFirstPage())
+                        <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">‹ Ant.</span>
+                    @else
+                        <button wire:click="previousPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">‹ Ant.</button>
+                    @endif
+
+                    {{-- Página actual --}}
+                    <span class="px-3 py-1.5 rounded-lg text-sm font-bold text-white" style="background-color: var(--color-primary);">
+                        {{ $this->products->currentPage() }} / {{ $this->products->lastPage() }}
+                    </span>
+
+                    {{-- Siguiente --}}
+                    @if($this->products->hasMorePages())
+                        <button wire:click="nextPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Sig. ›</button>
+                    @else
+                        <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">Sig. ›</span>
+                    @endif
+                </div>
+            </div>
+            @else
+            <p class="mt-4 text-xs text-gray-400 dark:text-gray-600 text-right">
+                {{ $this->products->total() }} {{ $this->products->total() === 1 ? 'producto' : 'productos' }} en total
+            </p>
+            @endif
         </div>
     </div>
 

@@ -5,18 +5,29 @@ use Livewire\Attributes\Layout;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Livewire\WithPagination;
 
 new #[Layout('layouts.app')] class extends Component {
-    public $orders;
+    use WithPagination;
+
+    // $orders NO es propiedad pública — se obtiene via computed + paginate()
 
     public function mount()
     {
-        $this->loadOrders();
+        // nada que hacer aquí, loadOrders era el patrón viejo
+    }
+
+    public function getOrdersProperty()
+    {
+        // PERF-02: Solo carga 30 órdenes por página en lugar de toda la tabla
+        return Order::with(['user', 'items.product'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(30);
     }
 
     public function loadOrders()
     {
-        $this->orders = Order::with(['user', 'items.product'])->orderBy('created_at', 'desc')->get();
+        $this->resetPage();
     }
 
     public function updateStatus($orderId, $status)
@@ -193,5 +204,30 @@ new #[Layout('layouts.app')] class extends Component {
                 </table>
             </div>
         </div>
+
+        {{-- Paginación PERF-02 --}}
+        @if($this->orders->hasPages())
+        <div class="mt-6 flex items-center justify-between px-2">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Mostrando {{ $this->orders->firstItem() }}–{{ $this->orders->lastItem() }}
+                de <span class="font-bold">{{ $this->orders->total() }}</span> órdenes
+            </p>
+            <div class="flex items-center gap-1">
+                @if($this->orders->onFirstPage())
+                    <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">‹ Ant.</span>
+                @else
+                    <button wire:click="previousPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">‹ Ant.</button>
+                @endif
+                <span class="px-3 py-1.5 rounded-lg text-sm font-bold text-white" style="background-color: var(--color-primary);">
+                    {{ $this->orders->currentPage() }} / {{ $this->orders->lastPage() }}
+                </span>
+                @if($this->orders->hasMorePages())
+                    <button wire:click="nextPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Sig. ›</button>
+                @else
+                    <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">Sig. ›</span>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
 </div>
