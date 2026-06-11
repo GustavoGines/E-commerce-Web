@@ -93,6 +93,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->loadProducts();
     }
 
+    #[Livewire\Attributes\On('products-imported')]
     public function loadProducts()
     {
         $query = Product::with(['category', 'brand']);
@@ -494,6 +495,9 @@ new #[Layout('layouts.app')] class extends Component {
                             <span class="overflow-hidden whitespace-nowrap text-sm"><span class="pl-2 pr-1">Nuevo Producto</span></span>
                         </div>
                     </button>
+
+                    <!-- Importar Excel Component -->
+                    <livewire:admin.product-import />
 
                     <!-- Columnas Dropdown (Icon only) -->
                     <div class="relative">

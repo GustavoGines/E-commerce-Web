@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_admin' => IsAdmin::class,
         ]);
 
+        $middleware->trustProxies(at: '*');
+
         // Excluir el webhook de MercadoPago del CSRF (es un POST server-to-server)
         $middleware->validateCsrfTokens(except: [
             'webhooks/mercadopago',

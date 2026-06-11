@@ -110,7 +110,7 @@ new class extends Component {
         }
 
         return [
-            'products' => $query->paginate(12),
+            'products' => $query->paginate(15),
             'popularProducts' => Product::latest()->take(3)->get(),
             'recentlyViewedProducts' => $recentlyViewedProducts
         ];
@@ -188,43 +188,83 @@ new class extends Component {
                     {{-- Categories --}}
                     <div>
                         <h4 class="text-gray-900 font-bold text-sm tracking-widest uppercase mb-4 pb-4 border-b border-gray-100">Categorías</h4>
-                        <ul class="space-y-3">
-                            <li>
-                                <button wire:click="setCategory(null)" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory === null ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
-                                    <span>Todas</span>
-                                    <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $products->total() }}</span>
-                                </button>
-                            </li>
-                            @foreach($categories as $category)
+                        <div x-data="{ expanded: false }">
+                            <ul class="space-y-3">
                                 <li>
-                                    <button wire:click="setCategory({{ $category->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory == $category->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
-                                        <span>{{ $category->name }}</span>
-                                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $category->products_count }}</span>
+                                    <button wire:click="setCategory(null)" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory === null ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
+                                        <span>Todas</span>
+                                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $products->total() }}</span>
                                     </button>
                                 </li>
-                            @endforeach
-                        </ul>
+                                @foreach($categories->take(5) as $category)
+                                    <li>
+                                        <button wire:click="setCategory({{ $category->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory == $category->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
+                                            <span>{{ $category->name }}</span>
+                                            <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $category->products_count }}</span>
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
+
+                            @if($categories->count() > 5)
+                                <div x-show="expanded" x-collapse>
+                                    <ul class="space-y-3 mt-3">
+                                        @foreach($categories->skip(5) as $category)
+                                            <li>
+                                                <button wire:click="setCategory({{ $category->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory == $category->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
+                                                    <span>{{ $category->name }}</span>
+                                                    <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $category->products_count }}</span>
+                                                </button>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                <button @click="expanded = !expanded" class="w-full mt-4 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-[10px] font-black text-gray-500 uppercase tracking-widest hover:border-gray-200 hover:text-gray-800 transition-all">
+                                    <span x-text="expanded ? '- VER MENOS' : '+ VER TODAS ({{ $categories->count() }})'"></span>
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
                     {{-- Brands --}}
                     @if(count($brands) > 0)
                     <div>
                         <h4 class="text-gray-900 font-bold text-sm tracking-widest uppercase mb-4 pb-4 border-b border-gray-100">Marcas</h4>
-                        <ul class="space-y-3">
-                            <li>
-                                <button wire:click="setBrand(null)" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedBrand === null ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
-                                    <span>Todas</span>
-                                </button>
-                            </li>
-                            @foreach($brands as $brand)
+                        <div x-data="{ expanded: false }">
+                            <ul class="space-y-3">
                                 <li>
-                                    <button wire:click="setBrand({{ $brand->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedBrand == $brand->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
-                                        <span>{{ $brand->name }}</span>
-                                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $brand->products_count }}</span>
+                                    <button wire:click="setBrand(null)" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedBrand === null ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
+                                        <span>Todas</span>
                                     </button>
                                 </li>
-                            @endforeach
-                        </ul>
+                                @foreach($brands->take(5) as $brand)
+                                    <li>
+                                        <button wire:click="setBrand({{ $brand->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedBrand == $brand->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
+                                            <span>{{ $brand->name }}</span>
+                                            <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $brand->products_count }}</span>
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
+
+                            @if($brands->count() > 5)
+                                <div x-show="expanded" x-collapse>
+                                    <ul class="space-y-3 mt-3">
+                                        @foreach($brands->skip(5) as $brand)
+                                            <li>
+                                                <button wire:click="setBrand({{ $brand->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedBrand == $brand->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
+                                                    <span>{{ $brand->name }}</span>
+                                                    <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $brand->products_count }}</span>
+                                                </button>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                <button @click="expanded = !expanded" class="w-full mt-4 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-[10px] font-black text-gray-500 uppercase tracking-widest hover:border-gray-200 hover:text-gray-800 transition-all">
+                                    <span x-text="expanded ? '- VER MENOS' : '+ VER TODAS ({{ $brands->count() }})'"></span>
+                                </button>
+                            @endif
+                        </div>
                     </div>
                     @endif
 
