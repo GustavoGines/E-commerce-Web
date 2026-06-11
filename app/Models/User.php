@@ -37,25 +37,29 @@ class User extends Authenticatable
     }
 
     /**
+     * Cache for the wholesale status to prevent repeated queries
+     * and avoid state leakage across different user instances.
+     */
+    protected ?bool $isWholesaleCache = null;
+
+    /**
      * Determine if the user qualifies for global wholesale pricing.
      * A user qualifies if they have at least one paid/completed order
      * with an item quantity of 10 or more.
      */
-    public function isWholesaleCustomer()
+    public function isWholesaleCustomer(): bool
     {
-        // Cache the result for the request lifecycle to avoid repeated queries
-        static $isWholesale = null;
-        if ($isWholesale !== null) {
-            return $isWholesale;
+        if ($this->isWholesaleCache !== null) {
+            return $this->isWholesaleCache;
         }
 
-        $isWholesale = $this->orders()
+        $this->isWholesaleCache = $this->orders()
             ->whereIn('status', ['pagado', 'completada', 'aprobada'])
             ->whereHas('items', function ($query) {
                 $query->where('quantity', '>=', 10);
             })
             ->exists();
 
-        return $isWholesale;
+        return $this->isWholesaleCache;
     }
 }

@@ -14,7 +14,7 @@ class MercadoPagoWebhookController extends Controller
      * MercadoPago envía un POST con el tipo de notificación y el ID del recurso.
      * Siempre debemos responder 200 inmediatamente, y luego procesar de forma idempotente.
      */
-    public function handle(Request $request, MercadoPagoService $mpService)
+    public function handle(Request $request, MercadoPagoService $mpService): \Illuminate\Http\JsonResponse
     {
         // Loggear el payload completo para debugging
         Log::info('MercadoPago Webhook recibido', $request->all());
@@ -31,41 +31,8 @@ class MercadoPagoWebhookController extends Controller
             // Consultamos el pago directamente a la API de MP (nunca confiar solo en el webhook)
             $payment = $mpService->getPayment($dataId);
 
-            $orderId = $payment->external_reference ?? null;
-            if (! $orderId) {
-                Log::warning('Webhook MP: pago sin external_reference', ['payment_id' => $dataId]);
-
-                return response()->json(['status' => 'no_reference'], 200);
-            }
-
-            $order = Order::find($orderId);
-            if (! $order) {
-                Log::warning('Webhook MP: orden no encontrada', ['order_id' => $orderId]);
-
-                return response()->json(['status' => 'order_not_found'], 200);
-            }
-
-            // Guardar el ID del pago en la orden
-            $order->mp_payment_id = $dataId;
-
-            // Mapear el estado de MP a nuestros estados internos
-            $order->status = match ($payment->status) {
-                'approved' => 'pagado',
-                'pending',
-                'in_process' => 'pendiente',
-                'rejected',
-                'cancelled' => 'cancelado',
-                default => $order->status, // no cambiar si es estado desconocido
-            };
-
-            $order->save();
-
-            Log::info('Webhook MP: orden actualizada', [
-                'order_id' => $orderId,
-                'payment_id' => $dataId,
-                'mp_status' => $payment->status,
-                'new_status' => $order->status,
-            ]);
+            // Disparamos el evento para que la lógica de negocio se maneje en listeners separados
+            event(new \App\Events\PaymentApproved($payment, $dataId));
 
         } catch (\Exception $e) {
             // Siempre devolver 200 para que MP no reintente indefinidamente.

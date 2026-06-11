@@ -6,28 +6,23 @@ use App\Models\StoreSetting;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
+Route::get('/debug-theme', function () {
+    return response()->json([
+        'theme' => app('activeTheme'),
+        'paths' => app('view.finder')->getPaths(),
+        'views' => [
+            'welcome' => app('view.finder')->find('welcome'),
+            'shop' => app('view.finder')->find('shop'),
+        ]
+    ]);
+});
+
 Route::get('/', function () {
-    $settings = StoreSetting::getSettings();
-    $theme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
-
-    // Fallback to stealth if theme view doesn't exist
-    if (! view()->exists("themes.{$theme}.welcome")) {
-        $theme = 'stealth';
-    }
-
-    return view("themes.{$theme}.welcome");
+    return view('welcome');
 })->name('home');
 
 Route::get('/shop', function () {
-    $settings = StoreSetting::getSettings();
-    $theme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
-
-    // Fallback to stealth if theme view doesn't exist
-    if (! view()->exists("themes.{$theme}.shop")) {
-        $theme = 'stealth';
-    }
-
-    return view("themes.{$theme}.shop");
+    return view('shop');
 })->name('shop');
 
 Volt::route('producto/{slug}', 'product-detail')

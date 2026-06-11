@@ -151,31 +151,60 @@ class CartService
     public function mergeGuestCartIntoUserCart($user, $sessionId = null)
     {
         $sessionId = $sessionId ?: Session::getId();
-        $guestCart = Cart::where('session_id', $sessionId)->whereNull('user_id')->first();
+        $guestCart = Cart::with('items.product')->where('session_id', $sessionId)->whereNull('user_id')->first();
 
-        if (! $guestCart || $guestCart->items()->count() === 0) {
+        if (! $guestCart || $guestCart->items->isEmpty()) {
             return;
         }
 
-        $userCart = Cart::firstOrCreate(['user_id' => $user->id]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($guestCart, $user) {
+            $userCart = Cart::firstOrCreate(['user_id' => $user->id]);
+            $userCartItems = $userCart->items->keyBy('product_id');
 
-        foreach ($guestCart->items as $item) {
-            $userCartItem = $userCart->items()->where('product_id', $item->product_id)->first();
+            $mergedData = [];
+            $now = now();
 
-            if ($userCartItem) {
-                // If the user already has this product, increment the quantity (cap by stock)
-                $newQuantity = $userCartItem->quantity + $item->quantity;
-                $maxStock = $item->product->stock;
-                $userCartItem->update([
-                    'quantity' => min($newQuantity, $maxStock),
-                ]);
-            } else {
-                // Move item to user cart
-                $item->update(['cart_id' => $userCart->id]);
+            // Merge guest items into user items
+            foreach ($guestCart->items as $guestItem) {
+                $productId = $guestItem->product_id;
+                $maxStock = $guestItem->product ? $guestItem->product->stock : 0;
+
+                if ($userCartItems->has($productId)) {
+                    $newQuantity = min($userCartItems[$productId]->quantity + $guestItem->quantity, $maxStock);
+                    $mergedData[$productId] = [
+                        'cart_id' => $userCart->id,
+                        'product_id' => $productId,
+                        'quantity' => $newQuantity,
+                        'created_at' => $userCartItems[$productId]->created_at->format('Y-m-d H:i:s'),
+                        'updated_at' => $now->format('Y-m-d H:i:s'),
+                    ];
+                    $userCartItems->forget($productId);
+                } else {
+                    $mergedData[$productId] = [
+                        'cart_id' => $userCart->id,
+                        'product_id' => $productId,
+                        'quantity' => min($guestItem->quantity, $maxStock),
+                        'created_at' => $now->format('Y-m-d H:i:s'),
+                        'updated_at' => $now->format('Y-m-d H:i:s'),
+                    ];
+                }
             }
-        }
 
-        // Delete the guest cart after merging
-        $guestCart->delete();
+            // Keep the rest of the user's cart items
+            foreach ($userCartItems as $productId => $userItem) {
+                $mergedData[$productId] = [
+                    'cart_id' => $userCart->id,
+                    'product_id' => $productId,
+                    'quantity' => $userItem->quantity,
+                    'created_at' => $userItem->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $userItem->updated_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            // Bulk replace to avoid N+1 updates
+            $userCart->items()->delete();
+            \App\Models\CartItem::insert(array_values($mergedData));
+            $guestCart->delete();
+        });
     }
 }

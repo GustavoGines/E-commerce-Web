@@ -119,94 +119,91 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
 
-        DB::beginTransaction();
-
         try {
-            // 1. Crear la Orden en DB con estado 'pendiente'
-            $order = Order::create([
-                'user_id'        => auth()->id(),
-                'status'         => 'pendiente',
-                'total'          => $this->subtotal,
-                'phone'          => $this->theme === 'modern-light' ? '-' : $this->phone,
-                'address_street' => $this->theme === 'modern-light' ? 'Retiro en Local' : $this->address_street,
-                'address_number' => $this->theme === 'modern-light' ? '-' : $this->address_number,
-                'city'           => $this->theme === 'modern-light' ? '-' : $this->city,
-                'state'          => $this->theme === 'modern-light' ? '-' : $this->state,
-                'zip_code'       => $this->theme === 'modern-light' ? '-' : $this->zip_code,
-                'role_applied'   => 'por_volumen',
-            ]);
+            $redirectUrl = null;
 
-            // 2. Crear Items y descontar stock
-            foreach ($this->cart as $productId => $quantity) {
-                if (isset($this->products[$productId])) {
-                    $product = $this->products[$productId];
-                    
-                    if ($product->stock < $quantity) {
-                        throw new \Exception("Sin stock suficiente para: " . $product->name);
-                    }
+            // Transacción DB para asegurar atomicidad
+            DB::transaction(function () use (&$redirectUrl) {
+                // 1. Crear la Orden en DB con estado 'pendiente'
+                $order = Order::create([
+                    'user_id'        => auth()->id(),
+                    'status'         => 'pendiente',
+                    'total'          => $this->subtotal,
+                    'phone'          => $this->theme === 'modern-light' ? '-' : $this->phone,
+                    'address_street' => $this->theme === 'modern-light' ? 'Retiro en Local' : $this->address_street,
+                    'address_number' => $this->theme === 'modern-light' ? '-' : $this->address_number,
+                    'city'           => $this->theme === 'modern-light' ? '-' : $this->city,
+                    'state'          => $this->theme === 'modern-light' ? '-' : $this->state,
+                    'zip_code'       => $this->theme === 'modern-light' ? '-' : $this->zip_code,
+                    'role_applied'   => 'por_volumen',
+                ]);
 
-                    $price = $this->getPrice($product, $quantity);
-                    
-                    OrderItem::create([
-                        'order_id'   => $order->id,
-                        'product_id' => $product->id,
-                        'quantity'   => $quantity,
-                        'price'      => $price,
-                    ]);
-
-                    $product->decrement('stock', $quantity);
-                }
-            }
-
-            // Limpiar carrito
-            app(\App\Services\CartService::class)->clear();
-            $this->dispatch('cart-updated');
-
-            if ($this->theme === 'modern-light') {
-                DB::commit();
-                
-                $sellerPhone = '5493705075839';
-                $message = "Hola JCG Electrónica! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
-                
+                // 2. Crear Items y descontar stock
                 foreach ($this->cart as $productId => $quantity) {
                     if (isset($this->products[$productId])) {
                         $product = $this->products[$productId];
+                        
+                        if ($product->stock < $quantity) {
+                            throw new \Exception("Sin stock suficiente para: " . $product->name);
+                        }
+
                         $price = $this->getPrice($product, $quantity);
-                        $message .= "• {$quantity}x {$product->name} (\$" . number_format($price * $quantity, 0, ',', '.') . ")\n";
+                        
+                        OrderItem::create([
+                            'order_id'   => $order->id,
+                            'product_id' => $product->id,
+                            'quantity'   => $quantity,
+                            'price'      => $price,
+                        ]);
+
+                        $product->decrement('stock', $quantity);
                     }
                 }
-                
-                $message .= "\n*Total a abonar:* $" . number_format($this->subtotal, 0, ',', '.') . "\n\n";
-                $message .= "Mi nombre es: *" . auth()->user()->name . "*\n\n";
-                $message .= "Paso a retirarlo por el local. ¡Aguardamos confirmación!";
-                
-                $waUrl = "https://wa.me/{$sellerPhone}?text=" . urlencode($message);
-                
-                return redirect()->away($waUrl);
+
+                // Limpiar carrito
+                app(\App\Services\CartService::class)->clear();
+                $this->dispatch('cart-updated');
+
+                if ($this->theme === 'modern-light') {
+                    $sellerPhone = '5493705075839';
+                    $message = "Hola JCG Electrónica! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
+                    
+                    foreach ($this->cart as $productId => $quantity) {
+                        if (isset($this->products[$productId])) {
+                            $product = $this->products[$productId];
+                            $price = $this->getPrice($product, $quantity);
+                            $message .= "• {$quantity}x {$product->name} (\$" . number_format($price * $quantity, 0, ',', '.') . ")\n";
+                        }
+                    }
+                    
+                    $message .= "\n*Total a abonar:* $" . number_format($this->subtotal, 0, ',', '.') . "\n\n";
+                    $message .= "Mi nombre es: *" . auth()->user()->name . "*\n\n";
+                    $message .= "Paso a retirarlo por el local. ¡Aguardamos confirmación!";
+                    
+                    $redirectUrl = "https://wa.me/{$sellerPhone}?text=" . urlencode($message);
+                    return; // Salir del transaction closure
+                }
+
+                // 3. Generar Preferencia de Pago en MercadoPago
+                $mpService  = app(MercadoPagoService::class);
+                $preference = $mpService->createPreference($order, $this->cart);
+
+                // 4. Guardar el preference_id en la orden
+                $order->update(['mp_preference_id' => $preference['preference_id']]);
+
+                $redirectUrl = app()->isProduction()
+                    ? $preference['init_point']
+                    : $preference['sandbox_init_point'];
+            });
+
+            if ($redirectUrl) {
+                return redirect()->away($redirectUrl);
             }
 
-            // 3. Generar Preferencia de Pago en MercadoPago
-            $mpService  = app(MercadoPagoService::class);
-            $preference = $mpService->createPreference($order, $this->cart);
-
-            // 4. Guardar el preference_id en la orden
-            $order->update(['mp_preference_id' => $preference['preference_id']]);
-
-            DB::commit();
-
-            // 6. Redirigir a MercadoPago en la misma pestaña
-            $redirectUrl = app()->isProduction()
-                ? $preference['init_point']
-                : $preference['sandbox_init_point'];
-
-            return redirect()->away($redirectUrl);
-
         } catch (\MercadoPago\Exceptions\MPApiException $e) {
-            DB::rollBack();
             Log::error('Error MP al crear preferencia en checkout', ['error' => $e->getMessage()]);
             session()->flash('error', 'No pudimos conectar con MercadoPago. Por favor intentá de nuevo en unos minutos.');
         } catch (\Exception $e) {
-            DB::rollBack();
             session()->flash('error', $e->getMessage());
         }
     }

@@ -94,16 +94,9 @@ class ProductsImport implements OnEachRow, WithHeadingRow
             return null;
         }
 
-        // Marcas comunes en electrónica, climatización y accesorios
-        $commonBrands = [
-            'Samsung', 'LG', 'Sony', 'Philips', 'BGH', 'Noblex', 'TCL', 'Hisense', 
-            'Hitachi', 'RCA', 'Philco', 'Sanyo', 'JVC', 'Pioneer', 'Motorola', 
-            'Apple', 'Xiaomi', 'Huawei', 'Lenovo', 'Asus', 'Acer', 'HP', 'Dell', 
-            'Kanji', 'Noga', 'Nisuta', 'Seisa', 'Suono', 'Panacom', 'Daewoo', 
-            'Sansei', 'Atma', 'Liliana', 'Peabody', 'Midea', 'Surrey', 'Carrier', 
-            'York', 'Electra', 'Marshall', 'Zenith'
-        ];
-
+        // Marcas conocidas por configuración y base de datos
+        $commonBrands = config('brands.common', []);
+        
         // Añadimos las marcas que ya existan en la base de datos para retroalimentar
         $dbBrands = Brand::pluck('name')->toArray();
         $allBrands = array_unique(array_merge($commonBrands, $dbBrands));

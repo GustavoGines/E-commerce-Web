@@ -9,10 +9,27 @@ use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        // No tocar la DB aquí
+    }
 
     public function boot(): void
     {
+        $theme = 'stealth';
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('store_settings')) {
+                $settings = \App\Models\StoreSetting::getSettings();
+                $dbTheme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
+                if ($dbTheme !== 'stealth') {
+                    $theme = $dbTheme;
+                }
+            }
+        } catch (\Exception $e) {}
+
+        \Illuminate\Support\Facades\View::share('activeTheme', $theme);
+        app()->singleton('activeTheme', fn() => $theme);
+
         // Fix for Laragon subdirectories: Force Laravel to generate URLs with the correct base path
         if (config('app.url') && ! app()->environment('testing')) {
             URL::forceRootUrl(config('app.url'));

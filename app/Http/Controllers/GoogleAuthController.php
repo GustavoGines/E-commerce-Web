@@ -15,7 +15,7 @@ class GoogleAuthController extends Controller
     /**
      * Redirect the user to the Google authentication page.
      */
-    public function redirect()
+    public function redirect(): \Illuminate\Http\RedirectResponse
     {
         try {
             // Store intended URL if not auth pages
@@ -33,7 +33,7 @@ class GoogleAuthController extends Controller
     /**
      * Obtain the user information from Google.
      */
-    public function callback()
+    public function callback(): \Illuminate\Http\RedirectResponse
     {
         try {
             $googleUser = Socialite::driver('google')->user();
@@ -42,9 +42,7 @@ class GoogleAuthController extends Controller
             $user = User::where('google_id', $googleUser->id)->first();
 
             if ($user) {
-                $oldSessionId = Session::getId();
-                Auth::login($user);
-                app(CartService::class)->mergeGuestCartIntoUserCart($user, $oldSessionId);
+                $this->loginAndMergeCart($user);
             } else {
                 // If user doesn't exist by google_id, check by email
                 $existingUserByEmail = User::where('email', $googleUser->email)->first();
@@ -54,9 +52,7 @@ class GoogleAuthController extends Controller
                     $existingUserByEmail->update([
                         'google_id' => $googleUser->id,
                     ]);
-                    $oldSessionId = Session::getId();
-                    Auth::login($existingUserByEmail);
-                    app(CartService::class)->mergeGuestCartIntoUserCart($existingUserByEmail, $oldSessionId);
+                    $this->loginAndMergeCart($existingUserByEmail);
                 } else {
                     // Create new user
                     $newUser = User::create([
@@ -65,9 +61,7 @@ class GoogleAuthController extends Controller
                         'google_id' => $googleUser->id,
                         'password' => null,
                     ]);
-                    $oldSessionId = Session::getId();
-                    Auth::login($newUser);
-                    app(CartService::class)->mergeGuestCartIntoUserCart($newUser, $oldSessionId);
+                    $this->loginAndMergeCart($newUser);
                 }
             }
 
@@ -76,5 +70,15 @@ class GoogleAuthController extends Controller
         } catch (Exception $e) {
             return redirect()->route('login')->with('error', 'Error al iniciar sesión con Google. '.$e->getMessage());
         }
+    }
+
+    /**
+     * Logs the user in and merges the guest cart into the user's cart.
+     */
+    private function loginAndMergeCart(User $user): void
+    {
+        $oldSessionId = Session::getId();
+        Auth::login($user);
+        app(CartService::class)->mergeGuestCartIntoUserCart($user, $oldSessionId);
     }
 }
