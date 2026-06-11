@@ -17,12 +17,14 @@ new #[Layout('layouts.app')] class extends Component {
         // nada que hacer aquí, loadOrders era el patrón viejo
     }
 
-    public function getOrdersProperty()
+    public function with(): array
     {
         // PERF-02: Solo carga 30 órdenes por página en lugar de toda la tabla
-        return Order::with(['user', 'items.product'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(30);
+        return [
+            'orders' => Order::with(['user', 'items.product'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(30)
+        ];
     }
 
     public function loadOrders()
@@ -204,28 +206,28 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
 
         {{-- Paginación PERF-02 --}}
-        @if($this->orders->hasPages())
-        <div class="mt-6 flex items-center justify-between px-2">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                Mostrando {{ $this->orders->firstItem() }}–{{ $this->orders->lastItem() }}
-                de <span class="font-bold">{{ $this->orders->total() }}</span> órdenes
-            </p>
-            <div class="flex items-center gap-1">
-                @if($this->orders->onFirstPage())
-                    <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">‹ Ant.</span>
+        @if($orders->hasPages())
+            <div class="px-6 py-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                <div>
+                Mostrando {{ $orders->firstItem() }}–{{ $orders->lastItem() }} 
+                de <span class="font-bold">{{ $orders->total() }}</span> órdenes
+                </div>
+                <div class="flex items-center gap-2">
+                @if($orders->onFirstPage())
+                    <button disabled class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-md cursor-not-allowed">Anterior</button>
                 @else
-                    <button wire:click="previousPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">‹ Ant.</button>
+                    <button wire:click="previousPage" class="px-3 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Anterior</button>
                 @endif
-                <span class="px-3 py-1.5 rounded-lg text-sm font-bold text-white" style="background-color: var(--color-primary);">
-                    {{ $this->orders->currentPage() }} / {{ $this->orders->lastPage() }}
+                <span class="px-2">
+                    {{ $orders->currentPage() }} / {{ $orders->lastPage() }}
                 </span>
-                @if($this->orders->hasMorePages())
-                    <button wire:click="nextPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Sig. ›</button>
+                @if($orders->hasMorePages())
+                    <button wire:click="nextPage" class="px-3 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Siguiente</button>
                 @else
-                    <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">Sig. ›</span>
+                    <button disabled class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-md cursor-not-allowed">Siguiente</button>
                 @endif
+                </div>
             </div>
-        </div>
         @endif
     </div>
 </div>
