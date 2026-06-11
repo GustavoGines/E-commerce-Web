@@ -42,8 +42,9 @@ return [
     ],
 
     'mercadopago' => [
-        'access_token' => env('MP_ACCESS_TOKEN'),
-        'public_key' => env('MP_PUBLIC_KEY'),
+        'access_token'   => env('MP_ACCESS_TOKEN'),
+        'public_key'     => env('MP_PUBLIC_KEY'),
+        'webhook_secret' => env('MP_WEBHOOK_SECRET'), // Used to validate x-signature header (SEC-01)
     ],
 
 ];

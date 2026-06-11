@@ -143,12 +143,8 @@ new #[Layout('layouts.app')] class extends Component {
                     if (isset($this->products[$productId])) {
                         $product = $this->products[$productId];
                         
-                        if ($product->stock < $quantity) {
-                            throw new \Exception("Sin stock suficiente para: " . $product->name);
-                        }
-
                         $price = $this->getPrice($product, $quantity);
-                        
+
                         OrderItem::create([
                             'order_id'   => $order->id,
                             'product_id' => $product->id,
@@ -156,7 +152,15 @@ new #[Layout('layouts.app')] class extends Component {
                             'price'      => $price,
                         ]);
 
-                        $product->decrement('stock', $quantity);
+                        // BUG-01 FIX: Atomic decrement — prevents race conditions / overselling.
+                        // The WHERE clause ensures stock cannot go below zero even with concurrent requests.
+                        $decremented = Product::where('id', $product->id)
+                            ->where('stock', '>=', $quantity)
+                            ->decrement('stock', $quantity);
+
+                        if (!$decremented) {
+                            throw new \Exception("Sin stock suficiente para: " . $product->name . ". Es posible que otro cliente lo haya comprado en este momento.");
+                        }
                     }
                 }
 

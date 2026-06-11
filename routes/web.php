@@ -6,16 +6,6 @@ use App\Models\StoreSetting;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/debug-theme', function () {
-    return response()->json([
-        'theme' => app('activeTheme'),
-        'paths' => app('view.finder')->getPaths(),
-        'views' => [
-            'welcome' => app('view.finder')->find('welcome'),
-            'shop' => app('view.finder')->find('shop'),
-        ]
-    ]);
-});
 
 Route::get('/', function () {
     return view('welcome');

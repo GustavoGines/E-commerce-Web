@@ -3,6 +3,8 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use App\Models\Order;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 new #[Layout('layouts.app')] class extends Component {
     public $orders;
@@ -34,9 +36,20 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function cancelarOrden($id)
     {
-        $order = Order::where('user_id', auth()->id())->find($id);
+        $order = Order::where('user_id', auth()->id())
+            ->with('items.product')
+            ->find($id);
+
         if ($order && $order->status === 'pendiente') {
-            $order->update(['status' => 'cancelado']);
+            DB::transaction(function () use ($order) {
+                // BUG-05 FIX: Restore stock before cancelling.
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+                $order->update(['status' => 'cancelado']);
+            });
             $this->cargarOrdenes();
         }
     }

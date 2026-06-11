@@ -3,6 +3,8 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use App\Models\Order;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 new #[Layout('layouts.app')] class extends Component {
     public $orders;
@@ -30,12 +32,21 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function deleteOrder($orderId)
     {
-        $order = Order::find($orderId);
+        $order = Order::with('items.product')->find($orderId);
         if ($order) {
-            $order->items()->delete();
-            $order->delete();
+            DB::transaction(function () use ($order) {
+                // BUG-06 FIX: Restore stock before deleting, regardless of order status.
+                // This prevents permanent inventory loss when admins remove paid/completed orders.
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+                $order->items()->delete();
+                $order->delete();
+            });
             $this->loadOrders();
-            $this->dispatch('notify', message: 'Orden eliminada permanentemente');
+            $this->dispatch('notify', message: 'Orden eliminada y stock restaurado correctamente');
         }
     }
 }; ?>

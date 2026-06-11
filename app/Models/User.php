@@ -54,7 +54,7 @@ class User extends Authenticatable
         }
 
         $this->isWholesaleCache = $this->orders()
-            ->whereIn('status', ['pagado', 'completada', 'aprobada'])
+            ->whereIn('status', ['pagado', 'completado']) // BUG-09 FIX: 'completada'/'aprobada' never existed in the DB
             ->whereHas('items', function ($query) {
                 $query->where('quantity', '>=', 10);
             })
