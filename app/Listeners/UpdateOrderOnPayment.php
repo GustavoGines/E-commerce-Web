@@ -10,8 +10,9 @@ use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class UpdateOrderOnPayment
+class UpdateOrderOnPayment implements ShouldQueue
 {
+    use InteractsWithQueue;
     /**
      * Create the event listener.
      */

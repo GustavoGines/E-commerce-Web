@@ -16,7 +16,10 @@ class MercadoPagoService
     public function __construct()
     {
         MercadoPagoConfig::setAccessToken(config('services.mercadopago.access_token'));
-        MercadoPagoConfig::setRuntimeEnviroment(MercadoPagoConfig::LOCAL);
+        // SEC-03 FIX: TLS activo en prod (SERVER), desactivado solo en desarrollo (LOCAL).
+        MercadoPagoConfig::setRuntimeEnviroment(
+            app()->isProduction() ? MercadoPagoConfig::SERVER : MercadoPagoConfig::LOCAL
+        );
     }
 
     /**
@@ -32,6 +35,10 @@ class MercadoPagoService
         $productIds = array_keys($cartItems);
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
+        // DRY-01: Usar PricingService para calcular el precio — misma regla que el carrito y checkout.
+        $pricingService = app(\App\Services\PricingService::class);
+        $user = $order->user; // Ya cargado por eager-load en checkout
+
         // Construir los items de la preferencia
         $items = [];
         foreach ($cartItems as $productId => $quantity) {
@@ -40,13 +47,13 @@ class MercadoPagoService
             }
 
             $product = $products[$productId];
-            $unitPrice = ($quantity >= $product->wholesale_min_quantity) ? (float) $product->wholesale_price : (float) $product->retail_price;
+            $unitPrice = $pricingService->unitPrice($product, (int) $quantity, $user);
 
             $items[] = [
-                'id' => (string) $product->id,
-                'title' => $product->name,
-                'quantity' => (int) $quantity,
-                'unit_price' => $unitPrice,
+                'id'          => (string) $product->id,
+                'title'       => $product->name,
+                'quantity'    => (int) $quantity,
+                'unit_price'  => $unitPrice,
                 'currency_id' => 'ARS',
             ];
         }

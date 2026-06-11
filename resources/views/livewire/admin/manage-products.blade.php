@@ -317,7 +317,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function deleteCategory($id)
     {
-        Category::find($id)->delete();
+        Category::findOrFail($id)->delete(); // BAD-02 FIX
         $this->loadCategoriesWithCount();
     }
 
@@ -367,7 +367,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function deleteBrand($id)
     {
-        Brand::find($id)->delete();
+        Brand::findOrFail($id)->delete(); // BAD-02 FIX
         $this->loadBrandsWithCount();
     }
 

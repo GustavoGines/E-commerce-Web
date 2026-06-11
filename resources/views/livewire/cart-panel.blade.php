@@ -2,6 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\Product;
+use App\Services\PricingService;
 use Livewire\Attributes\On;
 
 new class extends Component {
@@ -34,16 +35,10 @@ new class extends Component {
         }
     }
 
-    public function getPrice($product, $quantity)
+    public function getPrice($product, $quantity): float
     {
-        // Global Wholesale rule: if user is logged in and is a wholesale customer, 
-        // they get wholesale price on EVERYTHING.
-        if (auth()->check() && auth()->user()->isWholesaleCustomer()) {
-            return $product->wholesale_price;
-        }
-
-        // Otherwise, they get wholesale price only if they buy the minimum quantity of THIS product
-        return ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+        // DRY-01: Lógica centralizada en PricingService
+        return app(PricingService::class)->unitPrice($product, $quantity, auth()->user());
     }
 
     public function calculateSubtotal()

@@ -56,10 +56,24 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function eliminarOrden($id)
     {
-        $order = Order::where('user_id', auth()->id())->find($id);
+        $order = Order::where('user_id', auth()->id())
+            ->with('items.product')
+            ->find($id);
+
         if ($order && in_array($order->status, ['pendiente', 'cancelado'])) {
-            $order->items()->delete();
-            $order->delete();
+            DB::transaction(function () use ($order) {
+                // BUG-05 FIX: Restaurar stock antes de eliminar.
+                // Solo restaura si la orden estaba pendiente (canceladas ya restauraron el stock al cancelar).
+                if ($order->status === 'pendiente') {
+                    foreach ($order->items as $item) {
+                        if ($item->product) {
+                            $item->product->increment('stock', $item->quantity);
+                        }
+                    }
+                }
+                $order->items()->delete();
+                $order->delete();
+            });
             $this->cargarOrdenes();
         }
     }

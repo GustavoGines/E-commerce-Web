@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\MercadoPagoService;
+use App\Services\PricingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -39,20 +40,10 @@ new #[Layout('layouts.app')] class extends Component {
         $this->calculateSubtotal();
     }
 
-    public function getPrice($product, $quantity)
+    public function getPrice($product, $quantity): float
     {
-        if ($this->theme === 'modern-light') {
-            $hasPreviousOrders = auth()->check() && auth()->user()->orders()->where('status', '!=', 'cancelada')->exists();
-            $totalItems = array_sum($this->cart);
-            
-            if ($hasPreviousOrders || $totalItems >= 10) {
-                return $product->wholesale_price;
-            } else {
-                return $product->retail_price;
-            }
-        }
-
-        return ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+        // DRY-01: Lógica centralizada en PricingService
+        return app(PricingService::class)->unitPrice($product, $quantity, auth()->user());
     }
 
     public function calculateSubtotal()
