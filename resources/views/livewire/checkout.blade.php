@@ -314,7 +314,8 @@ new #[Layout('layouts.app')] class extends Component {
                                 @if(isset($products[$productId]))
                                     @php
                                         $product = $products[$productId];
-                                        $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                                        {{-- DRY-01 FIX: usa PricingService vía getPrice() — cubre regla VIP mayorista --}}
+                                        $price = $this->getPrice($product, $quantity);
                                     @endphp
                                     <div class="flex gap-4">
                                         <div class="w-20 h-20 bg-[#0a0f1c] rounded-xl border border-white/5 flex items-center justify-center p-2 flex-shrink-0">
@@ -328,6 +329,9 @@ new #[Layout('layouts.app')] class extends Component {
                                                 <span class="text-xs text-gray-400">{{ $quantity }} x ${{ number_format($price, 2) }}</span>
                                                 <span class="font-bold">${{ number_format($price * $quantity, 2) }}</span>
                                             </div>
+                                            @if($price == $product->wholesale_price)
+                                                <span class="text-[9px] font-bold uppercase tracking-widest text-[var(--color-primary)] mt-1 block">Mayorista</span>
+                                            @endif
                                         </div>
                                     </div>
                                 @endif
@@ -487,7 +491,8 @@ new #[Layout('layouts.app')] class extends Component {
                         @if(isset($products[$productId]))
                             @php
                                 $product = $products[$productId];
-                                $price = ($quantity >= $product->wholesale_min_quantity) ? $product->wholesale_price : $product->retail_price;
+                                {{-- DRY-01 FIX: usa PricingService vía getPrice() — cubre regla VIP mayorista --}}
+                                $price = $this->getPrice($product, $quantity);
                             @endphp
                             <li class="py-4 flex justify-between items-center">
                                 <div class="flex items-center">
@@ -523,7 +528,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     <div class="font-bold text-gray-900 dark:text-white text-lg">
                                         ${{ number_format($price * $quantity, 2) }}
                                     </div>
-                                    @if($quantity >= $product->wholesale_min_quantity)
+                                    @if($price == $product->wholesale_price)
                                         <span class="text-[9px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mt-1 block">Precio Mayorista</span>
                                     @endif
                                 </div>
