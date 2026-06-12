@@ -38,6 +38,8 @@ new #[Layout('layouts.app')] class extends Component {
         if ($order) {
             $oldStatus = $order->status;
             $order->status = $status;
+            $order->updated_by = auth()->id();
+            $order->status_updated_at = now();
             $order->save();
 
             // BUG-03 FIX: Restaurar stock si la orden se cancela manualmente desde el panel

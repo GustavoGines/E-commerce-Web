@@ -26,8 +26,12 @@ require __DIR__.'/auth.php';
 
 use App\Http\Controllers\GoogleAuthController;
 
-Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
-Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])
+    ->middleware(['throttle:10,1'])
+    ->name('google.login');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+    ->middleware(['throttle:10,1'])
+    ->name('google.callback');
 
 Route::middleware(['auth'])->group(function () {
     Volt::route('checkout', 'checkout')->name('checkout');
@@ -48,4 +52,5 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
 
 // Webhook de MercadoPago — sin auth, sin CSRF (se maneja en bootstrap/app.php)
 Route::post('webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handle'])
+    ->middleware(['throttle:60,1'])
     ->name('webhook.mercadopago');

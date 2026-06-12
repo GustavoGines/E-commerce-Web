@@ -9,6 +9,8 @@ use App\Services\MercadoPagoService;
 use App\Services\PricingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderPlaced;
 
 new #[Layout('layouts.app')] class extends Component {
     public $cart = [];
@@ -158,6 +160,15 @@ new #[Layout('layouts.app')] class extends Component {
                 // Limpiar carrito
                 app(\App\Services\CartService::class)->clear();
                 $this->dispatch('cart-updated');
+
+                // Enviar email OrderPlaced (M-01)
+                if (auth()->check() && auth()->user()->email) {
+                    try {
+                        Mail::to(auth()->user()->email)->send(new OrderPlaced($order));
+                    } catch (\Exception $e) {
+                        Log::error('Error enviando OrderPlaced email', ['error' => $e->getMessage()]);
+                    }
+                }
 
                 if ($this->theme === 'modern-light') {
                     $sellerPhone = '5493705075839';

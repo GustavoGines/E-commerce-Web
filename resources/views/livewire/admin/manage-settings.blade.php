@@ -11,6 +11,9 @@ new #[Layout('layouts.app')] class extends Component {
 
     public $store_name = '';
     public $theme_name = 'stealth';
+    public $store_tagline = '';
+    public $social_links = '';
+    public $favicon_url = '';
     public $logo;
     public $current_logo_url;
 
@@ -20,6 +23,9 @@ new #[Layout('layouts.app')] class extends Component {
         if ($settings) {
             $this->store_name = $settings->store_name;
             $this->theme_name = $settings->theme_name ?? 'stealth';
+            $this->store_tagline = $settings->store_tagline ?? '';
+            $this->social_links = is_array($settings->social_links) ? json_encode($settings->social_links) : ($settings->social_links ?? '');
+            $this->favicon_url = $settings->favicon_url ?? '';
             $this->current_logo_url = $settings->logo_url;
         }
     }
@@ -42,12 +48,20 @@ new #[Layout('layouts.app')] class extends Component {
         $this->validate([
             'store_name'    => 'required|string|max:255',
             'theme_name'    => 'required|string|in:stealth,luxury,modern-light',
+            'store_tagline' => 'nullable|string|max:255',
+            'social_links'  => 'nullable|string',
+            'favicon_url'   => 'nullable|url|max:255',
             'logo'          => 'nullable|image|max:10240',
         ]);
 
         $settings = StoreSetting::getSettings() ?? new StoreSetting();
         $settings->store_name    = $this->store_name;
         $settings->theme_name    = $this->theme_name;
+        $settings->store_tagline = $this->store_tagline;
+        
+        $social = json_decode($this->social_links, true);
+        $settings->social_links  = json_last_error() === JSON_ERROR_NONE ? $social : $this->social_links;
+        $settings->favicon_url   = $this->favicon_url;
 
         if ($this->logo) {
             // Eliminar el logo viejo del disco antes de subir el nuevo
@@ -102,6 +116,30 @@ new #[Layout('layouts.app')] class extends Component {
                         <option value="modern-light">Modern Light (Tema Limpio y Claro)</option>
                     </select>
                     @error('theme_name') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="store_tagline">
+                        Eslogan de la Tienda
+                    </label>
+                    <input wire:model="store_tagline" id="store_tagline" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none">
+                    @error('store_tagline') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="favicon_url">
+                        URL del Favicon
+                    </label>
+                    <input wire:model="favicon_url" id="favicon_url" type="url" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="https://ejemplo.com/favicon.ico">
+                    @error('favicon_url') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="social_links">
+                        Redes Sociales (JSON)
+                    </label>
+                    <textarea wire:model="social_links" id="social_links" rows="3" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder='{"facebook": "url", "instagram": "url"}'></textarea>
+                    @error('social_links') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- SECCIÓN LOGO --}}

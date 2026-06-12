@@ -171,7 +171,7 @@ new #[Layout('layouts.app')] class extends Component {
             'wholesale_discount' => 'required|integer|min:0|max:100',
             'wholesale_min_quantity' => 'required|integer|min:1',
             'retail_price' => 'required|numeric|min:0',
-            'wholesale_price' => 'required|numeric|min:0',
+            'wholesale_price' => 'required|numeric|min:0|lte:retail_price',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
