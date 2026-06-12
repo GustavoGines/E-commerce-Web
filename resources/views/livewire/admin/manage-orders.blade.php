@@ -42,6 +42,13 @@ new #[Layout('layouts.app')] class extends Component {
             $order->status_updated_at = now();
             $order->save();
 
+            // Si se marca como pagado/completado manualmente (WhatsApp o pago externo)
+            if ($oldStatus === 'pendiente' && in_array($status, ['pagado', 'completado'])) {
+                if ($order->user && $order->user->email) {
+                    \Illuminate\Support\Facades\Mail::to($order->user->email)->queue(new \App\Mail\OrderPaid($order));
+                }
+            }
+
             // BUG-03 FIX: Restaurar stock si la orden se cancela manualmente desde el panel
             if ($status === 'cancelado' && $oldStatus !== 'cancelado') {
                 foreach ($order->items as $item) {

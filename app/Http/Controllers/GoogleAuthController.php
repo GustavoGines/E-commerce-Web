@@ -79,6 +79,7 @@ class GoogleAuthController extends Controller
     {
         $oldSessionId = Session::getId();
         Auth::login($user);
+        request()->session()->regenerate();
         app(CartService::class)->mergeGuestCartIntoUserCart($user, $oldSessionId);
     }
 }

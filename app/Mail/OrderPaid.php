@@ -40,7 +40,7 @@ class OrderPaid extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.order_paid',
+            markdown: 'emails.order_paid',
         );
     }
 

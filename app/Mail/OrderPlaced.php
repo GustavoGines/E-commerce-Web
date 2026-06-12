@@ -40,7 +40,7 @@ class OrderPlaced extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.order_placed',
+            markdown: 'emails.order_placed',
         );
     }
 

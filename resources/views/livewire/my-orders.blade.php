@@ -2,20 +2,24 @@
 
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
+use Livewire\WithPagination;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 new #[Layout('layouts.app')] class extends Component {
-    public $orders;
+    use WithPagination;
+
     public $filtro = 'todas';
 
     public function mount()
     {
-        $this->cargarOrdenes();
+        // ...
     }
 
-    public function cargarOrdenes()
+    // We change cargarOrdenes to a computed property or just render method with pagination.
+    // In Livewire 3/Volt, we can use #[Computed] or with(). Let's use with().
+    public function with(): array
     {
         $query = Order::where('user_id', auth()->id())
             ->with('items.product')
@@ -25,13 +29,15 @@ new #[Layout('layouts.app')] class extends Component {
             $query->where('status', $this->filtro);
         }
 
-        $this->orders = $query->get();
+        return [
+            'orders' => $query->paginate(10)
+        ];
     }
 
     public function setFiltro($filtro)
     {
         $this->filtro = $filtro;
-        $this->cargarOrdenes();
+        $this->resetPage();
     }
 
     public function cancelarOrden($id)
@@ -50,7 +56,6 @@ new #[Layout('layouts.app')] class extends Component {
                 }
                 $order->update(['status' => 'cancelado']);
             });
-            $this->cargarOrdenes();
         }
     }
 
@@ -74,7 +79,6 @@ new #[Layout('layouts.app')] class extends Component {
                 $order->items()->delete();
                 $order->delete();
             });
-            $this->cargarOrdenes();
         }
     }
 }; ?>
@@ -105,7 +109,7 @@ new #[Layout('layouts.app')] class extends Component {
             <div>
                 <h1 class="text-2xl font-black text-gray-900 dark:text-white">Historial de Compras</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {{ $orders->count() }} {{ $orders->count() === 1 ? 'orden encontrada' : 'órdenes encontradas' }}
+                    {{ $orders->total() }} {{ $orders->total() === 1 ? 'orden encontrada' : 'órdenes encontradas' }}
                 </p>
             </div>
             <a href="{{ route('home') }}" wire:navigate
@@ -327,6 +331,10 @@ new #[Layout('layouts.app')] class extends Component {
                     @endif
                 </div>
             @endforelse
+        </div>
+
+        <div class="mt-6">
+            {{ $orders->links() }}
         </div>
     </div>
 </div>
