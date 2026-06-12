@@ -141,7 +141,7 @@ new class extends Component {
                                                     $product = $products[$productId];
                                                     $price = $this->getPrice($product, $quantity);
                                                 @endphp
-                                                <li class="flex py-6 transition-all duration-300">
+                                                <li wire:key="cart-item-{{ $productId }}" class="flex py-6 transition-all duration-300">
                                                     <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border {{ $theme === 'luxury' ? 'border-white/10 bg-[#0a0f1c]/50' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800' }} p-2">
                                                         @if($product->image_url)
                                                             <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal">
@@ -175,17 +175,33 @@ new class extends Component {
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
-                                                            <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
-                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'decrement')" wire:loading.class="opacity-50" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
+                                                            <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}"
+                                                                 x-data="{ 
+                                                                     qty: {{ $quantity }}, 
+                                                                     stock: {{ $product->stock }},
+                                                                     timeout: null,
+                                                                     changeQty(amount) {
+                                                                         let newQty = this.qty + amount;
+                                                                         if (newQty >= 1 && newQty <= this.stock) {
+                                                                             this.qty = newQty;
+                                                                             this.sync();
+                                                                         }
+                                                                     },
+                                                                     sync() {
+                                                                         clearTimeout(this.timeout);
+                                                                         this.timeout = setTimeout(() => {
+                                                                             $wire.setQuantity({{ $productId }}, this.qty);
+                                                                         }, 400);
+                                                                     }
+                                                                 }">
+                                                                <button @click="changeQty(-1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty <= 1">-</button>
                                                                 <input type="text" 
                                                                        inputmode="numeric" 
                                                                        pattern="[0-9]*"
-                                                                       value="{{ $quantity }}"
-                                                                       wire:change="setQuantity({{ $productId }}, $event.target.value)"
-                                                                       wire:loading.class="opacity-50"
-                                                                       wire:target="updateQuantity, setQuantity, removeItem"
+                                                                       x-model.number="qty"
+                                                                       @input="sync()"
                                                                        class="px-1 w-14 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
-                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'increment')" wire:loading.class="opacity-50" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
+                                                                <button @click="changeQty(1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty >= stock">+</button>
                                                             </div>
 
                                                             <div class="flex">
