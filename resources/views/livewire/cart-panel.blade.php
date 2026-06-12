@@ -175,7 +175,7 @@ new class extends Component {
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
-                                                            <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}"
+                                                            <div class="flex flex-col items-start gap-1.5"
                                                                  x-data="{ 
                                                                      qty: {{ $quantity }}, 
                                                                      stock: {{ $product->stock }},
@@ -194,14 +194,19 @@ new class extends Component {
                                                                          }, 400);
                                                                      }
                                                                  }">
-                                                                <button @click="changeQty(-1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty <= 1">-</button>
-                                                                <input type="text" 
-                                                                       inputmode="numeric" 
-                                                                       pattern="[0-9]*"
-                                                                       x-model.number="qty"
-                                                                       @input="sync()"
-                                                                       class="px-1 w-14 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
-                                                                <button @click="changeQty(1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty >= stock">+</button>
+                                                                <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
+                                                                    <button @click="changeQty(-1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty <= 1">-</button>
+                                                                    <input type="text" 
+                                                                           inputmode="numeric" 
+                                                                           pattern="[0-9]*"
+                                                                           x-model.number="qty"
+                                                                           @input="sync()"
+                                                                           class="px-1 w-14 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
+                                                                    <button @click="changeQty(1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty >= stock">+</button>
+                                                                </div>
+                                                                <span x-show="qty >= stock" x-cloak x-transition.opacity class="text-[9px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest">
+                                                                    ¡Últimas en stock!
+                                                                </span>
                                                             </div>
 
                                                             <div class="flex">
