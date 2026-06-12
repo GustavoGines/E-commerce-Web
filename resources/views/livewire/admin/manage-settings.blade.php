@@ -12,8 +12,16 @@ new #[Layout('layouts.app')] class extends Component {
     public $store_name = '';
     public $theme_name = 'stealth';
     public $store_tagline = '';
-    public $social_links = '';
-    public $favicon_url = '';
+    
+    // Redes sociales individuales
+    public $social_facebook = '';
+    public $social_instagram = '';
+    public $social_twitter = '';
+    public $social_tiktok = '';
+    public $social_whatsapp = '';
+
+    public $favicon;
+    public $current_favicon_url;
     public $logo;
     public $current_logo_url;
 
@@ -24,10 +32,32 @@ new #[Layout('layouts.app')] class extends Component {
             $this->store_name = $settings->store_name;
             $this->theme_name = $settings->theme_name ?? 'stealth';
             $this->store_tagline = $settings->store_tagline ?? '';
-            $this->social_links = is_array($settings->social_links) ? json_encode($settings->social_links) : ($settings->social_links ?? '');
-            $this->favicon_url = $settings->favicon_url ?? '';
+            
+            $social = is_array($settings->social_links) ? $settings->social_links : json_decode($settings->social_links ?? '{}', true);
+            if (is_array($social)) {
+                $this->social_facebook = $social['facebook'] ?? '';
+                $this->social_instagram = $social['instagram'] ?? '';
+                $this->social_twitter = $social['twitter'] ?? '';
+                $this->social_tiktok = $social['tiktok'] ?? '';
+                $this->social_whatsapp = $social['whatsapp'] ?? '';
+            }
+
+            $this->current_favicon_url = $settings->favicon_url;
             $this->current_logo_url = $settings->logo_url;
         }
+    }
+
+    public function removeFavicon()
+    {
+        $settings = StoreSetting::getSettings();
+        if ($settings && $settings->favicon_url) {
+            Storage::disk('public')->delete($settings->favicon_url);
+            $settings->favicon_url = null;
+            $settings->save();
+        }
+        $this->current_favicon_url = null;
+        $this->favicon = null;
+        session()->flash('message', 'Favicon eliminado correctamente.');
     }
 
     public function removeLogo()
@@ -46,12 +76,16 @@ new #[Layout('layouts.app')] class extends Component {
     public function save()
     {
         $this->validate([
-            'store_name'    => 'required|string|max:255',
-            'theme_name'    => 'required|string|in:stealth,luxury,modern-light',
-            'store_tagline' => 'nullable|string|max:255',
-            'social_links'  => 'nullable|string',
-            'favicon_url'   => 'nullable|url|max:255',
-            'logo'          => 'nullable|image|max:10240',
+            'store_name'       => 'required|string|max:255',
+            'theme_name'       => 'required|string|in:stealth,luxury,modern-light',
+            'store_tagline'    => 'nullable|string|max:255',
+            'social_facebook'  => 'nullable|url|max:255',
+            'social_instagram' => 'nullable|url|max:255',
+            'social_twitter'   => 'nullable|url|max:255',
+            'social_tiktok'    => 'nullable|url|max:255',
+            'social_whatsapp'  => 'nullable|url|max:255',
+            'favicon'          => 'nullable|image|max:2048', // 2MB
+            'logo'             => 'nullable|image|max:10240', // 10MB
         ]);
 
         $settings = StoreSetting::getSettings() ?? new StoreSetting();
@@ -59,9 +93,24 @@ new #[Layout('layouts.app')] class extends Component {
         $settings->theme_name    = $this->theme_name;
         $settings->store_tagline = $this->store_tagline;
         
-        $social = json_decode($this->social_links, true);
-        $settings->social_links  = json_last_error() === JSON_ERROR_NONE ? $social : $this->social_links;
-        $settings->favicon_url   = $this->favicon_url;
+        $social = [
+            'facebook'  => $this->social_facebook,
+            'instagram' => $this->social_instagram,
+            'twitter'   => $this->social_twitter,
+            'tiktok'    => $this->social_tiktok,
+            'whatsapp'  => $this->social_whatsapp,
+        ];
+        $settings->social_links = array_filter($social); // Remueve vacíos
+
+        if ($this->favicon) {
+            if ($settings->favicon_url) {
+                Storage::disk('public')->delete($settings->favicon_url);
+            }
+            $path = $this->favicon->store('favicons', 'public');
+            $settings->favicon_url = $path;
+            $this->current_favicon_url = $path;
+            $this->favicon = null;
+        }
 
         if ($this->logo) {
             // Eliminar el logo viejo del disco antes de subir el nuevo
@@ -126,20 +175,78 @@ new #[Layout('layouts.app')] class extends Component {
                     @error('store_tagline') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="mb-5">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="favicon_url">
-                        URL del Favicon
+                {{-- SECCIÓN FAVICON --}}
+                <div class="mb-8 p-6 bg-gray-50/50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-3 uppercase tracking-wider transition-colors">
+                        Ícono de Pestaña (Favicon)
                     </label>
-                    <input wire:model="favicon_url" id="favicon_url" type="url" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder="https://ejemplo.com/favicon.ico">
-                    @error('favicon_url') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                    @if($current_favicon_url)
+                        <div class="flex items-center gap-4 mb-4 p-3 bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <img src="{{ asset('storage/' . $current_favicon_url) }}"
+                                 alt="Favicon Actual"
+                                 class="h-10 w-10 object-contain rounded bg-gray-100 dark:bg-gray-800 p-1 border border-gray-200 dark:border-gray-600">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Favicon actual</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Se muestra en las pestañas del navegador</p>
+                            </div>
+                            <button type="button"
+                                    wire:click="removeFavicon"
+                                    wire:confirm="¿Estás seguro de que querés eliminar el favicon?"
+                                    wire:loading.attr="disabled"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg transition-all">
+                                Quitar
+                            </button>
+                        </div>
+                    @endif
+
+                    @if($favicon)
+                        <div class="flex items-center gap-3 mb-3 p-3 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-200 dark:border-blue-500/30">
+                            <img src="{{ $favicon->temporaryUrl() }}"
+                                 alt="Preview nuevo favicon"
+                                 class="h-10 w-10 object-contain rounded bg-white dark:bg-gray-800 p-1">
+                            <div>
+                                <p class="text-sm font-medium text-blue-700 dark:text-blue-400">Nuevo favicon listo</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <input wire:model="favicon"
+                           id="favicon"
+                           type="file"
+                           accept="image/*"
+                           class="w-full py-3 px-4 bg-white dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-200 dark:file:bg-gray-800 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-300 dark:hover:file:bg-gray-700 cursor-pointer">
+                    @error('favicon') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <div wire:loading wire:target="favicon" class="text-sm text-gray-500 mt-2">Cargando imagen...</div>
                 </div>
 
-                <div class="mb-8">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase tracking-wider transition-colors" for="social_links">
-                        Redes Sociales (JSON)
+                {{-- SECCIÓN REDES SOCIALES --}}
+                <div class="mb-8 p-6 bg-gray-50/50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-4 uppercase tracking-wider">
+                        Redes Sociales y Contacto
                     </label>
-                    <textarea wire:model="social_links" id="social_links" rows="3" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-900/80 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none" placeholder='{"facebook": "url", "instagram": "url"}'></textarea>
-                    @error('social_links') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1" for="social_whatsapp">WhatsApp (URL de enlace)</label>
+                            <input wire:model="social_whatsapp" id="social_whatsapp" type="url" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm" placeholder="https://wa.me/5491100000000">
+                            @error('social_whatsapp') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1" for="social_instagram">Instagram</label>
+                            <input wire:model="social_instagram" id="social_instagram" type="url" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm" placeholder="https://instagram.com/tutienda">
+                            @error('social_instagram') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1" for="social_facebook">Facebook</label>
+                            <input wire:model="social_facebook" id="social_facebook" type="url" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm" placeholder="https://facebook.com/tutienda">
+                            @error('social_facebook') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1" for="social_tiktok">TikTok</label>
+                            <input wire:model="social_tiktok" id="social_tiktok" type="url" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm" placeholder="https://tiktok.com/@tutienda">
+                            @error('social_tiktok') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
                 </div>
 
                 {{-- SECCIÓN LOGO --}}

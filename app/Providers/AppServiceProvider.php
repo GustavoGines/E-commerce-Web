@@ -18,9 +18,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $theme = 'stealth';
         try {
-            $settings = \Illuminate\Support\Facades\Cache::rememberForever('store_settings', function () {
-                return \App\Models\StoreSetting::first();
-            });
+            $settings = \App\Models\StoreSetting::getSettings();
 
             $dbTheme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
             if ($dbTheme !== 'stealth') {
