@@ -35,6 +35,11 @@ class StoreSetting extends Model
                 return $setting ? $setting->getAttributes() : [];
             });
 
+            if (!is_array($attributes)) {
+                Cache::forget('store_settings');
+                $attributes = [];
+            }
+
             $model = new static;
             $model->setRawAttributes($attributes, true);
             $model->exists = !empty($attributes);
