@@ -14,6 +14,8 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    
+    'tunnel_active' => env('TUNNEL_ACTIVE', false),
 
     /*
     |--------------------------------------------------------------------------

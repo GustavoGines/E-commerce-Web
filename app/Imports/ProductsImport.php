@@ -60,13 +60,19 @@ class ProductsImport implements OnEachRow, WithHeadingRow
         $retailPrice = $rowArray['precio'] ?? 0;
         $wholesalePrice = $rowArray['precio_mayorista'] ?? 0;
         $costPrice = $rowArray['costo'] ?? 0;
+        $stock = (int) ($rowArray['stock'] ?? 0);
+
+        // BUG-06 FIX: Evitar insertar productos con valores negativos o ilógicos
+        if ($retailPrice < 0 || $wholesalePrice < 0 || $costPrice < 0 || $stock < 0) {
+            return;
+        }
 
         $productData = [
             'name' => $name,
             'retail_price' => (float) $retailPrice,
             'wholesale_price' => (float) $wholesalePrice,
             'cost_price' => (float) $costPrice,
-            'stock' => (int) ($rowArray['stock'] ?? 0),
+            'stock' => $stock,
             'category_id' => $categoryId,
             'brand_id' => $brandId,
         ];

@@ -34,10 +34,21 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function updateStatus($orderId, $status)
     {
-        $order = Order::find($orderId);
+        $order = Order::with('items.product')->find($orderId);
         if ($order) {
+            $oldStatus = $order->status;
             $order->status = $status;
             $order->save();
+
+            // BUG-03 FIX: Restaurar stock si la orden se cancela manualmente desde el panel
+            if ($status === 'cancelado' && $oldStatus !== 'cancelado') {
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+            }
+
             $this->loadOrders();
             $this->dispatch('notify', message: 'Estado actualizado correctamente');
         }

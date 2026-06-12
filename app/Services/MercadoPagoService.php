@@ -87,7 +87,7 @@ class MercadoPagoService
 
         // auto_return y notification_url requieren URLs públicas
         // Se activan en producción O cuando hay un túnel activo (desarrollo con localtunnel/ngrok)
-        if (app()->isProduction() || env('TUNNEL_ACTIVE')) {
+        if (app()->isProduction() || config('app.tunnel_active')) {
             $requestData['auto_return'] = 'approved';
             $requestData['notification_url'] = route('webhook.mercadopago');
         }

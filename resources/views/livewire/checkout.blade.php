@@ -126,7 +126,7 @@ new #[Layout('layouts.app')] class extends Component {
                     'city'           => $this->theme === 'modern-light' ? '-' : $this->city,
                     'state'          => $this->theme === 'modern-light' ? '-' : $this->state,
                     'zip_code'       => $this->theme === 'modern-light' ? '-' : $this->zip_code,
-                    'role_applied'   => 'por_volumen',
+                    'role_applied'   => (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'vip_mayorista' : 'por_volumen',
                 ]);
 
                 // 2. Crear Items y descontar stock

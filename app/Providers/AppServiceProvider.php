@@ -18,12 +18,13 @@ class AppServiceProvider extends ServiceProvider
     {
         $theme = 'stealth';
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('store_settings')) {
-                $settings = \App\Models\StoreSetting::getSettings();
-                $dbTheme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
-                if ($dbTheme !== 'stealth') {
-                    $theme = $dbTheme;
-                }
+            $settings = \Illuminate\Support\Facades\Cache::rememberForever('store_settings', function () {
+                return \App\Models\StoreSetting::first();
+            });
+
+            $dbTheme = ($settings && $settings->theme_name) ? $settings->theme_name : 'stealth';
+            if ($dbTheme !== 'stealth') {
+                $theme = $dbTheme;
             }
         } catch (\Exception $e) {}
 
@@ -34,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.url') && ! app()->environment('testing')) {
             URL::forceRootUrl(config('app.url'));
 
-            if (env('TUNNEL_ACTIVE') || str_starts_with(config('app.url'), 'https://')) {
+            if (config('app.tunnel_active') || str_starts_with(config('app.url'), 'https://')) {
                 URL::forceScheme('https');
             }
 
@@ -46,5 +47,10 @@ class AppServiceProvider extends ServiceProvider
                     ->middleware(['web']);
             });
         }
+
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\PaymentApproved::class,
+            \App\Listeners\UpdateOrderOnPayment::class,
+        );
     }
 }
