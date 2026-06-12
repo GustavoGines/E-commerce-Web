@@ -134,7 +134,8 @@
         <!-- Botón Flotante de WhatsApp Global -->
         @php
             $social = isset($settings) && is_string($settings->social_links) ? json_decode($settings->social_links, true) : (isset($settings) ? $settings->social_links : []);
-            $whatsappUrl = is_array($social) && isset($social['whatsapp']) ? $social['whatsapp'] : 'https://wa.me/5493705075839';
+            $whatsappNumber = is_array($social) && !empty($social['whatsapp']) ? preg_replace('/[^0-9]/', '', $social['whatsapp']) : '5493705075839';
+            $whatsappUrl = $whatsappNumber ? 'https://wa.me/' . $whatsappNumber : null;
         @endphp
         
         @if($whatsappUrl)

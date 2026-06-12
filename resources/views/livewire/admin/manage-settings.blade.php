@@ -83,7 +83,7 @@ new #[Layout('layouts.app')] class extends Component {
             'social_instagram' => 'nullable|url|max:255',
             'social_twitter'   => 'nullable|url|max:255',
             'social_tiktok'    => 'nullable|url|max:255',
-            'social_whatsapp'  => 'nullable|url|max:255',
+            'social_whatsapp'  => 'nullable|string|max:50',
             'favicon'          => 'nullable|image|max:2048', // 2MB
             'logo'             => 'nullable|image|max:10240', // 10MB
         ]);
@@ -227,8 +227,8 @@ new #[Layout('layouts.app')] class extends Component {
                     </label>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1" for="social_whatsapp">WhatsApp (URL de enlace)</label>
-                            <input wire:model="social_whatsapp" id="social_whatsapp" type="url" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm" placeholder="https://wa.me/5491100000000">
+                            <label class="block text-xs font-bold text-gray-500 mb-1" for="social_whatsapp">WhatsApp (Solo números con código de país)</label>
+                            <input wire:model="social_whatsapp" id="social_whatsapp" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm" placeholder="Ej: 5493705075839">
                             @error('social_whatsapp') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                         <div>
