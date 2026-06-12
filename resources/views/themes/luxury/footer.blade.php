@@ -124,7 +124,7 @@
             <div class="lg:col-span-1">
                 <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Descubrir</h5>
                 <ul class="space-y-4">
-                    <li><a href="{{ route('shop') }}" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Catálogo de Hardware</a></li>
+                    <li><a href="{{ route('shop') }}" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Catálogo de Productos</a></li>
                     <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Tarjetas Gráficas</a></li>
                     <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Procesadores</a></li>
                     <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Ofertas Especiales</a></li>

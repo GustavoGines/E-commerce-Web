@@ -62,7 +62,8 @@ new class extends Component {
         if (!$success && $action === 'increment') {
             $this->dispatch('notify', message: 'Límite de stock alcanzado', type: 'error');
         } else {
-            $this->dispatch('cart-updated');
+            $this->loadCart();
+            $this->dispatch('cart-badge-updated');
         }
     }
 
@@ -70,14 +71,16 @@ new class extends Component {
     {
         $cartService = app(\App\Services\CartService::class);
         $cartService->setQuantity($productId, $quantity);
-        $this->dispatch('cart-updated');
+        $this->loadCart();
+        $this->dispatch('cart-badge-updated');
     }
 
     public function removeItem($productId)
     {
         $cartService = app(\App\Services\CartService::class);
         $cartService->removeItem($productId);
-        $this->dispatch('cart-updated');
+        $this->loadCart();
+        $this->dispatch('cart-badge-updated');
     }
 }; ?>
 
@@ -173,20 +176,20 @@ new class extends Component {
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
                                                             <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
-                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'decrement')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
+                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'decrement')" wire:loading.class="opacity-50" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}">-</button>
                                                                 <input type="text" 
                                                                        inputmode="numeric" 
                                                                        pattern="[0-9]*"
                                                                        value="{{ $quantity }}"
                                                                        wire:change="setQuantity({{ $productId }}, $event.target.value)"
-                                                                       wire:loading.attr="disabled"
+                                                                       wire:loading.class="opacity-50"
                                                                        wire:target="updateQuantity, setQuantity, removeItem"
                                                                        class="px-1 w-14 font-bold text-center bg-transparent border-0 border-transparent outline-none focus:ring-0 focus:border-transparent focus:outline-none shadow-none p-0 m-0 {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
-                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'increment')" wire:loading.attr="disabled" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
+                                                                <button wire:click.prevent="updateQuantity({{ $productId }}, 'increment')" wire:loading.class="opacity-50" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" @if($quantity >= $product->stock) disabled @endif>+</button>
                                                             </div>
 
                                                             <div class="flex">
-                                                                <button wire:click.prevent="removeItem({{ $productId }})" wire:loading.attr="disabled" type="button" class="font-medium text-red-500 hover:text-red-400 transition-colors inline-flex items-center gap-1">
+                                                                <button wire:click.prevent="removeItem({{ $productId }})" wire:loading.class="opacity-50" type="button" class="font-medium text-red-500 hover:text-red-400 transition-colors inline-flex items-center gap-1">
                                                                     <svg wire:loading wire:target="removeItem({{ $productId }})" class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

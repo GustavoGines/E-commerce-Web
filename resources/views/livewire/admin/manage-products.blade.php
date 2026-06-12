@@ -488,7 +488,7 @@ new #[Layout('layouts.app')] class extends Component {
         <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl dark:[box-shadow:0_10px_30px_-10px_var(--color-primary-glow)] overflow-hidden sm:rounded-3xl p-6 transition-colors duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div class="flex items-center gap-3">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Catálogo de Hardware</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Catálogo de Productos</h3>
                     {{-- Buscador PERF-02: debounce 400ms para no disparar requests en cada tecla --}}
                     <div class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>

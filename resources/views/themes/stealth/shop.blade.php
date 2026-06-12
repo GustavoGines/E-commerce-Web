@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-2xl text-slate-900 dark:text-white leading-tight">
-                Catálogo de Hardware
+                Catálogo de Productos
             </h2>
             <div class="text-sm text-slate-500 dark:text-slate-400">
                 La mejor selección de componentes.

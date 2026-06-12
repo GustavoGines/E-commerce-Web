@@ -17,6 +17,7 @@ new class extends Component {
     }
 
     #[On('cart-updated')]
+    #[On('cart-badge-updated')]
     public function updateCount()
     {
         $cartService = app(\App\Services\CartService::class);
