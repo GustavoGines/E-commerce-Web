@@ -65,7 +65,6 @@ new #[Layout('layouts.app')] class extends Component {
 
         $this->loadCategoriesWithCount();
         $this->loadBrandsWithCount();
-        $this->loadProducts();
     }
 
     public function updatedVisibleColumns()
@@ -81,7 +80,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         if ($value) {
             // Solo selecciona los de la página actual
-            $this->selectedProducts = $this->getProductsProperty()->pluck('id')->map(fn($id) => (string)$id)->toArray();
+            $this->selectedProducts = $this->with()['products']->pluck('id')->map(fn($id) => (string)$id)->toArray();
         } else {
             $this->selectedProducts = [];
         }
@@ -164,6 +163,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         $this->validate([
             'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:255|unique:products,sku,' . $this->product_id,
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
             'cost_price' => 'required|numeric|min:0',
@@ -212,8 +212,20 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function delete($id)
     {
-        Product::findOrFail($id)->delete();
+        $product = Product::findOrFail($id);
+        
+        if (\App\Models\OrderItem::where('product_id', $product->id)->exists()) {
+            $this->dispatch('notify', message: 'No se puede eliminar: el producto está en órdenes de compra.');
+            return;
+        }
+
+        if ($product->image_url) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_url);
+        }
+        
+        $product->delete();
         $this->loadProducts();
+        $this->dispatch('notify', message: 'Producto eliminado correctamente.');
     }
 
     public function resetFields()
@@ -261,14 +273,26 @@ new #[Layout('layouts.app')] class extends Component {
         }
     }
 
-    // --- ACCIONES MASIVAS SIMPLES ---
     public function deleteSelected()
     {
         if (count($this->selectedProducts) > 0) {
+            if (\App\Models\OrderItem::whereIn('product_id', $this->selectedProducts)->exists()) {
+                $this->dispatch('notify', message: 'No se pueden eliminar productos que están en órdenes de compra.');
+                return;
+            }
+            
+            $products = Product::whereIn('id', $this->selectedProducts)->get();
+            foreach($products as $product) {
+                if ($product->image_url) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_url);
+                }
+            }
+            
             Product::whereIn('id', $this->selectedProducts)->delete();
             $this->selectedProducts = [];
             $this->selectAll = false;
             $this->loadProducts();
+            $this->dispatch('notify', message: 'Productos eliminados correctamente.');
         }
     }
 
@@ -289,88 +313,12 @@ new #[Layout('layouts.app')] class extends Component {
         $this->categories = Category::withCount('products')->get();
     }
 
-    public function createCategory()
-    {
-        $this->cat_id = null;
-        $this->cat_name = '';
-        $this->showCategoryEditModal = true;
-    }
-
-    public function editCategory($id)
-    {
-        $category = Category::find($id);
-        $this->cat_id = $category->id;
-        $this->cat_name = $category->name;
-        $this->showCategoryEditModal = true;
-    }
-
-    public function saveCategory()
-    {
-        $this->validate(['cat_name' => 'required|string|max:255']);
-        $cat = Category::updateOrCreate(
-            ['id' => $this->cat_id],
-            ['name' => $this->cat_name, 'slug' => \Illuminate\Support\Str::slug($this->cat_name)]
-        );
-        $this->showCategoryEditModal = false;
-        $this->loadCategoriesWithCount();
-        if ($this->showModal) { $this->category_id = $cat->id; }
-    }
-
-    public function deleteCategory($id)
-    {
-        Category::findOrFail($id)->delete(); // BAD-02 FIX
-        $this->loadCategoriesWithCount();
-    }
-
-    // --- LÓGICA DE MARCAS ---
-    public $showBrandListModal = false;
-    public $showBrandEditModal = false;
-    public $b_id = null;
-    public $b_name = '';
-
-    public function openBrandList()
-    {
-        $this->loadBrandsWithCount();
-        $this->showBrandListModal = true;
-    }
-
     public function loadBrandsWithCount()
     {
         $this->brands = Brand::withCount('products')->get();
     }
 
-    public function createBrand()
-    {
-        $this->b_id = null;
-        $this->b_name = '';
-        $this->showBrandEditModal = true;
-    }
 
-    public function editBrand($id)
-    {
-        $brand = Brand::find($id);
-        $this->b_id = $brand->id;
-        $this->b_name = $brand->name;
-        $this->showBrandEditModal = true;
-    }
-
-    public function saveBrand()
-    {
-        $this->validate(['b_name' => 'required|string|max:255']);
-        $brand = Brand::updateOrCreate(
-            ['id' => $this->b_id],
-            ['name' => $this->b_name, 'slug' => \Illuminate\Support\Str::slug($this->b_name)]
-        );
-        $this->showBrandEditModal = false;
-        $this->loadBrandsWithCount();
-        if ($this->showModal) { $this->brand_id = $brand->id; }
-    }
-
-    public function deleteBrand($id)
-    {
-        Brand::findOrFail($id)->delete(); // BAD-02 FIX
-        $this->loadBrandsWithCount();
-    }
 
     // --- ACTUALIZADOR MASIVO DE PRECIOS ---
     public $showMassUpdateModal = false;
@@ -465,7 +413,8 @@ new #[Layout('layouts.app')] class extends Component {
     massUpdateOpen: @entangle('showMassUpdateModal').live,
     colDropdownOpen: false,
     previewImageOpen: false,
-    previewImageUrl: ''
+    previewImageUrl: '',
+    isProductLoading: false
 }">
 
 
@@ -525,7 +474,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
                     </button>
                     
-                    <button type="button" @click="modalOpen = true; $wire.create()" class="group flex items-center justify-center p-2.5 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-white font-bold" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">
+                    <button type="button" @click="isProductLoading = true; modalOpen = true; $wire.create().then(() => isProductLoading = false)" class="group flex items-center justify-center p-2.5 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-white font-bold" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         <div class="grid grid-cols-[0fr] group-hover:grid-cols-[1fr] transition-all duration-300 ease-in-out">
                             <span class="overflow-hidden whitespace-nowrap text-sm"><span class="pl-2 pr-1">Nuevo Producto</span></span>
@@ -614,7 +563,7 @@ new #[Layout('layouts.app')] class extends Component {
                     </thead>
                     <tbody class="bg-white dark:bg-transparent divide-y divide-gray-200 dark:divide-gray-700/50 transition-colors">
                         @foreach($products as $product)
-                        <tr @click="modalOpen = true; $wire.edit({{ $product->id }})" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer {{ in_array($product->id, $selectedProducts) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : '' }}">
+                        <tr @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer {{ in_array($product->id, $selectedProducts) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : '' }}">
                             <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                 <input type="checkbox" value="{{ $product->id }}" wire:model.live="selectedProducts" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]">
                             </td>
@@ -672,7 +621,7 @@ new #[Layout('layouts.app')] class extends Component {
                             @endif
 
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right space-x-2" @click.stop>
-                                <button @click="modalOpen = true; $wire.edit({{ $product->id }})" type="button" title="Editar" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30">
+                                <button @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }" type="button" title="Editar" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
                                 <button wire:click="delete({{ $product->id }})" wire:confirm="¿Estás seguro de que deseas eliminar este producto?" title="Eliminar" class="text-red-600 dark:text-red-500 hover:text-red-800 dark:hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30">
@@ -737,29 +686,46 @@ new #[Layout('layouts.app')] class extends Component {
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             
             <!-- Modal Content -->
-            <div x-show="modalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl dark:[box-shadow:0_25px_50px_-12px_var(--color-primary-glow)] transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div x-show="modalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl dark:[box-shadow:0_25px_50px_-12px_var(--color-primary-glow)] transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full relative">
+                
+                <!-- Overlay de carga premium -->
+                <div x-show="isProductLoading" x-transition.opacity.duration.200ms class="absolute inset-0 z-50 flex items-center justify-center bg-white/40 dark:bg-gray-900/40 backdrop-blur-sm rounded-3xl" style="display: none;">
+                    <div class="bg-white dark:bg-gray-800 px-6 py-5 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 flex flex-col items-center transform transition-all animate-pulse-once">
+                        <div class="relative w-10 h-10 mb-3">
+                            <div class="absolute inset-0 rounded-full border-t-2 border-[var(--color-primary)] animate-spin"></div>
+                            <div class="absolute inset-2 rounded-full border-r-2 border-[var(--color-primary)] opacity-50 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                        </div>
+                        <span class="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-primary)] to-blue-600 tracking-wide uppercase text-[10px]">Actualizando...</span>
+                    </div>
+                </div>
+
                 <div class="px-8 pt-8 pb-4">
                     <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-8 tracking-tight">
                         {{ $product_id ? 'Editar Producto' : 'Nuevo Producto' }}
                     </h3>
                     <form wire:submit="save">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-4">
-                            <div>
+                        <!-- Primera Fila: Nombre y SKU -->
+                        <div class="flex flex-col md:flex-row gap-5 mb-4">
+                            <div class="w-full md:w-4/5">
                                 <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Nombre</label>
                                 <input wire:model="name" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                 @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div>
+                            <div class="w-full md:w-1/5">
                                 <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">SKU / Código</label>
                                 <input wire:model="sku" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="Ej: RM-304">
                                 @error('sku') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div>
+                        </div>
+
+                        <!-- Segunda Fila: Categoría, Marca y Stock -->
+                        <div class="flex flex-col md:flex-row gap-5 mb-5">
+                            <div class="w-full md:w-2/5">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Categoría</label>
-                                    <button type="button" wire:click="createCategory" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
-                                        + Nueva
-                                    </button>
+                                    <a href="{{ route('admin.categories') }}" wire:navigate class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
+                                        Gestionar
+                                    </a>
                                 </div>
                                 <select wire:model="category_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                     <option value="">Seleccione una categoría</option>
@@ -769,12 +735,12 @@ new #[Layout('layouts.app')] class extends Component {
                                 </select>
                                 @error('category_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div>
+                            <div class="w-full md:w-2/5">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Marca</label>
-                                    <button type="button" wire:click="createBrand" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
-                                        + Nueva
-                                    </button>
+                                    <a href="{{ route('admin.brands') }}" wire:navigate class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
+                                        Gestionar
+                                    </a>
                                 </div>
                                 <select wire:model="brand_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                     <option value="">Sin marca</option>
@@ -783,6 +749,11 @@ new #[Layout('layouts.app')] class extends Component {
                                     @endforeach
                                 </select>
                                 @error('brand_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="w-full md:w-1/5">
+                                <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]">Stock</label>
+                                <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="0">
+                                @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         
@@ -825,11 +796,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
 
-                        <div class="mb-5">
-                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Stock</label>
-                            <input wire:model="stock" type="number" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm dark:shadow-none">
-                            @error('stock') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        </div>
+
                         <div class="mb-8">
                             <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Imagen del Producto</label>
                             @if($current_image_url)
@@ -855,153 +822,7 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
     </div>
     
-    <!-- Modal Listado Categorías -->
-    <div x-show="catListOpen" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-            <div x-show="catListOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/40 dark:bg-[#0b0f19]/80 backdrop-blur-sm transition-opacity" @click="catListOpen = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div x-show="catListOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                <div class="px-8 pt-8 pb-4">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Categorías</h3>
-                        <button wire:click="createCategory" class="text-sm text-white font-bold py-2 px-4 rounded-full transition-all hover:opacity-90 shadow-md" style="background-color: var(--color-primary);">+ Nueva</button>
-                    </div>
-                    
-                    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700/50 mb-4 max-h-[60vh] overflow-y-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700/50 text-left">
-                            <thead class="bg-gray-50 dark:bg-gray-900/50 sticky top-0">
-                                <tr>
-                                    <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Nombre</th>
-                                    <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase text-center">Productos</th>
-                                    <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700/50">
-                                @forelse($categories as $category)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30">
-                                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-200">{{ $category->name }}</td>
-                                    <td class="px-4 py-3 text-sm text-center text-[var(--color-primary)] font-bold">{{ $category->products_count ?? $category->products()->count() }}</td>
-                                    <td class="px-4 py-3 text-sm font-medium text-right space-x-3">
-                                        <button wire:click="editCategory({{ $category->id }})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">Editar</button>
-                                        <button wire:click="deleteCategory({{ $category->id }})" class="text-red-600 hover:text-red-800 dark:text-red-400">Eliminar</button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="3" class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No hay categorías registradas.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="flex items-center justify-end mt-6 -mx-8 -mb-4 px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800">
-                        <button type="button" @click="catListOpen = false" class="text-gray-600 dark:text-gray-400 font-bold py-2 px-5 hover:text-gray-900 dark:hover:text-white transition-colors">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal Editar/Crear Categoría -->
-    <div x-show="catEditOpen" class="fixed z-[60] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-            <div x-show="catEditOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/60 dark:bg-[#0b0f19]/90 backdrop-blur-md transition-opacity" @click="catEditOpen = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div x-show="catEditOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                <div class="px-8 pt-8 pb-4">
-                    <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-                        {{ $cat_id ? 'Editar Categoría' : 'Nueva Categoría' }}
-                    </h3>
-                    <form wire:submit="saveCategory">
-                        <div class="mb-6">
-                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase">Nombre</label>
-                            <input wire:model="cat_name" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                            @error('cat_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex items-center justify-end bg-gray-50 dark:bg-gray-900/50 -mx-8 -mb-4 px-8 py-5 border-t border-gray-200 dark:border-gray-800">
-                            <button type="button" @click="catEditOpen = false" class="text-gray-600 dark:text-gray-400 font-bold py-2.5 px-5 hover:text-gray-900 dark:hover:text-white transition-colors mr-3">Cancelar</button>
-                            <button type="submit" class="text-white font-bold py-2.5 px-8 rounded-full shadow-lg hover:-translate-y-0.5 transition-all" style="background-color: var(--color-primary);">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Listado Marcas -->
-    <div x-show="brandListOpen" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-            <div x-show="brandListOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/40 dark:bg-[#0b0f19]/80 backdrop-blur-sm transition-opacity" @click="brandListOpen = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div x-show="brandListOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                <div class="px-8 pt-8 pb-4">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Marcas</h3>
-                        <button wire:click="createBrand" class="text-sm text-white font-bold py-2 px-4 rounded-full transition-all hover:opacity-90 shadow-md" style="background-color: var(--color-primary);">+ Nueva</button>
-                    </div>
-                    
-                    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700/50 mb-4 max-h-[60vh] overflow-y-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700/50 text-left">
-                            <thead class="bg-gray-50 dark:bg-gray-900/50 sticky top-0">
-                                <tr>
-                                    <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Nombre</th>
-                                    <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase text-center">Productos</th>
-                                    <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700/50">
-                                @forelse($brands as $brand)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30">
-                                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-200">{{ $brand->name }}</td>
-                                    <td class="px-4 py-3 text-sm text-center text-[var(--color-primary)] font-bold">{{ $brand->products_count ?? $brand->products()->count() }}</td>
-                                    <td class="px-4 py-3 text-sm font-medium text-right space-x-3">
-                                        <button wire:click="editBrand({{ $brand->id }})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">Editar</button>
-                                        <button wire:click="deleteBrand({{ $brand->id }})" class="text-red-600 hover:text-red-800 dark:text-red-400">Eliminar</button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="3" class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No hay marcas registradas.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="flex items-center justify-end mt-6 -mx-8 -mb-4 px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800">
-                        <button type="button" @click="brandListOpen = false" class="text-gray-600 dark:text-gray-400 font-bold py-2 px-5 hover:text-gray-900 dark:hover:text-white transition-colors">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Editar/Crear Marca -->
-    <div x-show="brandEditOpen" class="fixed z-[60] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-            <div x-show="brandEditOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/60 dark:bg-[#0b0f19]/90 backdrop-blur-md transition-opacity" @click="brandEditOpen = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div x-show="brandEditOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                <div class="px-8 pt-8 pb-4">
-                    <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-                        {{ $b_id ? 'Editar Marca' : 'Nueva Marca' }}
-                    </h3>
-                    <form wire:submit="saveBrand">
-                        <div class="mb-6">
-                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase">Nombre</label>
-                            <input wire:model="b_name" type="text" class="w-full py-3 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                            @error('b_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex items-center justify-end bg-gray-50 dark:bg-gray-900/50 -mx-8 -mb-4 px-8 py-5 border-t border-gray-200 dark:border-gray-800">
-                            <button type="button" @click="brandEditOpen = false" class="text-gray-600 dark:text-gray-400 font-bold py-2.5 px-5 hover:text-gray-900 dark:hover:text-white transition-colors mr-3">Cancelar</button>
-                            <button type="submit" class="text-white font-bold py-2.5 px-8 rounded-full shadow-lg hover:-translate-y-0.5 transition-all" style="background-color: var(--color-primary);">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Modal Actualización Masiva de Precios -->
     <div x-show="massUpdateOpen" class="fixed z-[60] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>

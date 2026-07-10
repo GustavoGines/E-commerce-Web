@@ -10,8 +10,8 @@
 
         @php
             $storeName = $settings->store_name ?? config('app.name', 'JCG Electrónica');
-            $logoUrl = asset('storage/logos/logo-cjg-horizontal.png');
-            $description = 'El mayor catálogo de controles remotos y electrónica. Ventas por mayor y menor.';
+            $logoUrl = $settings->logo_url ? asset('storage/' . $settings->logo_url) : asset('storage/logos/logo-cjg-horizontal.png');
+            $description = $settings->meta_description ?? 'El mayor catálogo de controles remotos y electrónica. Ventas por mayor y menor.';
         @endphp
 
         <title>{{ $storeName }}</title>

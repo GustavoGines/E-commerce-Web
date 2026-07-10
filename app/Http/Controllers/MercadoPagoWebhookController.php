@@ -28,8 +28,8 @@ class MercadoPagoWebhookController extends Controller
             return response()->json(['status' => 'invalid_signature'], 200);
         }
 
-        // Loggear el payload completo para debugging
-        Log::info('MercadoPago Webhook recibido', $request->all());
+        // SEC-02: Loggear de forma segura omitiendo datos sensibles
+        Log::info('MercadoPago Webhook recibido', $request->except(['card', 'payment_method_id', 'token']));
 
         $type   = $request->input('type');
         $dataId = $request->input('data.id'); // ID del pago

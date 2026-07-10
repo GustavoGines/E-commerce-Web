@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'table_preferences', 'google_id'])]
+#[Fillable(['name', 'email', 'password', 'role', 'table_preferences', 'google_id', 'phone', 'is_banned'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,6 +28,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'table_preferences' => 'array',
+            'role' => \App\Enums\UserRole::class,
+            'is_banned' => 'boolean',
         ];
     }
 
@@ -36,13 +38,15 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Determine if the user qualifies for global wholesale pricing.
-     * A user qualifies if they have at least one paid/completed order
-     * with an item quantity of 10 or more.
-     */
     public function isWholesaleCustomer(): bool
     {
+        // First check if the user has been manually assigned the Mayorista role
+        if ((is_string($this->role) && $this->role === 'mayorista') || 
+            ($this->role instanceof \App\Enums\UserRole && $this->role->value === 'mayorista')) {
+            return true;
+        }
+
+        // Fallback to checking their purchase history
         return \Illuminate\Support\Facades\Cache::remember(
             "user.{$this->id}.wholesale", 
             300, 
@@ -53,5 +57,14 @@ class User extends Authenticatable
                 })
                 ->exists()
         );
+    }
+
+    /**
+     * Determine if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return (is_string($this->role) && $this->role === 'admin') 
+            || ($this->role instanceof \App\Enums\UserRole && $this->role->value === 'admin');
     }
 }

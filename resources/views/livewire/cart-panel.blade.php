@@ -35,6 +35,21 @@ new class extends Component {
         }
     }
 
+    #[On('add-to-cart-action')]
+    public function addItemToCart($productId, $quantity)
+    {
+        $cartService = app(\App\Services\CartService::class);
+        
+        if ($cartService->addItem($productId, $quantity)) {
+            $this->loadCart();
+            $this->dispatch('cart-badge-updated', count: array_sum($this->cart));
+            $this->dispatch('notify', message: 'Producto añadido al carrito');
+        } else {
+            $this->dispatch('notify', message: 'No hay stock suficiente', type: 'error');
+            $this->dispatch('cart-badge-updated', count: array_sum($this->cart));
+        }
+    }
+
     public function getPrice($product, $quantity): float
     {
         // DRY-01: Lógica centralizada en PricingService
@@ -63,7 +78,7 @@ new class extends Component {
             $this->dispatch('notify', message: 'Límite de stock alcanzado', type: 'error');
         } else {
             $this->loadCart();
-            $this->dispatch('cart-badge-updated');
+            $this->dispatch('cart-badge-updated', count: array_sum($this->cart));
         }
     }
 
@@ -72,7 +87,7 @@ new class extends Component {
         $cartService = app(\App\Services\CartService::class);
         $cartService->setQuantity($productId, $quantity);
         $this->loadCart();
-        $this->dispatch('cart-badge-updated');
+        $this->dispatch('cart-badge-updated', count: array_sum($this->cart));
     }
 
     public function removeItem($productId)
@@ -80,15 +95,55 @@ new class extends Component {
         $cartService = app(\App\Services\CartService::class);
         $cartService->removeItem($productId);
         $this->loadCart();
-        $this->dispatch('cart-badge-updated');
+        $this->dispatch('cart-badge-updated', count: array_sum($this->cart));
+    }
+
+    public function clearCart()
+    {
+        $cartService = app(\App\Services\CartService::class);
+        $cartService->clear();
+        $this->loadCart();
+        $this->dispatch('cart-badge-updated', count: array_sum($this->cart));
+    }
+
+    public function goToCheckout()
+    {
+        if (!auth()->check()) {
+            return $this->redirect(route('login'), navigate: true);
+        }
+        return $this->redirect(route('checkout'), navigate: true);
+    }
+
+    public function with(): array
+    {
+        return [];
     }
 }; ?>
 
-<div x-data="{}"
+<div x-data="{ 
+        isClearing: false,
+        itemTotals: {},
+        get globalSubtotal() {
+            return Object.values(this.itemTotals).reduce((a, b) => a + b, 0);
+        },
+        formatMoney(value) {
+            return new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(value);
+        }
+     }"
      x-show="$store.cart.open"
      @open-cart.window="$store.cart.show()"
      @keydown.escape.window="$store.cart.hide()"
+     @cart-badge-updated.window="isClearing = false"
      class="relative z-[100]"
+     data-cart-ids="{{ json_encode(array_keys($cart)) }}"
+     x-effect="
+         let validIds = JSON.parse($el.dataset.cartIds || '[]');
+         for(let id in itemTotals) {
+             if(!validIds.includes(parseInt(id))) {
+                 delete itemTotals[id];
+             }
+         }
+     "
      aria-labelledby="slide-over-title" role="dialog" aria-modal="true" x-cloak>
     
     <!-- Backdrop -->
@@ -117,10 +172,17 @@ new class extends Component {
                      x-transition:leave-end="translate-x-full" 
                      class="pointer-events-auto w-screen max-w-md">
                      
-                     <div class="flex h-full flex-col shadow-2xl transition-colors duration-300 {{ $theme === 'luxury' ? 'bg-[#0a0f1c]/90 backdrop-blur-3xl border-l border-white/5' : 'bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800' }}" :style="('{{ $theme }}' === 'stealth' && $store.theme.dark) ? 'box-shadow: -10px 0 30px -10px var(--color-primary-glow);' : ''">
+                     <div class="flex h-full flex-col relative shadow-2xl transition-colors duration-300 {{ $theme === 'luxury' ? 'bg-[#0a0f1c]/90 backdrop-blur-3xl border-l border-white/5' : 'bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800' }}" :style="('{{ $theme }}' === 'stealth' && $store.theme.dark) ? 'box-shadow: -10px 0 30px -10px var(--color-primary-glow);' : ''">
                         <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
                             <div class="flex items-start justify-between">
-                                <h2 class="text-xl font-bold text-gray-900 dark:text-white" id="slide-over-title">Carrito de Compras</h2>
+                                <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3" id="slide-over-title">
+                                    Carrito de Compras
+                                    @if(count($cart) > 0)
+                                        <button @click="isClearing = true; $dispatch('cart-cleared-local'); $wire.clearCart()" type="button" class="text-xs font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-wider bg-red-50 dark:bg-red-500/10 px-2 py-1 rounded-lg border border-red-100 dark:border-red-500/20">
+                                            Vaciar Todo
+                                        </button>
+                                    @endif
+                                </h2>
                                 <div class="ml-3 flex h-7 items-center">
                                     <button type="button" @click="$store.cart.hide()" class="relative -m-2 p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
                                         <span class="absolute -inset-0.5"></span>
@@ -132,7 +194,7 @@ new class extends Component {
                                 </div>
                             </div>
 
-                            <div class="mt-8">
+                            <div class="mt-8" x-show="!isClearing" x-transition.opacity.duration.300ms>
                                 <div class="flow-root">
                                     <ul role="list" class="-my-6 divide-y divide-gray-200 dark:divide-gray-800">
                                         @forelse($cart as $productId => $quantity)
@@ -141,7 +203,58 @@ new class extends Component {
                                                     $product = $products[$productId];
                                                     $price = $this->getPrice($product, $quantity);
                                                 @endphp
-                                                <li wire:key="cart-item-{{ $productId }}" class="flex py-6 transition-all duration-300">
+                                                <li wire:key="cart-item-{{ $productId }}" class="flex py-6 transition-all duration-300"
+                                                    x-show="!isDeleted"
+                                                    x-transition.opacity.duration.300ms
+                                                    x-data="{ 
+                                                        qty: @entangle('cart.' . $productId), 
+                                                        stock: {{ $product->stock }},
+                                                        isDeleted: false,
+                                                        isVip: {{ (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'true' : 'false' }},
+                                                        minWholesaleQty: {{ $product->wholesale_min_quantity }},
+                                                        retailPrice: {{ $product->retail_price }},
+                                                        wholesalePrice: {{ $product->wholesale_price }},
+                                                        timeout: null,
+                                                        
+                                                        get isWholesale() {
+                                                            return this.isVip || this.qty >= this.minWholesaleQty;
+                                                        },
+                                                        get currentUnitPrice() {
+                                                            return this.isWholesale ? this.wholesalePrice : this.retailPrice;
+                                                        },
+                                                        get itemTotal() {
+                                                            return this.currentUnitPrice * this.qty;
+                                                        },
+                                                        
+                                                        formatMoney(value) {
+                                                            return new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(value);
+                                                        },
+                                                        
+                                                        changeQty(amount) {
+                                                            let newQty = parseInt(this.qty) + amount;
+                                                            if(isNaN(newQty)) newQty = 1;
+                                                            if (newQty >= 1 && newQty <= this.stock) {
+                                                                this.qty = newQty;
+                                                                this.sync();
+                                                            }
+                                                        },
+                                                        sync() {
+                                                            clearTimeout(this.timeout);
+                                                            this.timeout = setTimeout(() => {
+                                                                $wire.setQuantity({{ $productId }}, this.qty);
+                                                            }, 400);
+                                                        }
+                                                    }"
+                                                    x-init="
+                                                        $watch('qty', val => { 
+                                                            let parsed = parseInt(val);
+                                                            if(isNaN(parsed)) return;
+                                                            if(parsed > stock) { qty = stock; sync(); }
+                                                            else if(parsed < 1) { qty = 1; sync(); }
+                                                        });
+                                                    "
+                                                    x-effect="itemTotals[{{ $productId }}] = itemTotal"
+                                                >
                                                     <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border {{ $theme === 'luxury' ? 'border-white/10 bg-[#0a0f1c]/50' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800' }} p-2">
                                                         @if($product->image_url)
                                                             <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal">
@@ -160,40 +273,25 @@ new class extends Component {
                                                                 <h3 class="line-clamp-2 leading-tight flex-1">
                                                                     {{ $product->name }}
                                                                 </h3>
-                                                                <p class="text-[var(--color-primary)] whitespace-nowrap">${{ number_format($price * $quantity, 2) }}</p>
+                                                                <p class="text-[var(--color-primary)] whitespace-nowrap" x-text="`$${formatMoney(itemTotal)}`"></p>
                                                             </div>
                                                             <div class="mt-1 flex items-center flex-wrap gap-2">
-                                                                @if($price == $product->wholesale_price)
-                                                                    <p class="text-xs text-gray-400 dark:text-gray-500 line-through">${{ number_format($product->retail_price, 2) }} c/u</p>
-                                                                    <p class="text-sm font-black text-emerald-600 dark:text-emerald-400">${{ number_format($price, 2) }} c/u</p>
-                                                                    <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-transparent border border-emerald-200 dark:border-emerald-500/50 px-1.5 py-0.5 rounded shadow-sm">
-                                                                        🔥 Precio Mayorista
-                                                                    </span>
-                                                                @else
-                                                                    <p class="text-sm text-gray-500 dark:text-gray-400">${{ number_format($price, 2) }} c/u</p>
-                                                                @endif
+                                                                <template x-if="isWholesale">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <p class="text-xs text-gray-400 dark:text-gray-500 line-through" x-text="`$${formatMoney(retailPrice)} c/u`"></p>
+                                                                        <p class="text-sm font-black text-emerald-600 dark:text-emerald-400" x-text="`$${formatMoney(wholesalePrice)} c/u`"></p>
+                                                                        <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-transparent border border-emerald-200 dark:border-emerald-500/50 px-1.5 py-0.5 rounded shadow-sm">
+                                                                            🔥 Precio Mayorista
+                                                                        </span>
+                                                                    </div>
+                                                                </template>
+                                                                <template x-if="!isWholesale">
+                                                                    <p class="text-sm text-gray-500 dark:text-gray-400" x-text="`$${formatMoney(retailPrice)} c/u`"></p>
+                                                                </template>
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
-                                                            <div class="flex flex-col items-start gap-1.5"
-                                                                 x-data="{ 
-                                                                     qty: {{ $quantity }}, 
-                                                                     stock: {{ $product->stock }},
-                                                                     timeout: null,
-                                                                     changeQty(amount) {
-                                                                         let newQty = this.qty + amount;
-                                                                         if (newQty >= 1 && newQty <= this.stock) {
-                                                                             this.qty = newQty;
-                                                                             this.sync();
-                                                                         }
-                                                                     },
-                                                                     sync() {
-                                                                         clearTimeout(this.timeout);
-                                                                         this.timeout = setTimeout(() => {
-                                                                             $wire.setQuantity({{ $productId }}, this.qty);
-                                                                         }, 400);
-                                                                     }
-                                                                 }">
+                                                            <div class="flex flex-col items-start gap-1.5">
                                                                 <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
                                                                     <button @click="changeQty(-1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty <= 1">-</button>
                                                                     <input type="text" 
@@ -210,10 +308,9 @@ new class extends Component {
                                                             </div>
 
                                                             <div class="flex">
-                                                                <button wire:click.prevent="removeItem({{ $productId }})" wire:loading.class="opacity-50" type="button" class="font-medium text-red-500 hover:text-red-400 transition-colors inline-flex items-center gap-1">
-                                                                    <svg wire:loading wire:target="removeItem({{ $productId }})" class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                <button @click.prevent="isDeleted = true; $dispatch('cart-item-deleted-local', {qty: qty}); $wire.removeItem({{ $productId }})" type="button" class="font-medium text-red-500 hover:text-red-400 transition-colors inline-flex items-center gap-1">
+                                                                    <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                                     </svg>
                                                                     Eliminar
                                                                 </button>
@@ -236,30 +333,36 @@ new class extends Component {
                             </div>
                         </div>
 
-                        <div class="border-t px-4 py-6 sm:px-6 transition-colors duration-300 {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50' }}">
-                            <div class="flex justify-between text-base font-black text-xl {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
-                                <p>Subtotal</p>
-                                <p>${{ number_format($subtotal, 2) }}</p>
-                            </div>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Impuestos y envío calculados en el checkout.</p>
-                            <div class="mt-6">
-                                <a href="{{ route('checkout') }}"
-                                   wire:navigate
-                                   @click="$store.cart.hide()"
-                                   class="flex items-center justify-center w-full rounded-full px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5 {{ empty($cart) ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}"
-                                   style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">
-                                    Proceder al Pago
-                                </a>
-                            </div>
-                            <div class="mt-6 flex justify-center text-center text-sm">
-                                <p class="text-gray-500 dark:text-gray-400">
-                                    o&nbsp;
-                                    <button type="button" @click="$store.cart.hide()" class="font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white underline underline-offset-2 transition-colors">
-                                        Seguir Comprando
-                                        <span aria-hidden="true">&rarr;</span>
+                        @if(count($cart) > 0)
+                            <div class="border-t px-4 py-6 sm:px-6 transition-colors duration-300 {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50' }}" x-show="!isClearing" x-transition.opacity.duration.300ms>
+                                <div class="flex justify-between text-base font-black text-xl {{ $theme === 'luxury' ? 'text-white' : 'text-gray-900 dark:text-white' }}">
+                                    <p>Subtotal</p>
+                                    <p x-text="`$${formatMoney(globalSubtotal)}`">${{ number_format($subtotal, 2) }}</p>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Impuestos y envío calculados en el checkout.</p>
+                                <div class="mt-6">
+                                    <button wire:click="goToCheckout"
+                                       @click="$store.cart.hide()"
+                                       class="flex items-center justify-center w-full rounded-full px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:opacity-90 hover:-translate-y-0.5 {{ empty($cart) ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}"
+                                       style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">
+                                        Finalizar Pedido
                                     </button>
-                                </p>
+                                </div>
+                                <div class="mt-6 flex justify-center text-center text-sm">
+                                    <p class="text-gray-500 dark:text-gray-400">
+                                        o&nbsp;
+                                        <button type="button" @click="$store.cart.hide()" class="font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white underline underline-offset-2 transition-colors">
+                                            Seguir Comprando
+                                            <span aria-hidden="true">&rarr;</span>
+                                        </button>
+                                    </p>
+                                </div>
                             </div>
+                        @endif
+
+                        <div x-show="isClearing" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50">
+                            <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mb-4"></div>
+                            <p class="text-red-500 font-bold text-lg">Vaciando carrito...</p>
                         </div>
                     </div>
                 </div>

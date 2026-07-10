@@ -65,7 +65,7 @@ new class extends Component {
 
     public function with()
     {
-        $query = Product::with('category');
+        $query = Product::with(['category', 'brand']);
 
         if ($this->selectedCategory) {
             $query->where('category_id', $this->selectedCategory);
@@ -111,7 +111,7 @@ new class extends Component {
 
         return [
             'products' => $query->paginate(15),
-            'popularProducts' => Product::latest()->take(3)->get(),
+            'popularProducts' => \Illuminate\Support\Facades\Cache::remember('popularProducts', 3600, fn() => Product::latest()->take(3)->get()),
             'recentlyViewedProducts' => $recentlyViewedProducts
         ];
     }

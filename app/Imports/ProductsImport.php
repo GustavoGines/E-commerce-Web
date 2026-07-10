@@ -14,6 +14,14 @@ use App\Models\Brand;
 class ProductsImport implements OnEachRow, WithHeadingRow, WithTransactions
 {
     public $importedCount = 0;
+    private $allBrands = [];
+
+    public function __construct()
+    {
+        $commonBrands = config('brands.common', []);
+        $dbBrands = Brand::pluck('name')->toArray();
+        $this->allBrands = array_unique(array_merge($commonBrands, $dbBrands));
+    }
 
     public function onRow(Row $row)
     {
@@ -101,16 +109,9 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithTransactions
             return null;
         }
 
-        // Marcas conocidas por configuración y base de datos
-        $commonBrands = config('brands.common', []);
-        
-        // Añadimos las marcas que ya existan en la base de datos para retroalimentar
-        $dbBrands = Brand::pluck('name')->toArray();
-        $allBrands = array_unique(array_merge($commonBrands, $dbBrands));
-
         $textLower = mb_strtolower($text);
 
-        foreach ($allBrands as $brand) {
+        foreach ($this->allBrands as $brand) {
             // Buscamos la palabra exacta (con separadores de palabra para no falsos positivos, ej: LG en "ALGO")
             if (preg_match('/\b' . preg_quote(mb_strtolower($brand), '/') . '\b/u', $textLower)) {
                 // Retornamos el nombre bien formateado

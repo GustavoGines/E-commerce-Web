@@ -189,5 +189,5 @@ return [
     |
     */
 
-    'release_token' => 'a',
+    'release_token' => env('APP_VERSION', '1.0.0'),
 ];

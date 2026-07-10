@@ -106,7 +106,5 @@
             </div>
         </div>
 
-        <!-- Slide-over Cart Panel -->
-        <livewire:cart-panel />
     </body>
 </html>

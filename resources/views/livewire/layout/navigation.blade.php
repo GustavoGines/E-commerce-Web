@@ -119,6 +119,9 @@ new class extends Component
                         {{ __('Tienda') }}
                     </x-nav-link>
                     @if(auth()->check() && optional(auth()->user())->role === 'admin')
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
+                            {{ __('Panel') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate>
                             {{ __('Productos') }}
                         </x-nav-link>
@@ -160,6 +163,9 @@ new class extends Component
                             {{ __('Tienda') }}
                         </x-nav-link>
                         @if(auth()->check() && optional(auth()->user())->role === 'admin')
+                            <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
+                                {{ __('Panel') }}
+                            </x-nav-link>
                             <x-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
                                 {{ __('Productos') }}
                             </x-nav-link>
@@ -217,16 +223,18 @@ new class extends Component
                                     </button>
                                 </x-slot>
                                 <x-slot name="content">
-                                    @if(optional(auth()->user())->role === 'admin')
+                                        @if(optional(auth()->user())->isAdmin())
                                         <div class="px-3 py-1.5">
                                             <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500">Administración</p>
                                         </div>
+                                        <x-dropdown-link :href="route('admin.dashboard')" wire:navigate>📊 &nbsp;Dashboard</x-dropdown-link>
                                         <x-dropdown-link :href="route('admin.orders')" wire:navigate class="flex items-center justify-between w-full">
                                             <span>📦 &nbsp;Órdenes</span>
                                             @if($pendingOrdersCount > 0)
                                                 <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $pendingOrdersCount }}</span>
                                             @endif
                                         </x-dropdown-link>
+                                        <x-dropdown-link :href="route('admin.users')" wire:navigate>👥 &nbsp;Usuarios</x-dropdown-link>
                                         <x-dropdown-link :href="route('admin.settings')" wire:navigate>⚙️ &nbsp;Configuración</x-dropdown-link>
                                         <div class="my-1 border-t border-gray-100"></div>
                                     @else
@@ -341,11 +349,13 @@ new class extends Component
                         </x-slot>
 
                         <x-slot name="content">
-                            @if(optional(auth()->user())->role === 'admin')
+                            @if(optional(auth()->user())->isAdmin())
                                 <div class="px-3 py-1.5">
                                     <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500">Administración</p>
                                 </div>
+                                <x-dropdown-link :href="route('admin.dashboard')" wire:navigate>📊 &nbsp;Dashboard</x-dropdown-link>
                                 <x-dropdown-link :href="route('admin.orders')" wire:navigate>📦 &nbsp;Órdenes</x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.users')" wire:navigate>👥 &nbsp;Usuarios</x-dropdown-link>
                                 <x-dropdown-link :href="route('admin.settings')" wire:navigate>⚙️ &nbsp;Configuración</x-dropdown-link>
                                 <div class="my-1 border-t border-slate-100 dark:border-slate-700/60"></div>
                             @else
@@ -414,6 +424,9 @@ new class extends Component
             <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate>🏠 Inicio</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>🛍️ Tienda</x-responsive-nav-link>
             @if(auth()->check() && optional(auth()->user())->role === 'admin')
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
+                    Panel
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate>
                     Productos
                 </x-responsive-nav-link>
@@ -430,8 +443,10 @@ new class extends Component
                 <div class="text-sm text-slate-500 dark:text-slate-400">{{ optional(auth()->user())->email }}</div>
             </div>
             <div class="space-y-1 px-4">
-                @if(optional(auth()->user())->role === 'admin')
+                @if(optional(auth()->user())->isAdmin())
+                    <x-responsive-nav-link :href="route('admin.dashboard')" wire:navigate>Dashboard</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.orders')" wire:navigate>Gestión de Órdenes</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.users')" wire:navigate>Usuarios</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings')" wire:navigate>Configuración</x-responsive-nav-link>
                 @else
                     <x-responsive-nav-link :href="route('my-orders')" wire:navigate>Mis Órdenes</x-responsive-nav-link>

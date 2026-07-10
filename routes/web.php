@@ -44,10 +44,17 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'is_admin'])->group(function () {
+    Route::get('/admin', function () {
+        return redirect()->route('admin.dashboard');
+    });
+    
+    Volt::route('admin/dashboard', 'admin.manage-dashboard')->name('admin.dashboard');
     Volt::route('admin/settings', 'admin.manage-settings')->name('admin.settings');
     Volt::route('admin/products', 'admin.manage-products')->name('admin.products');
-
+    Volt::route('admin/categories', 'admin.manage-categories')->name('admin.categories');
+    Volt::route('admin/brands', 'admin.manage-brands')->name('admin.brands');
     Volt::route('admin/orders', 'admin.manage-orders')->name('admin.orders');
+    Volt::route('admin/users', 'admin.manage-users')->name('admin.users');
 });
 
 // Webhook de MercadoPago — sin auth, sin CSRF (se maneja en bootstrap/app.php)

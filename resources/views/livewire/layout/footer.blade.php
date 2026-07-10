@@ -136,7 +136,7 @@ new class extends Component {
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">Transferencia</span>
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">MercadoPago</span>
                     </div>
-                    <p class="text-xs text-gray-400 mt-4 italic">* Los pagos se coordinan al retirar el pedido en el local.</p>
+                    <p class="text-xs text-gray-400 mt-4 italic">* Pagos y entregas se coordinan directamente por WhatsApp.</p>
                 </div>
 
                 {{-- Columna 4: Contacto --}}

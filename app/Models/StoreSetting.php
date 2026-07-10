@@ -27,36 +27,19 @@ class StoreSetting extends Model
     public static function getSettings()
     {
         try {
-            $attributes = Cache::rememberForever('store_settings', function () {
-                if (! Schema::hasTable('store_settings')) {
-                    return [];
-                }
-                $setting = static::first();
-                return $setting ? $setting->getAttributes() : [];
-            });
-
-            if (!is_array($attributes)) {
-                Cache::forget('store_settings');
-                $attributes = [];
+            if (! Schema::hasTable('store_settings')) {
+                return new static;
             }
-
-            $model = new static;
-            $model->setRawAttributes($attributes, true);
-            $model->exists = !empty($attributes);
-            return $model;
+            $setting = static::first();
+            if (! $setting) {
+                return new static;
+            }
+            return $setting;
         } catch (\Exception $e) {
             return new static;
         }
     }
 
-    protected static function booted()
-    {
-        static::saved(function ($setting) {
-            Cache::forget('store_settings');
-        });
 
-        static::deleted(function ($setting) {
-            Cache::forget('store_settings');
-        });
-    }
+
 }

@@ -63,25 +63,14 @@
 
             {{-- FAQ Right: Accordion --}}
             <div class="space-y-4">
-                {{-- Accordion Item 1 --}}
-                <div class="border-b border-white/10 pb-4">
-                    <button @click="activeAccordion = activeAccordion === 1 ? null : 1" class="w-full flex justify-between items-center py-4 text-left group">
-                        <span class="text-lg font-bold text-gray-200 group-hover:text-[var(--color-primary)] transition-colors">¿Tienen garantía los componentes?</span>
-                        <svg class="w-5 h-5 text-gray-500 transform transition-transform duration-300" :class="activeAccordion === 1 ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div x-show="activeAccordion === 1" x-collapse>
-                        <p class="text-gray-400 text-sm font-light pb-4">Sí, todos nuestros productos cuentan con la garantía oficial del fabricante, que oscila entre 1 y 3 años dependiendo de la marca y el componente específico.</p>
-                    </div>
-                </div>
-
                 {{-- Accordion Item 2 --}}
                 <div class="border-b border-white/10 pb-4">
                     <button @click="activeAccordion = activeAccordion === 2 ? null : 2" class="w-full flex justify-between items-center py-4 text-left group">
-                        <span class="text-lg font-bold text-gray-200 group-hover:text-[var(--color-primary)] transition-colors">¿Realizan envíos a todo el país?</span>
+                        <span class="text-lg font-bold text-gray-200 group-hover:text-[var(--color-primary)] transition-colors">¿Cómo se coordinan los envíos?</span>
                         <svg class="w-5 h-5 text-gray-500 transform transition-transform duration-300" :class="activeAccordion === 2 ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div x-show="activeAccordion === 2" x-collapse>
-                        <p class="text-gray-400 text-sm font-light pb-4">Absolutamente. Realizamos envíos asegurados a todo el territorio nacional a través de correos logísticos premium para garantizar la integridad de tu hardware.</p>
+                        <p class="text-gray-400 text-sm font-light pb-4">Una vez confirmado tu pedido, nos comunicaremos por WhatsApp para acordar la mejor opción de envío o retiro, asegurando que tu compra llegue de forma segura y rápida a tus manos.</p>
                     </div>
                 </div>
 
@@ -135,7 +124,6 @@
             <div class="lg:col-span-1">
                 <h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Soporte</h5>
                 <ul class="space-y-4">
-                    <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Garantía Premium</a></li>
                     <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Rastreo de Pedidos</a></li>
                     <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Centro de Ayuda</a></li>
                     <li><a href="#" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors text-sm">Términos y Condiciones</a></li>

@@ -164,11 +164,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
 
                         {{-- Trust Badges --}}
-                        <div class="mt-10 grid grid-cols-2 gap-4 mb-10">
-                            <div class="flex items-center gap-3 text-gray-400">
-                                <svg class="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span class="text-xs font-bold uppercase tracking-wider">12 Meses Garantía</span>
-                            </div>
+                        <div class="mt-10 grid grid-cols-1 gap-4 mb-10">
                             <div class="flex items-center gap-3 text-gray-400">
                                 <svg class="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                 <span class="text-xs font-bold uppercase tracking-wider">Pago Seguro</span>
@@ -185,23 +181,12 @@ new #[Layout('layouts.app')] class extends Component {
                                 </button>
                                 <div x-show="active === 1" x-collapse x-cloak>
                                     <div class="pb-5 text-sm text-gray-400 font-light leading-relaxed">
-                                        Realizamos envíos a todo el país a través de correos certificados. Los tiempos de entrega oscilan entre 24 y 72 horas hábiles tras la confirmación del pago. Todos nuestros paquetes cuentan con seguro a todo riesgo.
+                                        Una vez realizado tu pedido, nos comunicaremos con vos por WhatsApp para coordinar la forma de envío o retiro que mejor se adapte a tus necesidades.
                                     </div>
                                 </div>
                             </div>
                             
-                            {{-- Accordion 2 --}}
-                            <div class="border-b border-white/10">
-                                <button @click="active = (active === 2 ? null : 2)" class="w-full flex justify-between items-center py-5 text-left transition-colors hover:text-[var(--color-primary)]">
-                                    <span class="text-sm font-bold tracking-widest uppercase">Políticas de Garantía</span>
-                                    <svg class="w-5 h-5 transform transition-transform duration-300" :class="{'rotate-180': active === 2}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                <div x-show="active === 2" x-collapse x-cloak>
-                                    <div class="pb-5 text-sm text-gray-400 font-light leading-relaxed">
-                                        Este componente está cubierto por 12 meses de garantía oficial directamente con la marca, gestionable a través de nuestra plataforma. Cubre defectos de fábrica y fallas prematuras.
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -374,10 +359,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
                         @endif
                         
-                        <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>12 meses de garantía oficial</span>
-                        </div>
+
                     </div>
 
                     <div>

@@ -45,6 +45,12 @@ class UpdateOrderOnPayment implements ShouldQueue
                 return;
             }
 
+            // FIX BUG-02: Idempotencia para evitar múltiples correos y actualizaciones
+            if (in_array($order->status, ['pagado', 'completado'])) {
+                Log::info('Webhook MP: orden ya procesada, ignorando webhook', ['order_id' => $orderId]);
+                return;
+            }
+
             // Guardar el ID del pago en la orden
             $order->mp_payment_id = $dataId;
 

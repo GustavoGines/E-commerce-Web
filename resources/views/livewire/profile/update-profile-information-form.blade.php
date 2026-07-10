@@ -10,6 +10,7 @@ new class extends Component
 {
     public string $name = '';
     public string $email = '';
+    public string $phone = '';
 
     /**
      * Mount the component.
@@ -18,6 +19,7 @@ new class extends Component
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->phone = Auth::user()->phone ?? '';
     }
 
     /**
@@ -30,6 +32,7 @@ new class extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user->fill($validated);
@@ -84,6 +87,12 @@ new class extends Component
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
+        </div>
+
+        <div>
+            <x-input-label for="phone" value="Teléfono / WhatsApp" />
+            <x-text-input wire:model="phone" id="phone" name="phone" type="tel" class="mt-1 block w-full" autocomplete="tel" placeholder="Ej: 3704 123456" />
+            <x-input-error class="mt-2" :messages="$errors->get('phone')" />
 
             @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
                 <div>

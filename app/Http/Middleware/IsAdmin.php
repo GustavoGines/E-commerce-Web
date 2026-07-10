@@ -15,7 +15,10 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->role === 'admin') {
+        $role = auth()->user()->role;
+        $isAdmin = (is_string($role) && $role === 'admin') || ($role instanceof \App\Enums\UserRole && $role->value === 'admin');
+        
+        if (auth()->check() && $isAdmin) {
             return $next($request);
         }
 

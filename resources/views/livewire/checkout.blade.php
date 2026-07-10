@@ -38,6 +38,10 @@ new #[Layout('layouts.app')] class extends Component {
             return redirect()->route('home');
         }
 
+        if (auth()->check() && auth()->user()->phone) {
+            $this->phone = auth()->user()->phone;
+        }
+
         $this->products = Product::whereIn('id', array_keys($this->cart))->get()->keyBy('id');
         $this->calculateSubtotal();
     }
@@ -91,22 +95,23 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function placeOrder()
     {
-        $rules = [];
+        $rules = [
+            'phone' => 'required|string|min:8|max:25',
+        ];
 
         if ($this->theme !== 'modern-light') {
-            $rules = [
-                'phone'          => 'required|string|min:8|max:25',
+            $rules = array_merge($rules, [
                 'address_street' => 'required|string|max:255',
                 'address_number' => 'required|string|max:50',
                 'city'           => 'required|string|max:255',
                 'state'          => 'required|string|max:255',
                 'zip_code'       => 'required|string|max:20',
-            ];
-            
-            $this->validate($rules, [
-                'phone.required' => 'El número de celular/WhatsApp es obligatorio para poder contactarte.'
             ]);
         }
+            
+        $this->validate($rules, [
+            'phone.required' => 'El número de celular/WhatsApp es obligatorio para poder contactarte.'
+        ]);
 
         if (empty($this->cart)) {
             return;
@@ -122,7 +127,7 @@ new #[Layout('layouts.app')] class extends Component {
                     'user_id'        => auth()->id(),
                     'status'         => 'pendiente',
                     'total'          => $this->subtotal,
-                    'phone'          => $this->theme === 'modern-light' ? '-' : $this->phone,
+                    'phone'          => $this->phone,
                     'address_street' => $this->theme === 'modern-light' ? 'Retiro en Local' : $this->address_street,
                     'address_number' => $this->theme === 'modern-light' ? '-' : $this->address_number,
                     'city'           => $this->theme === 'modern-light' ? '-' : $this->city,
@@ -161,6 +166,11 @@ new #[Layout('layouts.app')] class extends Component {
                 app(\App\Services\CartService::class)->clear();
                 $this->dispatch('cart-updated');
 
+                // Actualizar teléfono del usuario si no tenía uno o si lo cambió
+                if (auth()->check() && auth()->user()->phone !== $this->phone) {
+                    auth()->user()->update(['phone' => $this->phone]);
+                }
+
                 // Enviar email OrderPlaced (M-01)
                 if (auth()->check() && auth()->user()->email) {
                     try {
@@ -171,8 +181,11 @@ new #[Layout('layouts.app')] class extends Component {
                 }
 
                 if ($this->theme === 'modern-light') {
-                    $sellerPhone = '5493705075839';
-                    $message = "Hola JCG Electrónica! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
+                    $settings = \App\Models\StoreSetting::getSettings();
+                    $social = is_string($settings->social_links) ? json_decode($settings->social_links, true) : ($settings->social_links ?? []);
+                    $whatsappNumber = is_array($social) && !empty($social['whatsapp']) ? preg_replace('/[^0-9]/', '', $social['whatsapp']) : '5493705075839';
+                    $sellerPhone = $whatsappNumber;
+                    $message = "Hola {$settings->store_name}! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
                     
                     foreach ($this->cart as $productId => $quantity) {
                         if (isset($this->products[$productId])) {
@@ -226,7 +239,7 @@ new #[Layout('layouts.app')] class extends Component {
             
             <div class="mb-12">
                 <h1 class="text-4xl font-black tracking-tight mb-2">Finalizar Compra</h1>
-                <p class="text-gray-400">Completa tus datos para proceder al pago seguro.</p>
+                <p class="text-gray-400">Completa tus datos para coordinar el pedido y envío.</p>
                 
                 @if (session()->has('error'))
                     <div class="mt-6 bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-2xl flex items-center gap-3">
@@ -455,21 +468,33 @@ new #[Layout('layouts.app')] class extends Component {
                     Confirmar por WhatsApp
                 </h3>
                 
-                <div class="bg-red-50 border border-red-100 rounded-xl p-5 mb-6 text-sm text-red-900">
-                    <p class="font-bold mb-1">Paso a retirar por el local</p>
-                    <p>No realizamos envíos. Una vez confirmado tu pedido, nos comunicaremos por WhatsApp para coordinar el pago y el retiro de tu compra.</p>
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-6 text-sm text-blue-900">
+                    <p class="font-bold mb-1">Pagos y Envíos</p>
+                    <p>¡Excelente elección! Una vez que confirmes tu pedido, nos comunicaremos por WhatsApp para coordinar juntos los detalles del pago y la entrega.</p>
                 </div>
 
                 <form wire:submit="placeOrder">
-                    <div class="mb-8">
+                    <div class="mb-6">
                         <label class="block text-gray-700 text-xs font-bold mb-2 uppercase tracking-wider">Tu Nombre</label>
                         <input type="text" value="{{ auth()->user()->name }}" disabled class="w-full py-3 px-4 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 shadow-sm cursor-not-allowed">
+                    </div>
+
+                    <div class="mb-8">
+                        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase tracking-wider">Celular / WhatsApp <span class="text-red-500">*</span></label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500 font-bold">
+                                📞
+                            </span>
+                            <input wire:model="phone" type="tel" class="w-full py-3 px-4 bg-white border border-gray-200 rounded-r-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all shadow-sm" placeholder="Ej: 3704 123456">
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-1.5 uppercase tracking-wider font-bold">Para coordinar el retiro</p>
+                        @error('phone') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
 
                     <button type="submit"
                             wire:loading.attr="disabled"
                             class="w-full inline-flex items-center justify-center gap-2 py-4 px-8 rounded-xl text-white font-bold text-lg tracking-wide transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed bg-green-500 hover:bg-green-600">
-                        <span wire:loading.remove wire:target="placeOrder">Enviar Pedido y Abrir WhatsApp</span>
+                        <span wire:loading.remove wire:target="placeOrder">Confirmar Pedido</span>
                         <span wire:loading wire:target="placeOrder">Procesando...</span>
                     </button>
                 </form>

@@ -387,21 +387,8 @@
         ════════════════════════════════════════════════════════ --}}
         <section class="py-16 bg-[#0a0f1c] border-t border-white/5 relative z-10">
             <div class="max-w-7xl mx-auto px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 divide-y md:divide-y-0 md:divide-x divide-white/5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 divide-y md:divide-y-0 md:divide-x divide-white/5">
                     
-                    {{-- Badge 1 --}}
-                    <div class="flex items-start gap-5 pt-8 md:pt-0 px-4">
-                        <div class="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[var(--color-primary)]">
-                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 class="text-white font-bold text-sm tracking-widest uppercase mb-1">Garantía Oficial</h4>
-                            <p class="text-gray-500 text-sm leading-relaxed">Hardware premium 100% original con soporte técnico directo.</p>
-                        </div>
-                    </div>
-
                     {{-- Badge 2 --}}
                     <div class="flex items-start gap-5 pt-8 md:pt-0 md:px-8">
                         <div class="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[var(--color-primary)]">

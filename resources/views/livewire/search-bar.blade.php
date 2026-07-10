@@ -12,6 +12,7 @@ new class extends Component {
         if (strlen($this->search) >= 2) {
             $this->results = Product::where('name', 'like', '%' . $this->search . '%')
                                     ->orWhere('description', 'like', '%' . $this->search . '%')
+                                    ->with('category') // Fix N+1 queries
                                     ->take(5)
                                     ->get();
         } else {

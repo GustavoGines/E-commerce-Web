@@ -73,6 +73,14 @@ new #[Layout('layouts.app')] class extends Component {
         session()->flash('message', 'Logo eliminado correctamente.');
     }
 
+    public function validationAttributes()
+    {
+        return [
+            'store_name' => 'nombre de la tienda',
+            'theme_name' => 'tema de la tienda',
+        ];
+    }
+
     public function save()
     {
         $this->validate([
@@ -88,7 +96,7 @@ new #[Layout('layouts.app')] class extends Component {
             'logo'             => 'nullable|image|max:10240', // 10MB
         ]);
 
-        $settings = StoreSetting::getSettings() ?? new StoreSetting();
+        $settings = StoreSetting::first() ?? new StoreSetting();
         $settings->store_name    = $this->store_name;
         $settings->theme_name    = $this->theme_name;
         $settings->store_tagline = $this->store_tagline;

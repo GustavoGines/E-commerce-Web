@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhooks/mercadopago',
         ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackVisits::class,
+            \App\Http\Middleware\CheckBanned::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

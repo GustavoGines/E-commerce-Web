@@ -201,10 +201,6 @@
                             <p class="text-2xl font-black text-white">24hs</p>
                             <p class="text-xs text-white/50 uppercase tracking-widest">Envío express</p>
                         </div>
-                        <div>
-                            <p class="text-2xl font-black text-white">100%</p>
-                            <p class="text-xs text-white/50 uppercase tracking-widest">Garantía oficial</p>
-                        </div>
                     </div>
                 </div>
             </div>

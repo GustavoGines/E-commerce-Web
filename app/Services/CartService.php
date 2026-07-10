@@ -79,7 +79,7 @@ class CartService
         $cartItem = $cart->items()->where('product_id', $productId)->first();
 
         if (! $cartItem) {
-            return;
+            return false;
         }
 
         $product = $cartItem->product;

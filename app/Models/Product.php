@@ -38,16 +38,46 @@ class Product extends Model
 
         static::creating(function ($product) {
             if (empty($product->slug)) {
-                $product->slug = Str::slug($product->name);
+                $product->slug = static::generateUniqueSlug($product->name);
             }
         });
 
         static::updating(function ($product) {
-            if ($product->isDirty('name') && empty($product->slug)) {
-                $product->slug = Str::slug($product->name);
+            // FIX BUG-11: Always regenerate slug when name changes,
+            // not only when slug is empty (which was always false after first save)
+            if ($product->isDirty('name')) {
+                $product->slug = static::generateUniqueSlug($product->name, $product->id);
             }
         });
     }
+
+    /**
+     * Generate a unique slug for the product.
+     * Appends a numeric suffix if the base slug already exists.
+     */
+    private static function generateUniqueSlug(string $name, ?int $excludeId = null): string
+    {
+        $base = \Illuminate\Support\Str::slug($name);
+        $slug = $base;
+        $counter = 1;
+
+        $query = static::where('slug', $slug);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        while ($query->clone()->exists()) {
+            $slug  = $base . '-' . $counter;
+            $query = static::where('slug', $slug);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            $counter++;
+        }
+
+        return $slug;
+    }
+
 
     public function category()
     {
