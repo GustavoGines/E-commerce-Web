@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Cliente Mayorista',
             'email' => 'cliente@gmail.com',
             'password' => Hash::make('password'),
-            'role' => 'user',
+            'role' => 'mayorista',
         ]);
 
         StoreSetting::create([
