@@ -23,7 +23,7 @@ new class extends Component
         $isModernLight = ($themeName === 'modern-light');
         
         $pendingOrdersCount = 0;
-        if(auth()->check() && auth()->user()->role === 'admin') {
+        if(auth()->check() && auth()->user()->isAdmin()) {
             $pendingOrdersCount = \App\Models\Order::where('status', 'pendiente')->count();
         }
     @endphp
@@ -118,7 +118,7 @@ new class extends Component
                     <x-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>
                         {{ __('Tienda') }}
                     </x-nav-link>
-                    @if(auth()->check() && optional(auth()->user())->role === 'admin')
+                    @if(auth()->check() && optional(auth()->user())->isAdmin())
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
                             {{ __('Panel') }}
                         </x-nav-link>
@@ -162,7 +162,7 @@ new class extends Component
                         <x-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
                             {{ __('Tienda') }}
                         </x-nav-link>
-                        @if(auth()->check() && optional(auth()->user())->role === 'admin')
+                        @if(auth()->check() && optional(auth()->user())->isAdmin())
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate class="text-base font-bold text-white/90 hover:text-white border-transparent hover:border-white/50">
                                 {{ __('Panel') }}
                             </x-nav-link>
@@ -214,7 +214,7 @@ new class extends Component
                                         <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-white shadow-sm border border-white/30">
                                             {{ substr(Auth::user()->name, 0, 1) }}
                                         </div>
-                                        @if(optional(auth()->user())->role === 'admin' && $pendingOrdersCount > 0)
+                                        @if(optional(auth()->user())->isAdmin() && $pendingOrdersCount > 0)
                                             <span class="absolute top-1 right-1 flex h-3 w-3">
                                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                                 <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-gray-900"></span>
@@ -227,7 +227,6 @@ new class extends Component
                                         <div class="px-3 py-1.5">
                                             <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500">Administración</p>
                                         </div>
-                                        <x-dropdown-link :href="route('admin.dashboard')" wire:navigate>📊 &nbsp;Dashboard</x-dropdown-link>
                                         <x-dropdown-link :href="route('admin.orders')" wire:navigate class="flex items-center justify-between w-full">
                                             <span>📦 &nbsp;Órdenes</span>
                                             @if($pendingOrdersCount > 0)
@@ -279,6 +278,14 @@ new class extends Component
                         <x-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>
                             {{ __('Tienda') }}
                         </x-nav-link>
+                        @if(auth()->check() && optional(auth()->user())->isAdmin())
+                            <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
+                                {{ __('Panel') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate>
+                                {{ __('Productos') }}
+                            </x-nav-link>
+                        @endif
                     </div>
                 </div>
 
@@ -353,7 +360,6 @@ new class extends Component
                                 <div class="px-3 py-1.5">
                                     <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500">Administración</p>
                                 </div>
-                                <x-dropdown-link :href="route('admin.dashboard')" wire:navigate>📊 &nbsp;Dashboard</x-dropdown-link>
                                 <x-dropdown-link :href="route('admin.orders')" wire:navigate>📦 &nbsp;Órdenes</x-dropdown-link>
                                 <x-dropdown-link :href="route('admin.users')" wire:navigate>👥 &nbsp;Usuarios</x-dropdown-link>
                                 <x-dropdown-link :href="route('admin.settings')" wire:navigate>⚙️ &nbsp;Configuración</x-dropdown-link>
@@ -423,7 +429,7 @@ new class extends Component
         <div class="pt-2 pb-3 space-y-1 px-4">
             <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate>🏠 Inicio</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>🛍️ Tienda</x-responsive-nav-link>
-            @if(auth()->check() && optional(auth()->user())->role === 'admin')
+            @if(auth()->check() && optional(auth()->user())->isAdmin())
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
                     Panel
                 </x-responsive-nav-link>
@@ -444,7 +450,6 @@ new class extends Component
             </div>
             <div class="space-y-1 px-4">
                 @if(optional(auth()->user())->isAdmin())
-                    <x-responsive-nav-link :href="route('admin.dashboard')" wire:navigate>Dashboard</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.orders')" wire:navigate>Gestión de Órdenes</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.users')" wire:navigate>Usuarios</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings')" wire:navigate>Configuración</x-responsive-nav-link>

@@ -125,7 +125,7 @@ new #[Layout('layouts.app')] class extends Component {
                             <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6">
                                 <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Agotado
                             </div>
-                        @elseif(auth()->check() && auth()->user()->role === 'admin')
+                        @elseif(auth()->check() && auth()->user()->isAdmin())
                             <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Stock Administrador: {{ $product->stock }}
                             </div>
@@ -315,7 +315,7 @@ new #[Layout('layouts.app')] class extends Component {
                 <div class="flex flex-col justify-center">
                     @if($product->stock <= 0)
                         <span class="inline-block px-3 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-xs uppercase tracking-widest font-bold rounded-full w-max mb-4">Agotado</span>
-                    @elseif(auth()->check() && auth()->user()->role === 'admin')
+                    @elseif(auth()->check() && auth()->user()->isAdmin())
                         <span class="inline-block px-3 py-1 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/30 text-xs uppercase tracking-widest font-bold rounded-full w-max mb-4" title="Solo visible para Administradores">En Stock: {{ $product->stock }}</span>
                     @endif
 

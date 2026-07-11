@@ -7,7 +7,6 @@ use Livewire\Attributes\On;
 
 new class extends Component {
     public $cart = [];
-    public $products = [];
     public $subtotal = 0;
     public $theme = 'stealth';
     
@@ -26,11 +25,7 @@ new class extends Component {
         $cartService = app(\App\Services\CartService::class);
         $this->cart = $cartService->getCartItemsArray();
         
-        if (count($this->cart) > 0) {
-            $this->products = Product::whereIn('id', array_keys($this->cart))->get()->keyBy('id');
-            $this->calculateSubtotal();
-        } else {
-            $this->products = collect();
+        if (count($this->cart) == 0) {
             $this->subtotal = 0;
         }
     }
@@ -56,13 +51,13 @@ new class extends Component {
         return app(PricingService::class)->unitPrice($product, $quantity, auth()->user());
     }
 
-    public function calculateSubtotal()
+    public function calculateSubtotal($products)
     {
         $this->subtotal = 0;
 
         foreach ($this->cart as $productId => $quantity) {
-            if (isset($this->products[$productId])) {
-                $product = $this->products[$productId];
+            if (isset($products[$productId])) {
+                $product = $products[$productId];
                 $price = $this->getPrice($product, $quantity);
                 $this->subtotal += $price * $quantity;
             }
@@ -116,7 +111,16 @@ new class extends Component {
 
     public function with(): array
     {
-        return [];
+        $products = collect();
+        
+        if (count($this->cart) > 0) {
+            $products = Product::whereIn('id', array_keys($this->cart))->get()->keyBy('id');
+            $this->calculateSubtotal($products);
+        }
+
+        return [
+            'products' => $products
+        ];
     }
 }; ?>
 

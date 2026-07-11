@@ -98,7 +98,7 @@ new class extends Component {
                                      bg-rose-500/90 text-white shadow-sm">
                             Agotado
                         </span>
-                    @elseif(auth()->check() && auth()->user()->role === 'admin')
+                    @elseif(auth()->check() && auth()->user()->isAdmin())
                         <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
                                      px-2 py-1 rounded-lg backdrop-blur-md
                                      bg-emerald-500/90 text-white shadow-sm" title="Solo visible para Administradores">

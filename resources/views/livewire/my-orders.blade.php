@@ -85,7 +85,7 @@ new #[Layout('layouts.app')] class extends Component {
 
 <div>
     <x-slot name="header">
-        @if(auth()->check() && auth()->user()->role === 'admin')
+        @if(auth()->check() && auth()->user()->isAdmin())
             <div class="flex items-center space-x-6">
                 <a href="{{ route('admin.orders') }}" wire:navigate class="font-semibold text-xl text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-tight">
                     {{ __('Todas las Órdenes') }}

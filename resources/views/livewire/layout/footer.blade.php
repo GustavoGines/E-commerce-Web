@@ -114,7 +114,7 @@ new class extends Component {
                         <li><a href="{{ route('home') }}" wire:navigate class="text-gray-500 dark:text-gray-400 hover:text-[var(--color-primary)] text-sm font-medium transition-colors">Inicio</a></li>
                         <li><a href="{{ route('shop') }}" wire:navigate class="text-gray-500 dark:text-gray-400 hover:text-[var(--color-primary)] text-sm font-medium transition-colors">Catálogo Completo</a></li>
                         @auth
-                            @if(optional(auth()->user())->role === 'admin')
+                            @if(optional(auth()->user())->isAdmin())
                                 <li><a href="{{ route('admin.orders') }}" wire:navigate class="text-gray-500 dark:text-gray-400 hover:text-[var(--color-primary)] text-sm font-medium transition-colors">Gestión de Órdenes</a></li>
                                 <li><a href="{{ route('admin.products') }}" wire:navigate class="text-gray-500 dark:text-gray-400 hover:text-[var(--color-primary)] text-sm font-medium transition-colors">Gestión de Productos</a></li>
                                 <li><a href="{{ route('admin.settings') }}" wire:navigate class="text-gray-500 dark:text-gray-400 hover:text-[var(--color-primary)] text-sm font-medium transition-colors">Configuración Tienda</a></li>

@@ -147,10 +147,10 @@ new #[Layout('layouts.app')] class extends Component {
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Usuario</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Registro</th>
-                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Órdenes</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Rol</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-full">Usuario</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Registro</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Órdenes</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Rol y Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -162,48 +162,55 @@ new #[Layout('layouts.app')] class extends Component {
                                     <div class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                         {{ $user->name }}
                                         @if($user->is_banned)
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                                Baneado
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50">
+                                                Bloqueado
                                             </span>
                                         @endif
                                     </div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
                                     @if($user->phone)
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">📞 {{ $user->phone }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                            {{ $user->phone }}
+                                        </div>
                                     @endif
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 align-middle">
                             {{ $user->created_at->format('d/m/Y') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-700 dark:text-gray-300">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-700 dark:text-gray-300 align-middle">
                             {{ $user->orders_count }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm flex items-center gap-2">
-                            <select wire:change="updateRole({{ $user->id }}, $event.target.value)" 
-                                    class="py-1 px-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:ring-[var(--color-primary)] {{ $user->id === auth()->id() ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                    @if($user->id === auth()->id()) disabled @endif>
-                                @foreach($roles as $role)
-                                    <option value="{{ $role->value }}" @if(optional($user->role)->value === $role->value) selected @endif>
-                                        {{ $role->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <td class="px-6 py-4 whitespace-nowrap align-middle">
+                            <div class="flex items-center gap-3">
+                                <select wire:change="updateRole({{ $user->id }}, $event.target.value)" 
+                                        class="py-1.5 pl-3 pr-8 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-[var(--color-primary)] {{ $user->id === auth()->id() ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                        @if($user->id === auth()->id()) disabled @endif>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->value }}" @if(optional($user->role)->value === $role->value) selected @endif>
+                                            {{ $role->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
 
-                            <button wire:click="editUser({{ $user->id }})" title="Editar Usuario" class="text-gray-500 hover:text-[var(--color-primary)] transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </button>
+                                <div class="flex items-center gap-1">
+                                    <button wire:click="editUser({{ $user->id }})" title="Editar Usuario" class="text-gray-400 hover:text-[var(--color-primary)] transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </button>
 
-                            @if($user->id !== auth()->id())
-                                <button wire:click="toggleBan({{ $user->id }})" wire:confirm="¿Seguro que quieres {{ $user->is_banned ? 'desbloquear' : 'bloquear' }} a este usuario?" title="{{ $user->is_banned ? 'Desbloquear' : 'Bloquear (Lista Negra)' }}" class="{{ $user->is_banned ? 'text-green-600 hover:text-green-700' : 'text-red-500 hover:text-red-700' }} transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    @if($user->is_banned)
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
-                                    @else
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                    @if($user->id !== auth()->id())
+                                        <button wire:click="toggleBan({{ $user->id }})" wire:confirm="¿Seguro que quieres {{ $user->is_banned ? 'desbloquear' : 'bloquear' }} a este usuario?" title="{{ $user->is_banned ? 'Desbloquear' : 'Bloquear (Lista Negra)' }}" class="{{ $user->is_banned ? 'text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 dark:bg-red-900/20 dark:hover:bg-red-900/40' : 'text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700' }} transition-colors p-1.5 rounded-lg">
+                                            @if($user->is_banned)
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                                            @else
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                            @endif
+                                        </button>
                                     @endif
-                                </button>
-                            @endif
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     @empty
