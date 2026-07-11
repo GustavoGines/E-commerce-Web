@@ -9,7 +9,7 @@ El estado de tu pedido ha sido actualizado a **Pagado** y ya estamos preparando 
 | Detalle | Valor |
 |:---|:---|
 | **Monto Pagado:** | ${{ number_format($order->total, 2) }} |
-| **ID de Pago:** | {{ $order->mp_payment_id ?? 'N/A' }} |
+| **Forma de Entrega:** | {{ $order->delivery_label }} |
 </x-mail::table>
 
 <x-mail::button :url="route('my-orders')" color="success">

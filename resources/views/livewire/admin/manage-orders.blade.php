@@ -208,23 +208,7 @@ new #[Layout('layouts.app')] class extends Component {
                                             </div>
                                         </div>
 
-                                        {{-- MercadoPago --}}
-                                        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
-                                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">MercadoPago</h4>
-                                            <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                                                <div><span class="font-semibold">ID Pago:</span> 
-                                                    <span class="font-mono text-xs {{ $order->mp_payment_id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 italic' }}">
-                                                        {{ $order->mp_payment_id ?: 'Pendiente' }}
-                                                    </span>
-                                                </div>
-                                                <div><span class="font-semibold">Preferencia:</span> 
-                                                    <span class="font-mono text-xs text-gray-500 break-all">{{ $order->mp_preference_id ?: 'N/A' }}</span>
-                                                </div>
-                                                @if($order->payment_method)
-                                                    <div><span class="font-semibold">Método:</span> {{ $order->payment_method }}</div>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        {{-- El bloque de MercadoPago fue removido temporalmente --}}
                                     </div>
 
                                     {{-- Productos --}}

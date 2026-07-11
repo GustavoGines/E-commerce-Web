@@ -247,13 +247,7 @@ new #[Layout('layouts.app')] class extends Component {
 
                             {{-- Acciones --}}
                             <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                                @if($order->mp_payment_id)
-                                    <p class="text-xs text-gray-500 dark:text-gray-600">
-                                        Op. MP: <span class="font-mono">{{ $order->mp_payment_id }}</span>
-                                    </p>
-                                @else
                                     <span></span>
-                                @endif
 
                                 @if(in_array($order->status, ['pagado', 'completado']))
                                     <a href="{{ route('checkout.success', $order) }}"
