@@ -14,8 +14,7 @@ Hemos recibido tu pedido **#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}** co
 | **Total:** | | **${{ number_format($order->total, 2) }}** |
 </x-mail::table>
 
-Si realizaste el pago por MercadoPago, el pedido se procesará automáticamente. 
-Si el pago es acordado con el vendedor (transferencia o efectivo), nos pondremos en contacto contigo a la brevedad.
+Como tu método de pago es **"Acordado con el Vendedor"** (transferencia o efectivo), nos pondremos en contacto contigo a la brevedad para coordinar el pago y la entrega de tus productos.
 
 <x-mail::button :url="route('my-orders')" color="primary">
 Ver Mis Órdenes
