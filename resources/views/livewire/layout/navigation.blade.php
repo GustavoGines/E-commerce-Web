@@ -431,10 +431,10 @@ new class extends Component
             <x-responsive-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>🛍️ Tienda</x-responsive-nav-link>
             @if(auth()->check() && optional(auth()->user())->isAdmin())
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
-                    Panel
+                    📊 Panel
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate>
-                    Productos
+                    🏷️ Productos
                 </x-responsive-nav-link>
             @endif
         </div>
