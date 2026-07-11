@@ -146,7 +146,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <select wire:change="updateStatus({{ $order->id }}, $event.target.value)" class="text-xs py-1.5 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
+                                        <select wire:key="select-{{ $order->id }}-{{ $order->status }}" wire:change="updateStatus({{ $order->id }}, $event.target.value)" class="text-xs py-1.5 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                             <option value="pendiente" {{ $order->status === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
                                             <option value="pagado" {{ $order->status === 'pagado' ? 'selected' : '' }}>Pagado</option>
                                             <option value="completado" {{ $order->status === 'completado' ? 'selected' : '' }}>Completado</option>
