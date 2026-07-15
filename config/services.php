@@ -47,4 +47,10 @@ return [
         'webhook_secret' => env('MP_WEBHOOK_SECRET'), // Used to validate x-signature header (SEC-01)
     ],
 
+    'turnstile' => [
+        'enabled' => env('TURNSTILE_ENABLED', false),
+        'site_key' => env('TURNSTILE_SITE_KEY', ''),
+        'secret_key' => env('TURNSTILE_SECRET_KEY', ''),
+    ],
+
 ];

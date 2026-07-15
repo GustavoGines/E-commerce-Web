@@ -51,6 +51,33 @@ new #[Layout('layouts.app')] class extends Component {
 }; ?>
 
 <div>
+    <!-- SEO JSON-LD Microdata -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "{{ $product->name }}",
+      @if($product->image_url)
+      "image": [
+        "{{ asset('storage/' . $product->image_url) }}"
+      ],
+      @endif
+      "description": "{{ $product->description }}",
+      "sku": "PRD-{{ $product->id }}",
+      "brand": {
+        "@type": "Brand",
+        "name": "{{ config('app.name', 'JCG Electrónica') }}"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ request()->url() }}",
+        "priceCurrency": "ARS",
+        "price": "{{ $product->retail_price }}",
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": "{{ $product->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}"
+      }
+    }
+    </script>
 @if($theme === 'luxury')
     {{-- =========================================================
          LUXURY THEME: PRODUCT DETAIL (Apple/Turnstime Style)

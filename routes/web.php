@@ -15,6 +15,12 @@ Route::get('/shop', function () {
     return view('shop');
 })->name('shop');
 
+Route::get('/sitemap.xml', function () {
+    $products = \App\Models\Product::where('is_active', true)->get();
+    return response()->view('seo.sitemap', compact('products'))
+        ->header('Content-Type', 'text/xml');
+})->name('sitemap');
+
 Volt::route('producto/{slug}', 'product-detail')
     ->name('product.detail');
 
