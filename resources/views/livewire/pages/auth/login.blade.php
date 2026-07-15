@@ -106,6 +106,13 @@ new #[Layout('layouts.guest')] class extends Component
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                ¿No tienes una cuenta? 
+                <a href="{{ route('register') }}" class="font-bold text-[var(--color-primary)] hover:underline">Regístrate aquí</a>
+            </p>
+        </div>
 
     </form>
 

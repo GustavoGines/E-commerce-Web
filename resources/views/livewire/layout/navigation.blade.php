@@ -247,10 +247,10 @@ new class extends Component
                                 </x-slot>
                             </x-dropdown>
                         @else
-                            <a href="{{ route('login') }}" wire:navigate class="text-sm font-bold text-white/90 hover:text-white transition-colors whitespace-nowrap">
+                            <a href="{{ route('login') }}" class="text-sm font-bold text-white/90 hover:text-white transition-colors whitespace-nowrap">
                                 Ingresar
                             </a>
-                            <a href="{{ route('register') }}" wire:navigate class="px-4 py-2 text-sm font-bold text-[var(--color-primary)] rounded-xl transition-all shadow hover:shadow-md hover:-translate-y-0.5 bg-white hover:bg-gray-50 whitespace-nowrap">
+                            <a href="{{ route('register') }}" class="px-4 py-2 text-sm font-bold text-[var(--color-primary)] rounded-xl transition-all shadow hover:shadow-md hover:-translate-y-0.5 bg-white hover:bg-gray-50 whitespace-nowrap">
                                 Registrarse
                             </a>
                         @endauth
@@ -375,11 +375,11 @@ new class extends Component
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <a href="{{ route('login') }}" wire:navigate
+                    <a href="{{ route('login') }}"
                        class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap">
                         Ingresar
                     </a>
-                    <a href="{{ route('register') }}" wire:navigate
+                    <a href="{{ route('register') }}"
                        class="px-4 py-2 text-sm font-bold text-white rounded-xl transition-all
                               hover:opacity-90 hover:-translate-y-0.5 shadow-md whitespace-nowrap"
                        style="background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #7c3aed))">
@@ -464,8 +464,8 @@ new class extends Component
         </div>
         @else
         <div class="pt-4 pb-3 space-y-1 px-4 {{ $isLuxury ? 'border-t border-white/5' : 'border-t border-slate-200 dark:border-slate-800' }}">
-            <x-responsive-nav-link :href="route('login')" wire:navigate>Iniciar Sesión</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('register')" wire:navigate>Registrarse</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('login')">Iniciar Sesión</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('register')">Registrarse</x-responsive-nav-link>
         </div>
         @endauth
     </div>
