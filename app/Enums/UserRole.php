@@ -15,7 +15,7 @@ enum UserRole: string
             self::Admin => 'Administrador',
             self::Mayorista => 'Mayorista (Manual)',
             self::Minorista => 'Cliente / Usuario',
-            self::User => 'Cliente / Usuario',
+            self::User => 'Cliente (Antiguo)',
         };
     }
 }
