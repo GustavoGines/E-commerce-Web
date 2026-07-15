@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\CheckoutReturnController;
 use App\Http\Controllers\MercadoPagoWebhookController;
+use App\Http\Controllers\SitemapController;
 use App\Models\StoreSetting;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
+// SEO Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,12 +17,6 @@ Route::get('/', function () {
 Route::get('/shop', function () {
     return view('shop');
 })->name('shop');
-
-Route::get('/sitemap.xml', function () {
-    $products = \App\Models\Product::where('is_active', true)->get();
-    return response()->view('seo.sitemap', compact('products'))
-        ->header('Content-Type', 'text/xml');
-})->name('sitemap');
 
 Volt::route('producto/{slug}', 'product-detail')
     ->name('product.detail');
