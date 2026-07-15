@@ -391,7 +391,7 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" data-navigate-once></script>
     <script>
         const initDashboardCharts = () => {
             const isDark = document.documentElement.classList.contains('dark');
@@ -513,13 +513,22 @@ new #[Layout('layouts.app')] class extends Component {
                 }
             };
             
-        // Allow time for DOM to render if needed by Alpine/Livewire
-        setTimeout(initDashboardCharts, 100);
+        // Esperar activamente a que Chart.js esté cargado en memoria por Livewire
+        const checkAndInitCharts = (attempts = 0) => {
+            if (window.Chart && document.getElementById('dailyRevenueChart')) {
+                initDashboardCharts();
+            } else if (attempts < 20) {
+                // Intentar hasta por 1 segundo (20 * 50ms)
+                setTimeout(() => checkAndInitCharts(attempts + 1), 50);
+            }
+        };
+        
+        checkAndInitCharts();
         
         // Ensure it runs on back/forward navigations too if Livewire doesn't re-execute scripts natively
         document.addEventListener('livewire:navigated', () => {
             if (document.getElementById('dailyRevenueChart')) {
-                setTimeout(initDashboardCharts, 50);
+                checkAndInitCharts();
             }
         });
     </script>
