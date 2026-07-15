@@ -38,11 +38,6 @@ new #[Layout('layouts.guest')] class extends Component
      @link-sent.window="cooldown = 60; let interval = setInterval(() => { cooldown--; if(cooldown <= 0) clearInterval(interval); }, 1000)">
     
     <div class="mb-6 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4 shadow-inner">
-            <svg class="w-8 h-8 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
-        </div>
         <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Recuperar Contraseña</h2>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             ¿Olvidaste tu contraseña? No te preocupes. Escribe tu correo electrónico y te enviaremos un enlace seguro para crear una nueva.
@@ -68,7 +63,7 @@ new #[Layout('layouts.guest')] class extends Component
             <button type="submit" 
                     x-bind:disabled="cooldown > 0"
                     wire:loading.attr="disabled"
-                    class="w-full inline-flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white transition-all duration-200 transform active:scale-95 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                    class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white transition-all duration-200 transform active:scale-95 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
                     style="background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #7c3aed))">
                 
                 {{-- Estado Normal --}}
@@ -77,13 +72,13 @@ new #[Layout('layouts.guest')] class extends Component
                 </span>
                 
                 {{-- Estado Cargando (Esperando servidor) --}}
-                <span wire:loading wire:target="sendPasswordResetLink" class="flex items-center gap-2">
+                <div wire:loading wire:target="sendPasswordResetLink" class="flex flex-row items-center justify-center gap-2">
                     <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Enviando...
-                </span>
+                    <span>Enviando...</span>
+                </div>
 
                 {{-- Estado Cooldown (Temporizador de 60s) --}}
                 <span wire:loading.remove wire:target="sendPasswordResetLink" x-show="cooldown > 0" style="display: none;">

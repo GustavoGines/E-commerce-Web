@@ -70,32 +70,55 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <form wire:submit="resetPassword">
+<div class="mb-6 text-center">
+        <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Crear nueva contraseña</h2>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Casi listo. Ingresa tu nueva contraseña segura a continuación.
+        </p>
+    </div>
+
+    <form wire:submit="resetPassword" class="space-y-4">
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full py-2 px-4" type="email" name="email" required autofocus autocomplete="username" />
+            <x-input-label for="email" value="Correo electrónico" />
+            <x-text-input wire:model="email" id="email" class="block mt-1 w-full py-2.5 px-4 rounded-xl" type="email" name="email" required autofocus autocomplete="username" readonly />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-password-input wire:model="password" id="password" name="password" required autocomplete="new-password" />
+        <div>
+            <x-input-label for="password" value="Nueva contraseña" />
+            <x-password-input wire:model="password" id="password" name="password" required autocomplete="new-password" class="py-2.5 px-4 rounded-xl" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-            <x-password-input wire:model="password_confirmation" id="password_confirmation" name="password_confirmation" required autocomplete="new-password" />
+        <div>
+            <x-input-label for="password_confirmation" value="Confirmar contraseña" />
+            <x-password-input wire:model="password_confirmation" id="password_confirmation" name="password_confirmation" required autocomplete="new-password" class="py-2.5 px-4 rounded-xl" />
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
+        <div class="pt-2">
+            <button type="submit" 
+                    wire:loading.attr="disabled"
+                    class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white transition-all duration-200 transform active:scale-95 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                    style="background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #7c3aed))">
+                
+                {{-- Estado Normal --}}
+                <span wire:loading.remove wire:target="resetPassword">
+                    Guardar nueva contraseña
+                </span>
+                
+                {{-- Estado Cargando --}}
+                <div wire:loading wire:target="resetPassword" class="flex flex-row items-center justify-center gap-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Guardando...</span>
+                </div>
+            </button>
         </div>
     </form>
 </div>
