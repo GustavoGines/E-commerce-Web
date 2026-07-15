@@ -54,8 +54,8 @@ new #[Layout('layouts.app')] class extends Component {
     <!-- SEO JSON-LD Microdata -->
     <script type="application/ld+json">
     {
-      "@context": "https://schema.org/",
-      "@type": "Product",
+      "@@context": "https://schema.org/",
+      "@@type": "Product",
       "name": "{{ $product->name }}",
       @if($product->image_url)
       "image": [
@@ -65,11 +65,11 @@ new #[Layout('layouts.app')] class extends Component {
       "description": "{{ $product->description }}",
       "sku": "PRD-{{ $product->id }}",
       "brand": {
-        "@type": "Brand",
+        "@@type": "Brand",
         "name": "{{ config('app.name', 'JCG Electrónica') }}"
       },
       "offers": {
-        "@type": "Offer",
+        "@@type": "Offer",
         "url": "{{ request()->url() }}",
         "priceCurrency": "ARS",
         "price": "{{ $product->retail_price }}",
