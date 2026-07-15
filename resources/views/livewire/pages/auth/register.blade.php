@@ -106,7 +106,7 @@ new #[Layout('layouts.guest')] class extends Component
         @endif
 
         <div class="flex items-center justify-between pt-1">
-            <a class="text-sm font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity" href="{{ route('login') }}" wire:navigate>
+            <a class="text-sm font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 

@@ -97,7 +97,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         <div class="flex items-center justify-between pt-1">
             @if (Route::has('password.request'))
-                <a class="text-sm font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity" href="{{ route('password.request') }}" wire:navigate>
+                <a class="text-sm font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity" href="{{ route('password.request') }}">
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
