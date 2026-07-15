@@ -14,17 +14,33 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $turnstileToken = '';
 
     /**
      * Handle an incoming registration request.
      */
     public function register(): void
     {
-        $validated = $this->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
+
+        if (config('services.turnstile.enabled')) {
+            $rules['turnstileToken'] = ['required', function ($attribute, $value, $fail) {
+                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => config('services.turnstile.secret_key'),
+                    'response' => $value,
+                    'remoteip' => request()->ip(),
+                ]);
+                if (!$response->json('success')) {
+                    $fail('Verificación de seguridad fallida. Por favor recarga e intenta nuevamente.');
+                }
+            }];
+        }
+
+        $validated = $this->validate($rules);
 
         $validated['password'] = Hash::make($validated['password']);
 
@@ -72,6 +88,22 @@ new #[Layout('layouts.guest')] class extends Component
             <x-password-input wire:model="password_confirmation" id="password_confirmation" name="password_confirmation" required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
+
+        <!-- Turnstile -->
+        @if(config('services.turnstile.enabled'))
+            <div wire:ignore class="mt-4">
+                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-callback="setTurnstileTokenRegister"></div>
+                <script>
+                    function setTurnstileTokenRegister(token) {
+                        @this.set('turnstileToken', token);
+                    }
+                </script>
+                @once
+                    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                @endonce
+            </div>
+            <x-input-error :messages="$errors->get('turnstileToken')" class="mt-2" />
+        @endif
 
         <div class="flex items-center justify-between pt-1">
             <a class="text-sm font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity" href="{{ route('login') }}" wire:navigate>

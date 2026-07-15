@@ -8,12 +8,28 @@ use Livewire\Volt\Component;
 new #[Layout('layouts.guest')] class extends Component
 {
     public LoginForm $form;
+    public string $turnstileToken = '';
 
     /**
      * Handle an incoming authentication request.
      */
     public function login(): void
     {
+        if (config('services.turnstile.enabled')) {
+            $this->validate([
+                'turnstileToken' => ['required', function ($attribute, $value, $fail) {
+                    $response = \Illuminate\Support\Facades\Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                        'secret' => config('services.turnstile.secret_key'),
+                        'response' => $value,
+                        'remoteip' => request()->ip(),
+                    ]);
+                    if (!$response->json('success')) {
+                        $fail('Verificación de seguridad fallida. Por favor recarga e intenta nuevamente.');
+                    }
+                }],
+            ]);
+        }
+
         $this->validate();
 
         $this->form->authenticate();
@@ -62,6 +78,22 @@ new #[Layout('layouts.guest')] class extends Component
                 <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
             </label>
         </div>
+
+        <!-- Turnstile -->
+        @if(config('services.turnstile.enabled'))
+            <div wire:ignore class="mt-4">
+                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-callback="setTurnstileTokenLogin"></div>
+                <script>
+                    function setTurnstileTokenLogin(token) {
+                        @this.set('turnstileToken', token);
+                    }
+                </script>
+                @once
+                    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                @endonce
+            </div>
+            <x-input-error :messages="$errors->get('turnstileToken')" class="mt-2" />
+        @endif
 
         <div class="flex items-center justify-between pt-1">
             @if (Route::has('password.request'))

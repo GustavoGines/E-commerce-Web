@@ -24,6 +24,7 @@ new #[Layout('layouts.app')] class extends Component {
     public $zip_code = '';
     public $phone = '';
     public $theme = 'stealth';
+    public string $turnstileToken = '';
 
     public function mount()
     {
@@ -108,9 +109,23 @@ new #[Layout('layouts.app')] class extends Component {
                 'zip_code'       => 'required|string|max:20',
             ]);
         }
+
+        if (config('services.turnstile.enabled')) {
+            $rules['turnstileToken'] = ['required', function ($attribute, $value, $fail) {
+                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => config('services.turnstile.secret_key'),
+                    'response' => $value,
+                    'remoteip' => request()->ip(),
+                ]);
+                if (!$response->json('success')) {
+                    $fail('Verificación anti-bots fallida. Por favor recarga la página.');
+                }
+            }];
+        }
             
         $this->validate($rules, [
-            'phone.required' => 'El número de celular/WhatsApp es obligatorio para poder contactarte.'
+            'phone.required' => 'El número de celular/WhatsApp es obligatorio para poder contactarte.',
+            'turnstileToken.required' => 'La validación anti-bots es obligatoria.',
         ]);
 
         if (empty($this->cart)) {
@@ -303,6 +318,22 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
 
+                        <!-- Turnstile -->
+                        @if(config('services.turnstile.enabled'))
+                            <div wire:ignore class="mt-6">
+                                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-callback="setTurnstileTokenCheckout"></div>
+                                <script>
+                                    function setTurnstileTokenCheckout(token) {
+                                        @this.set('turnstileToken', token);
+                                    }
+                                </script>
+                                @once
+                                    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                                @endonce
+                            </div>
+                            @error('turnstileToken') <span class="text-red-400 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                        @endif
+
                         <div class="mt-10">
                             <button type="submit"
                                     wire:loading.attr="disabled"
@@ -491,6 +522,22 @@ new #[Layout('layouts.app')] class extends Component {
                         @error('phone') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
 
+                    <!-- Turnstile -->
+                    @if(config('services.turnstile.enabled'))
+                        <div wire:ignore class="mb-6">
+                            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-callback="setTurnstileTokenCheckout"></div>
+                            <script>
+                                function setTurnstileTokenCheckout(token) {
+                                    @this.set('turnstileToken', token);
+                                }
+                            </script>
+                            @once
+                                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                            @endonce
+                        </div>
+                        @error('turnstileToken') <span class="text-red-500 text-xs mt-1 block font-bold mb-4">{{ $message }}</span> @enderror
+                    @endif
+
                     <button type="submit"
                             wire:loading.attr="disabled"
                             class="w-full inline-flex items-center justify-center gap-2 py-4 px-8 rounded-xl text-white font-bold text-lg tracking-wide transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed bg-green-500 hover:bg-green-600">
@@ -629,6 +676,22 @@ new #[Layout('layouts.app')] class extends Component {
                             <strong>Pago seguro:</strong> Al confirmar, serás redirigido a MercadoPago para completar tu pago de forma segura.
                         </p>
                     </div>
+
+                    <!-- Turnstile -->
+                    @if(config('services.turnstile.enabled'))
+                        <div wire:ignore class="mb-6">
+                            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-callback="setTurnstileTokenCheckout"></div>
+                            <script>
+                                function setTurnstileTokenCheckout(token) {
+                                    @this.set('turnstileToken', token);
+                                }
+                            </script>
+                            @once
+                                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                            @endonce
+                        </div>
+                        @error('turnstileToken') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block font-bold mb-4">{{ $message }}</span> @enderror
+                    @endif
 
                     <button type="submit"
                             wire:loading.attr="disabled"
