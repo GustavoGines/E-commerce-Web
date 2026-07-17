@@ -348,7 +348,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <div x-show="lightboxOpen" 
                              style="display: none;" 
                              @click="lightboxOpen = false"
-                             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
+                             class="fixed inset-0 z-[40] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 pt-32 sm:pt-32 cursor-zoom-out"
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100"
@@ -358,7 +358,7 @@ new #[Layout('layouts.app')] class extends Component {
                              @keydown.escape.window="lightboxOpen = false">
                             
                             <!-- Close Button -->
-                            <button @click="lightboxOpen = false" class="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md z-[110]">
+                            <button @click="lightboxOpen = false" class="absolute top-32 right-4 sm:top-36 sm:right-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md z-[110]">
                                 <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
 
