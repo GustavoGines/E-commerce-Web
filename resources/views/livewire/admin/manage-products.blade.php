@@ -359,12 +359,23 @@ new #[Layout('layouts.app')] class extends Component {
     public function saveBrand()
     {
         $this->validate(['manageBrandName' => 'required|string|max:255']);
+        $slug = \Illuminate\Support\Str::slug($this->manageBrandName);
+        
+        $query = Brand::where('slug', $slug);
+        if ($this->manageBrandId) {
+            $query->where('id', '!=', $this->manageBrandId);
+        }
+        if ($query->exists()) {
+            $this->addError('manageBrandName', 'Ya existe una marca con este nombre.');
+            return;
+        }
+
         if ($this->manageBrandId) {
             $brand = Brand::find($this->manageBrandId);
-            $brand->update(['name' => $this->manageBrandName, 'slug' => \Illuminate\Support\Str::slug($this->manageBrandName)]);
+            $brand->update(['name' => $this->manageBrandName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Marca actualizada exitosamente.');
         } else {
-            Brand::create(['name' => $this->manageBrandName, 'slug' => \Illuminate\Support\Str::slug($this->manageBrandName)]);
+            Brand::create(['name' => $this->manageBrandName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Marca creada exitosamente.');
         }
         $this->loadBrandsWithCount();
@@ -394,12 +405,23 @@ new #[Layout('layouts.app')] class extends Component {
     public function saveCategory()
     {
         $this->validate(['manageCategoryName' => 'required|string|max:255']);
+        $slug = \Illuminate\Support\Str::slug($this->manageCategoryName);
+        
+        $query = Category::where('slug', $slug);
+        if ($this->manageCategoryId) {
+            $query->where('id', '!=', $this->manageCategoryId);
+        }
+        if ($query->exists()) {
+            $this->addError('manageCategoryName', 'Ya existe una categoría con este nombre.');
+            return;
+        }
+
         if ($this->manageCategoryId) {
             $cat = Category::find($this->manageCategoryId);
-            $cat->update(['name' => $this->manageCategoryName, 'slug' => \Illuminate\Support\Str::slug($this->manageCategoryName)]);
+            $cat->update(['name' => $this->manageCategoryName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Categoría actualizada exitosamente.');
         } else {
-            Category::create(['name' => $this->manageCategoryName, 'slug' => \Illuminate\Support\Str::slug($this->manageCategoryName)]);
+            Category::create(['name' => $this->manageCategoryName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Categoría creada exitosamente.');
         }
         $this->loadCategoriesWithCount();
