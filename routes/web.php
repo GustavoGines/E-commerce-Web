@@ -56,8 +56,6 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     Volt::route('admin/dashboard', 'admin.manage-dashboard')->name('admin.dashboard');
     Volt::route('admin/settings', 'admin.manage-settings')->name('admin.settings');
     Volt::route('admin/products', 'admin.manage-products')->name('admin.products');
-    Volt::route('admin/categories', 'admin.manage-categories')->name('admin.categories');
-    Volt::route('admin/brands', 'admin.manage-brands')->name('admin.brands');
     Volt::route('admin/orders', 'admin.manage-orders')->name('admin.orders');
     Volt::route('admin/users', 'admin.manage-users')->name('admin.users');
 });

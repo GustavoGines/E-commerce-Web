@@ -37,6 +37,13 @@ new #[Layout('layouts.app')] class extends Component {
     public $new_brand_name = '';
     
     public $showModal = false;
+    public $showBrandListModal = false;
+    public $showCategoryListModal = false;
+
+    public $manageBrandId = null;
+    public $manageBrandName = '';
+    public $manageCategoryId = null;
+    public $manageCategoryName = '';
 
     public $sortField = 'id';
     public $sortDirection = 'desc';
@@ -350,6 +357,76 @@ new #[Layout('layouts.app')] class extends Component {
     public function loadBrandsWithCount()
     {
         $this->brands = Brand::withCount('products')->get();
+    }
+
+    public function editBrand($id)
+    {
+        $brand = Brand::findOrFail($id);
+        $this->manageBrandId = $brand->id;
+        $this->manageBrandName = $brand->name;
+    }
+
+    public function saveBrand()
+    {
+        $this->validate(['manageBrandName' => 'required|string|max:255']);
+        if ($this->manageBrandId) {
+            $brand = Brand::find($this->manageBrandId);
+            $brand->update(['name' => $this->manageBrandName, 'slug' => \Illuminate\Support\Str::slug($this->manageBrandName)]);
+            $this->dispatch('notify', message: 'Marca actualizada exitosamente.');
+        } else {
+            Brand::create(['name' => $this->manageBrandName, 'slug' => \Illuminate\Support\Str::slug($this->manageBrandName)]);
+            $this->dispatch('notify', message: 'Marca creada exitosamente.');
+        }
+        $this->loadBrandsWithCount();
+        $this->manageBrandId = null;
+        $this->manageBrandName = '';
+    }
+
+    public function deleteBrand($id)
+    {
+        $brand = Brand::findOrFail($id);
+        if ($brand->products()->count() > 0) {
+            $this->dispatch('notify', message: 'No se puede eliminar la marca porque tiene productos.');
+            return;
+        }
+        $brand->delete();
+        $this->loadBrandsWithCount();
+        $this->dispatch('notify', message: 'Marca eliminada exitosamente.');
+    }
+
+    public function editCategory($id)
+    {
+        $cat = Category::findOrFail($id);
+        $this->manageCategoryId = $cat->id;
+        $this->manageCategoryName = $cat->name;
+    }
+
+    public function saveCategory()
+    {
+        $this->validate(['manageCategoryName' => 'required|string|max:255']);
+        if ($this->manageCategoryId) {
+            $cat = Category::find($this->manageCategoryId);
+            $cat->update(['name' => $this->manageCategoryName, 'slug' => \Illuminate\Support\Str::slug($this->manageCategoryName)]);
+            $this->dispatch('notify', message: 'Categoría actualizada exitosamente.');
+        } else {
+            Category::create(['name' => $this->manageCategoryName, 'slug' => \Illuminate\Support\Str::slug($this->manageCategoryName)]);
+            $this->dispatch('notify', message: 'Categoría creada exitosamente.');
+        }
+        $this->loadCategoriesWithCount();
+        $this->manageCategoryId = null;
+        $this->manageCategoryName = '';
+    }
+
+    public function deleteCategory($id)
+    {
+        $cat = Category::findOrFail($id);
+        if ($cat->products()->count() > 0) {
+            $this->dispatch('notify', message: 'No se puede eliminar la categoría porque tiene productos.');
+            return;
+        }
+        $cat->delete();
+        $this->loadCategoriesWithCount();
+        $this->dispatch('notify', message: 'Categoría eliminada exitosamente.');
     }
 
 
@@ -768,9 +845,9 @@ new #[Layout('layouts.app')] class extends Component {
                                             </div>
                                         </div>
                                     </label>
-                                    <a href="{{ route('admin.categories') }}" wire:navigate class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
+                                    <button type="button" @click="catListOpen = true" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider focus:outline-none">
                                         Gestionar
-                                    </a>
+                                    </button>
                                 </div>
                                 <select wire:model="category_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                     <option value="">Seleccione una categoría</option>
@@ -794,9 +871,9 @@ new #[Layout('layouts.app')] class extends Component {
                                             </div>
                                         </div>
                                     </label>
-                                    <a href="{{ route('admin.brands') }}" wire:navigate class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
+                                    <button type="button" @click="brandListOpen = true" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider focus:outline-none">
                                         Gestionar
-                                    </a>
+                                    </button>
                                 </div>
                                 <div class="flex gap-2">
                                     <select wire:model="brand_ids" multiple class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors min-h-[100px]">
@@ -965,6 +1042,150 @@ new #[Layout('layouts.app')] class extends Component {
                             <button type="submit" class="text-white font-bold py-2.5 px-8 rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700 transition-all">🚀 Aplicar Actualización</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Management Modal -->
+    <div x-show="brandListOpen" class="fixed z-[70] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div x-show="brandListOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-gray-900/40 dark:bg-[#0b0f19]/80 backdrop-blur-sm transition-opacity" 
+                 @click="brandListOpen = false" aria-hidden="true"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="brandListOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full relative">
+                
+                <div class="px-8 pt-8 pb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Marcas</h3>
+                        <button @click="brandListOpen = false" class="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 max-h-[60vh] overflow-y-auto mb-4">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-100 dark:bg-gray-900 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Productos</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                @foreach($brands as $brand)
+                                    @if($manageBrandId === $brand->id)
+                                    <tr class="bg-blue-50/50 dark:bg-blue-900/10">
+                                        <td class="px-6 py-3" colspan="2">
+                                            <input wire:model="manageBrandName" type="text" class="w-full py-2 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] dark:bg-gray-900 dark:text-white" @keydown.enter="$wire.saveBrand()" placeholder="Nombre de la marca">
+                                            @error('manageBrandName') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                        </td>
+                                        <td class="px-6 py-3 text-right">
+                                            <button wire:click="saveBrand" class="text-white bg-green-500 hover:bg-green-600 font-bold py-1.5 px-3 rounded text-xs mr-2 transition-colors">Guardar</button>
+                                            <button wire:click="$set('manageBrandId', null)" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-xs font-bold transition-colors">Cancelar</button>
+                                        </td>
+                                    </tr>
+                                    @else
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">{{ $brand->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-500 dark:text-gray-400">
+                                            <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ $brand->products_count }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button wire:click="editBrand({{ $brand->id }})" class="text-[var(--color-primary)] hover:opacity-80 font-bold mr-4">Editar</button>
+                                            <button wire:click="deleteBrand({{ $brand->id }})" wire:confirm="¿Eliminar la marca {{ $brand->name }}? Esta acción no se puede deshacer." class="text-red-600 hover:text-red-800 dark:hover:text-red-400 font-bold transition-colors">Eliminar</button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @if(count($brands) === 0)
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">No hay marcas creadas aún. Usá el botón + en el formulario para crear una.</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div x-show="catListOpen" class="fixed z-[70] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div x-show="catListOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-gray-900/40 dark:bg-[#0b0f19]/80 backdrop-blur-sm transition-opacity" 
+                 @click="catListOpen = false" aria-hidden="true"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="catListOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full relative">
+                
+                <div class="px-8 pt-8 pb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Categorías</h3>
+                        <button @click="catListOpen = false" class="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 max-h-[60vh] overflow-y-auto mb-4">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-100 dark:bg-gray-900 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Productos</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                @foreach($categories as $category)
+                                    @if($manageCategoryId === $category->id)
+                                    <tr class="bg-blue-50/50 dark:bg-blue-900/10">
+                                        <td class="px-6 py-3" colspan="2">
+                                            <input wire:model="manageCategoryName" type="text" class="w-full py-2 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] dark:bg-gray-900 dark:text-white" @keydown.enter="$wire.saveCategory()" placeholder="Nombre de la categoría">
+                                            @error('manageCategoryName') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                        </td>
+                                        <td class="px-6 py-3 text-right">
+                                            <button wire:click="saveCategory" class="text-white bg-green-500 hover:bg-green-600 font-bold py-1.5 px-3 rounded text-xs mr-2 transition-colors">Guardar</button>
+                                            <button wire:click="$set('manageCategoryId', null)" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-xs font-bold transition-colors">Cancelar</button>
+                                        </td>
+                                    </tr>
+                                    @else
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">{{ $category->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-500 dark:text-gray-400">
+                                            <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ $category->products_count }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button wire:click="editCategory({{ $category->id }})" class="text-[var(--color-primary)] hover:opacity-80 font-bold mr-4">Editar</button>
+                                            <button wire:click="deleteCategory({{ $category->id }})" wire:confirm="¿Eliminar la categoría {{ $category->name }}? Esta acción no se puede deshacer." class="text-red-600 hover:text-red-800 dark:hover:text-red-400 font-bold transition-colors">Eliminar</button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @if(count($categories) === 0)
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">No hay categorías creadas aún. Usá el botón + en el formulario para crear una.</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
