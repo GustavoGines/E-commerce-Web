@@ -936,12 +936,17 @@ new #[Layout('layouts.app')] class extends Component {
                                 
                                 <div class="relative" x-data="{
                                     open: false,
+                                    search: '',
                                     options: [
                                         @foreach($brands as $brand)
                                             { id: '{{ $brand->id }}', name: '{{ addslashes($brand->name) }}' },
                                         @endforeach
                                     ],
                                     selected: @entangle('brand_ids').live,
+                                    get filteredOptions() {
+                                        if (this.search === '') return this.options;
+                                        return this.options.filter(i => i.name.toLowerCase().includes(this.search.toLowerCase()));
+                                    },
                                     toggle(id) {
                                         id = String(id);
                                         let idx = this.selected.findIndex(i => String(i) === id);
@@ -958,7 +963,7 @@ new #[Layout('layouts.app')] class extends Component {
                                             return opt ? opt.name : '';
                                         }).filter(Boolean);
                                     }
-                                }" @click.outside="open = false">
+                                }" @click.outside="open = false; search = ''">
                                     <div @click="open = !open" class="w-full min-h-[42px] py-1.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex flex-wrap items-center gap-1.5 transition-colors focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:border-transparent">
                                         <template x-if="!selected || selected.length === 0">
                                             <span class="text-gray-500 py-1">Seleccione marcas...</span>
@@ -973,9 +978,15 @@ new #[Layout('layouts.app')] class extends Component {
                                         </div>
                                     </div>
                                     
-                                    <div x-show="open" style="display:none;" x-transition class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                        <ul class="py-1">
-                                            <template x-for="option in options" :key="option.id">
+                                    <div x-show="open" style="display:none;" x-transition class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg flex flex-col max-h-60">
+                                        <div class="p-2 border-b border-gray-100 dark:border-gray-800">
+                                            <input type="text" x-model="search" placeholder="Buscar marca..." class="w-full py-1.5 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]" @click.stop>
+                                        </div>
+                                        <ul class="py-1 overflow-y-auto flex-1">
+                                            <template x-if="filteredOptions.length === 0">
+                                                <li class="px-4 py-3 text-sm text-gray-500 text-center">No se encontraron marcas.</li>
+                                            </template>
+                                            <template x-for="option in filteredOptions" :key="option.id">
                                                 <li>
                                                     <label class="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
                                                         <input type="checkbox" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
@@ -1069,7 +1080,7 @@ new #[Layout('layouts.app')] class extends Component {
                             @endif
 
                             <div class="relative group" x-data="{ isDragging: false }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))">
-                                <label class="flex flex-col items-center justify-center w-full h-32 px-4 transition-all bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)]"
+                                <label class="flex flex-col items-center justify-center w-full h-24 md:h-32 px-4 transition-all bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)]"
                                        :class="isDragging ? 'border-[var(--color-primary)] bg-blue-50/50 dark:bg-blue-900/10' : ''">
                                     
                                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
