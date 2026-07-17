@@ -358,8 +358,8 @@ new #[Layout('layouts.app')] class extends Component {
                              @keydown.escape.window="lightboxOpen = false">
                             
                             <!-- Close Button -->
-                            <button @click="lightboxOpen = false" style="z-index: 100000;" class="absolute top-6 right-6 sm:top-8 sm:right-8 text-white hover:text-gray-200 transition-colors bg-white bg-opacity-10 hover:bg-opacity-20 p-3 rounded-full backdrop-blur-md">
-                                <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <button @click="lightboxOpen = false" style="z-index: 100000;" class="absolute top-6 right-6 sm:top-8 sm:right-8 text-white hover:text-red-500 transition-colors drop-shadow-lg">
+                                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
 
                             <!-- Fullscreen Image -->
