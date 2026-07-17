@@ -348,7 +348,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <div x-show="lightboxOpen" 
                              style="display: none;" 
                              @click="lightboxOpen = false"
-                             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
+                             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100"
