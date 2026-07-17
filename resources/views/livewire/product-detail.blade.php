@@ -346,9 +346,9 @@ new #[Layout('layouts.app')] class extends Component {
                     <!-- Lightbox Modal -->
                     <template x-teleport="body">
                         <div x-show="lightboxOpen" 
-                             style="display: none;" 
+                             style="display: none; z-index: 99999;" 
                              @click="lightboxOpen = false"
-                             class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
+                             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100"
@@ -358,13 +358,13 @@ new #[Layout('layouts.app')] class extends Component {
                              @keydown.escape.window="lightboxOpen = false">
                             
                             <!-- Close Button -->
-                            <button @click="lightboxOpen = false" class="absolute top-6 right-6 sm:top-8 sm:right-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md z-[110]">
-                                <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <button @click="lightboxOpen = false" style="z-index: 100000;" class="absolute top-6 right-6 sm:top-8 sm:right-8 text-white hover:text-red-500 transition-colors drop-shadow-lg">
+                                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
 
                             <!-- Fullscreen Image -->
                             @if($product->image_url)
-                                <img @click.stop src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain max-w-full max-h-[90vh] rounded-lg cursor-default shadow-2xl"
+                                <img @click.stop src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" style="max-height: 90vh;" class="object-contain max-w-full rounded-lg cursor-default shadow-2xl"
                                      x-transition:enter="transition ease-out duration-300 transform delay-100"
                                      x-transition:enter-start="opacity-0 scale-95"
                                      x-transition:enter-end="opacity-100 scale-100">
