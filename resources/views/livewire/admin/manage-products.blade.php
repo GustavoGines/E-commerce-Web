@@ -756,13 +756,21 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="flex flex-col md:flex-row gap-5 mb-5">
                             <div class="w-full md:w-2/5">
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                    <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openCatPrompt: false, newCatName: '' }" @click.outside="openCatPrompt = false">
                                         Categoría
-                                        <button type="button" @click="let name = prompt('Ingrese la nueva categoría:'); if(name) $wire.createCategoryQuick(name);" class="ml-2 bg-[var(--color-primary)] text-white w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors shadow-sm" title="Crear nueva categoría">+</button>
+                                        <button type="button" @click="openCatPrompt = !openCatPrompt; if(openCatPrompt) $nextTick(() => $refs.catInput.focus())" class="ml-2 bg-[var(--color-primary)] text-white w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors shadow-sm" title="Crear nueva categoría">+</button>
+                                        
+                                        <div x-show="openCatPrompt" style="display:none;" x-transition class="absolute z-50 left-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
+                                            <span class="block text-xs text-gray-500 dark:text-gray-400 mb-2 normal-case font-normal">Nombre de la nueva categoría:</span>
+                                            <div class="flex gap-2">
+                                                <input x-ref="catInput" x-model="newCatName" @keydown.enter.prevent="$wire.createCategoryQuick(newCatName); openCatPrompt = false; newCatName = ''" type="text" class="w-full text-sm py-1.5 px-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                                <button type="button" @click="if(newCatName) { $wire.createCategoryQuick(newCatName); openCatPrompt = false; newCatName = ''; }" class="bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Crear</button>
+                                            </div>
+                                        </div>
                                     </label>
-                                    <button type="button" @click="catListOpen = true" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
+                                    <a href="{{ route('admin.categories') }}" wire:navigate class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
                                         Gestionar
-                                    </button>
+                                    </a>
                                 </div>
                                 <select wire:model="category_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                     <option value="">Seleccione una categoría</option>
@@ -774,13 +782,21 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                             <div class="w-full md:w-2/5">
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                    <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openBrandPrompt: false, newBrandName: '' }" @click.outside="openBrandPrompt = false">
                                         Marca
-                                        <button type="button" @click="let name = prompt('Ingrese la nueva marca:'); if(name) $wire.createBrandQuick(name);" class="ml-2 bg-[var(--color-primary)] text-white w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors shadow-sm" title="Crear nueva marca">+</button>
+                                        <button type="button" @click="openBrandPrompt = !openBrandPrompt; if(openBrandPrompt) $nextTick(() => $refs.brandInput.focus())" class="ml-2 bg-[var(--color-primary)] text-white w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors shadow-sm" title="Crear nueva marca">+</button>
+                                        
+                                        <div x-show="openBrandPrompt" style="display:none;" x-transition class="absolute z-50 left-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
+                                            <span class="block text-xs text-gray-500 dark:text-gray-400 mb-2 normal-case font-normal">Nombre de la nueva marca:</span>
+                                            <div class="flex gap-2">
+                                                <input x-ref="brandInput" x-model="newBrandName" @keydown.enter.prevent="$wire.createBrandQuick(newBrandName); openBrandPrompt = false; newBrandName = ''" type="text" class="w-full text-sm py-1.5 px-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                                <button type="button" @click="if(newBrandName) { $wire.createBrandQuick(newBrandName); openBrandPrompt = false; newBrandName = ''; }" class="bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Crear</button>
+                                            </div>
+                                        </div>
                                     </label>
-                                    <button type="button" @click="brandListOpen = true" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
+                                    <a href="{{ route('admin.brands') }}" wire:navigate class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider">
                                         Gestionar
-                                    </button>
+                                    </a>
                                 </div>
                                 <div class="flex gap-2">
                                     <select wire:model="brand_ids" multiple class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors min-h-[100px]">
