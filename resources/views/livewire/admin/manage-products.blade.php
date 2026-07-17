@@ -159,12 +159,12 @@ new #[Layout('layouts.app')] class extends Component {
         $this->name = $product->name;
         $this->sku = $product->sku;
         $this->description = $product->description;
-        $this->cost_price = $product->cost_price;
-        $this->profit_margin = $product->profit_margin;
-        $this->wholesale_discount = $product->wholesale_discount;
+        $this->cost_price = (float) $product->cost_price;
+        $this->profit_margin = (int) $product->profit_margin;
+        $this->wholesale_discount = (int) $product->wholesale_discount;
         $this->wholesale_min_quantity = $product->wholesale_min_quantity ?? 3;
-        $this->retail_price = $product->retail_price;
-        $this->wholesale_price = $product->wholesale_price;
+        $this->retail_price = (float) $product->retail_price;
+        $this->wholesale_price = (float) $product->wholesale_price;
         $this->stock = $product->stock;
         $this->current_image_url = $product->image_url;
         $this->showModal = true;
@@ -947,7 +947,7 @@ new #[Layout('layouts.app')] class extends Component {
 
 
     <!-- Modal Actualización Masiva de Precios -->
-    <div x-show="massUpdateOpen" class="fixed z-[60] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+    <div x-show="massUpdateOpen" class="fixed z-50 inset-0 overflow-y-auto" style="z-index: 60;" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
             <div x-show="massUpdateOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/60 dark:bg-[#0b0f19]/90 backdrop-blur-md transition-opacity" @click="massUpdateOpen = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
@@ -1036,7 +1036,7 @@ new #[Layout('layouts.app')] class extends Component {
     </div>
 
     <!-- Brand Management Modal -->
-    <div x-show="brandListOpen" class="fixed z-[70] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+    <div x-show="brandListOpen" class="fixed z-50 inset-0 overflow-y-auto" style="z-index: 70;" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
             <div x-show="brandListOpen" 
                  x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
@@ -1108,7 +1108,7 @@ new #[Layout('layouts.app')] class extends Component {
     </div>
 
     <!-- Category Management Modal -->
-    <div x-show="catListOpen" class="fixed z-[70] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+    <div x-show="catListOpen" class="fixed z-50 inset-0 overflow-y-auto" style="z-index: 70;" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
             <div x-show="catListOpen" 
                  x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
@@ -1180,7 +1180,7 @@ new #[Layout('layouts.app')] class extends Component {
     </div>
 
     <!-- Image Preview Modal -->
-    <div x-show="previewImageOpen" class="fixed z-[60] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+    <div x-show="previewImageOpen" class="fixed z-50 inset-0 overflow-y-auto" style="z-index: 60;" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
             <div x-show="previewImageOpen" 
                  x-transition:enter="ease-out duration-300" 
