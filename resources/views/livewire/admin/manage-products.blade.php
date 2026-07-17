@@ -27,6 +27,7 @@ new #[Layout('layouts.app')] class extends Component {
     public $retail_price = 0;
     public $wholesale_price = 0;
     public $stock = 0;
+    public $min_stock = 2;
     public $image;
     public $current_image_url;
     public $delete_image = false;
@@ -166,6 +167,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->retail_price = (float) $product->retail_price;
         $this->wholesale_price = (float) $product->wholesale_price;
         $this->stock = $product->stock;
+        $this->min_stock = $product->min_stock ?? 2;
         $this->current_image_url = $product->image_url;
         $this->showModal = true;
     }
@@ -185,6 +187,7 @@ new #[Layout('layouts.app')] class extends Component {
             'retail_price' => 'required|numeric|min:0',
             'wholesale_price' => 'required|numeric|min:0|lte:retail_price',
             'stock' => 'required|integer|min:0',
+            'min_stock' => 'required|integer|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -201,6 +204,7 @@ new #[Layout('layouts.app')] class extends Component {
             'retail_price' => $this->retail_price,
             'wholesale_price' => $this->wholesale_price,
             'stock' => $this->stock,
+            'min_stock' => $this->min_stock,
         ];
 
         if ($this->delete_image && $this->product_id) {
@@ -284,6 +288,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->retail_price = 0;
         $this->wholesale_price = 0;
         $this->stock = 0;
+        $this->min_stock = 2;
         $this->image = null;
         $this->current_image_url = null;
         $this->delete_image = false;
@@ -866,7 +871,7 @@ new #[Layout('layouts.app')] class extends Component {
 
                         <!-- Segunda Fila: Categoría, Marca y Stock -->
                         <div class="flex flex-col md:flex-row gap-5 mb-5">
-                            <div class="w-full md:w-2/5">
+                            <div class="w-full md:w-1/3">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openCatPrompt: false, newCatName: '' }" @click.outside="openCatPrompt = false">
                                         Categoría
@@ -892,7 +897,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 </select>
                                 @error('category_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div class="w-full md:w-2/5">
+                            <div class="w-full md:w-1/3">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openBrandPrompt: false, newBrandName: '' }" @click.outside="openBrandPrompt = false">
                                         Marca
@@ -919,10 +924,17 @@ new #[Layout('layouts.app')] class extends Component {
                                 </div>
                                 @error('brand_ids') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div class="w-full md:w-1/5">
-                                <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]">Stock</label>
-                                <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="0">
-                                @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            <div class="w-full md:w-1/3 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]" title="Stock Actual">Stock Act.</label>
+                                    <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="0">
+                                    @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]" title="Alerta de Stock Crítico">Alerta Mín.</label>
+                                    <input wire:model="min_stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="2">
+                                    @error('min_stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                </div>
                             </div>
                         </div>
                         
@@ -935,7 +947,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     @error('cost_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Ganancia Minor. (%)</label>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Margen de Ganancia (%)</label>
                                     <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('profit_margin') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
