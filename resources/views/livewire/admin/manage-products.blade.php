@@ -596,9 +596,18 @@ new #[Layout('layouts.app')] class extends Component {
                                type="search"
                                placeholder="Buscar producto..."
                                id="admin-product-search"
-                               class="pl-9 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all w-52">
-                        <div wire:loading wire:target="search" class="absolute right-3 top-1/2 -translate-y-1/2">
+                               class="pl-9 pr-9 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all w-52">
+                        
+                        <div wire:loading.flex wire:target="search" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                             <svg class="animate-spin w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </div>
+                        
+                        <div wire:loading.remove wire:target="search" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                            @if($search)
+                                <button wire:click="$set('search', '')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
