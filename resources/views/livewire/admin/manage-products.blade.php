@@ -362,7 +362,7 @@ new #[Layout('layouts.app')] class extends Component {
         $slug = \Illuminate\Support\Str::slug($this->manageBrandName);
         
         $query = Brand::where('slug', $slug);
-        if ($this->manageBrandId) {
+        if ($this->manageBrandId && $this->manageBrandId !== 'new') {
             $query->where('id', '!=', $this->manageBrandId);
         }
         if ($query->exists()) {
@@ -370,7 +370,7 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
 
-        if ($this->manageBrandId) {
+        if ($this->manageBrandId && $this->manageBrandId !== 'new') {
             $brand = Brand::find($this->manageBrandId);
             $brand->update(['name' => $this->manageBrandName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Marca actualizada exitosamente.');
@@ -408,7 +408,7 @@ new #[Layout('layouts.app')] class extends Component {
         $slug = \Illuminate\Support\Str::slug($this->manageCategoryName);
         
         $query = Category::where('slug', $slug);
-        if ($this->manageCategoryId) {
+        if ($this->manageCategoryId && $this->manageCategoryId !== 'new') {
             $query->where('id', '!=', $this->manageCategoryId);
         }
         if ($query->exists()) {
@@ -416,7 +416,7 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
 
-        if ($this->manageCategoryId) {
+        if ($this->manageCategoryId && $this->manageCategoryId !== 'new') {
             $cat = Category::find($this->manageCategoryId);
             $cat->update(['name' => $this->manageCategoryName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Categoría actualizada exitosamente.');
@@ -1075,7 +1075,10 @@ new #[Layout('layouts.app')] class extends Component {
                 
                 <div class="px-8 pt-8 pb-8">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Marcas</h3>
+                        <div class="flex items-center gap-4">
+                            <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Marcas</h3>
+                            <button wire:click="$set('manageBrandId', 'new'); $set('manageBrandName', '')" class="bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">➕ Nueva Marca</button>
+                        </div>
                         <button @click="brandListOpen = false" class="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
@@ -1091,6 +1094,18 @@ new #[Layout('layouts.app')] class extends Component {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                @if($manageBrandId === 'new')
+                                <tr class="bg-green-50/50 dark:bg-green-900/10">
+                                    <td class="px-6 py-3" colspan="2">
+                                        <input wire:model="manageBrandName" type="text" class="w-full py-2 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] dark:bg-gray-900 dark:text-white" @keydown.enter="$wire.saveBrand()" placeholder="Nombre de la nueva marca">
+                                        @error('manageBrandName') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td class="px-6 py-3 text-right">
+                                        <button wire:click="saveBrand" class="text-white bg-green-500 hover:bg-green-600 font-bold py-1.5 px-3 rounded text-xs mr-2 transition-colors">Guardar</button>
+                                        <button wire:click="$set('manageBrandId', null)" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-xs font-bold transition-colors">Cancelar</button>
+                                    </td>
+                                </tr>
+                                @endif
                                 @foreach($brands as $brand)
                                     @if($manageBrandId === $brand->id)
                                     <tr class="bg-blue-50/50 dark:bg-blue-900/10">
@@ -1147,7 +1162,10 @@ new #[Layout('layouts.app')] class extends Component {
                 
                 <div class="px-8 pt-8 pb-8">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Categorías</h3>
+                        <div class="flex items-center gap-4">
+                            <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Categorías</h3>
+                            <button wire:click="$set('manageCategoryId', 'new'); $set('manageCategoryName', '')" class="bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">➕ Nueva Categoría</button>
+                        </div>
                         <button @click="catListOpen = false" class="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
@@ -1163,6 +1181,18 @@ new #[Layout('layouts.app')] class extends Component {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                @if($manageCategoryId === 'new')
+                                <tr class="bg-green-50/50 dark:bg-green-900/10">
+                                    <td class="px-6 py-3" colspan="2">
+                                        <input wire:model="manageCategoryName" type="text" class="w-full py-2 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] dark:bg-gray-900 dark:text-white" @keydown.enter="$wire.saveCategory()" placeholder="Nombre de la nueva categoría">
+                                        @error('manageCategoryName') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td class="px-6 py-3 text-right">
+                                        <button wire:click="saveCategory" class="text-white bg-green-500 hover:bg-green-600 font-bold py-1.5 px-3 rounded text-xs mr-2 transition-colors">Guardar</button>
+                                        <button wire:click="$set('manageCategoryId', null)" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-xs font-bold transition-colors">Cancelar</button>
+                                    </td>
+                                </tr>
+                                @endif
                                 @foreach($categories as $category)
                                     @if($manageCategoryId === $category->id)
                                     <tr class="bg-blue-50/50 dark:bg-blue-900/10">
