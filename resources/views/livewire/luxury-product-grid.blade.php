@@ -307,31 +307,35 @@ new class extends Component {
                                         <livewire:add-to-cart :product="$product" :compact="true" wire:key="add-cart-desk-{{ $product->id }}" />
                                     </div>
                                 </div>
-
-                                {{-- Stock Badge --}}
-                                @if($product->stock <= 0)
-                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-red-500/10 text-red-400 border border-red-500/20 backdrop-blur-sm shadow-sm rounded-none">
-                                        Agotado
-                                    </span>
-                                @elseif($product->stock <= ($product->min_stock ?? 5))
-                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-orange-500/10 text-orange-400 border border-orange-500/20 backdrop-blur-sm shadow-sm rounded-none" title="Stock Disponible">
-                                        ¡Quedan {{ $product->stock }}!
-                                    </span>
-                                @else
-                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-[#1a1f2c]/40 text-gray-300 border border-white/5 backdrop-blur-sm shadow-sm rounded-none" title="Stock Disponible">
-                                        Stock: {{ $product->stock }}
-                                    </span>
-                                @endif
                             </div>
 
                             {{-- Content Area --}}
                             <div class="p-6 pt-0 flex flex-col flex-grow relative z-20">
-                                @if($product->category)
-                                    <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-2">
-                                        {{ $product->category->name }}
-                                    </span>
-                                @endif
-                                
+                                <div class="flex justify-between items-start mb-2 gap-2">
+                                    @if($product->category)
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 block truncate">
+                                            {{ $product->category->name }}
+                                        </span>
+                                    @else
+                                        <span></span>
+                                    @endif
+
+                                    {{-- Stock Badge --}}
+                                    @if($product->stock <= 0)
+                                        <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 whitespace-nowrap">
+                                            Agotado
+                                        </span>
+                                    @elseif($product->stock <= ($product->min_stock ?? 5))
+                                        <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 whitespace-nowrap" title="Stock Disponible">
+                                            ¡Quedan {{ $product->stock }}!
+                                        </span>
+                                    @else
+                                        <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#1a1f2c]/40 text-gray-300 border border-white/5 whitespace-nowrap" title="Stock Disponible">
+                                            Stock: {{ $product->stock }}
+                                        </span>
+                                    @endif
+                                </div>
+
                                 <a href="{{ route('product.detail', $product->slug) }}" wire:navigate class="group/link flex justify-between items-start gap-4">
                                     <h3 class="text-base font-bold text-gray-200 leading-snug line-clamp-2 transition-colors group-hover:text-white">
                                         {{ $product->name }}
