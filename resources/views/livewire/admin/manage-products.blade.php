@@ -16,7 +16,7 @@ new #[Layout('layouts.app')] class extends Component {
     
     public $product_id = null;
     public $category_id = '';
-    public $brand_id = '';
+    public $brand_ids = [];
     public $name = '';
     public $sku = '';
     public $description = '';
@@ -108,7 +108,7 @@ new #[Layout('layouts.app')] class extends Component {
     public function with(): array
     {
         // PERF-01: Ordena desde SQL con JOIN en lugar de cargar todo en PHP.
-        $query = Product::query()->with(['category', 'brand']);
+        $query = Product::query()->with(['category', 'brands']);
 
         // Filtro de búsqueda por nombre
         if (!empty($this->search)) {
@@ -121,8 +121,10 @@ new #[Layout('layouts.app')] class extends Component {
                   ->orderBy('categories.name', $this->sortDirection)
                   ->select('products.*');
         } elseif ($this->sortField === 'brand_name') {
-            $query->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
-                  ->orderBy('brands.name', $this->sortDirection)
+            $query->orderBy(Brand::select('name')
+                ->join('brand_product', 'brands.id', '=', 'brand_product.brand_id')
+                ->whereColumn('brand_product.product_id', 'products.id')
+                ->limit(1), $this->sortDirection);
                   ->select('products.*');
         } else {
             $query->orderBy('products.' . $this->sortField, $this->sortDirection);
@@ -146,7 +148,7 @@ new #[Layout('layouts.app')] class extends Component {
         $product = Product::find($id);
         $this->product_id = $product->id;
         $this->category_id = $product->category_id;
-        $this->brand_id = $product->brand_id;
+        $this->brand_ids = $product->brands->pluck('id')->map(fn($id) => (string)$id)->toArray();
         $this->name = $product->name;
         $this->sku = $product->sku;
         $this->description = $product->description;
@@ -167,7 +169,8 @@ new #[Layout('layouts.app')] class extends Component {
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:255|unique:products,sku,' . $this->product_id,
             'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
+            'brand_ids' => 'nullable|array',
+            'brand_ids.*' => 'exists:brands,id',
             'cost_price' => 'required|numeric|min:0',
             'profit_margin' => 'required|integer|min:0',
             'wholesale_discount' => 'required|integer|min:0|max:100',
@@ -182,7 +185,7 @@ new #[Layout('layouts.app')] class extends Component {
             'name' => $this->name,
             'sku' => empty($this->sku) ? null : $this->sku,
             'category_id' => $this->category_id,
-            'brand_id' => $this->brand_id ?: null,
+            // brand_ids se manejan con sync()
             'description' => $this->description,
             'cost_price' => $this->cost_price,
             'profit_margin' => $this->profit_margin,
@@ -205,7 +208,8 @@ new #[Layout('layouts.app')] class extends Component {
             $data['image_url'] = $this->image->store('products', 'public');
         }
 
-        Product::updateOrCreate(['id' => $this->product_id], $data);
+        $product = Product::updateOrCreate(['id' => $this->product_id], $data);
+        $product->brands()->sync($this->brand_ids);
 
         $this->showModal = false;
         $this->loadProducts();
@@ -238,7 +242,7 @@ new #[Layout('layouts.app')] class extends Component {
             'slug' => \Illuminate\Support\Str::slug($this->new_brand_name)
         ]);
         $this->loadBrandsWithCount();
-        $this->brand_id = $brand->id;
+        $this->brand_ids[] = (string)$brand->id;
         $this->new_brand_name = '';
         $this->dispatch('notify', message: 'Marca creada y seleccionada exitosamente.');
     }
@@ -247,7 +251,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         $this->product_id = null;
         $this->category_id = '';
-        $this->brand_id = '';
+        $this->brand_ids = [];
         $this->name = '';
         $this->sku = '';
         $this->description = '';
@@ -367,7 +371,7 @@ new #[Layout('layouts.app')] class extends Component {
             $query->where('category_id', $this->massCategoryId);
         } elseif ($this->massTarget === 'brand') {
             if (empty($this->massBrandId)) return;
-            $query->where('brand_id', $this->massBrandId);
+            $query->whereHas('brands', fn($q) => $q->where('brands.id', $this->massBrandId));
         }
 
         $products = $query->get();
@@ -608,7 +612,7 @@ new #[Layout('layouts.app')] class extends Component {
                             @if($visibleColumns['brand'])
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                    {{ $product->brand ? $product->brand->name : 'N/A' }}
+                                    {{ $product->brands->pluck('name')->join(', ') ?: 'N/A' }}
                                 </span>
                             </td>
                             @endif
@@ -758,8 +762,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     </a>
                                 </div>
                                 <div class="flex gap-2">
-                                    <select wire:model="brand_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
-                                        <option value="">Sin marca</option>
+                                    <select wire:model="brand_ids" multiple class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors min-h-[100px]">
                                         @foreach($brands as $brand)
                                             <option value="{{ $brand->id }}">{{ $brand->name }}</option>
                                         @endforeach
@@ -769,7 +772,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     <input wire:model="new_brand_name" type="text" placeholder="O crear nueva..." class="w-full py-1.5 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     <button type="button" wire:click="createBrandQuick" class="px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-xs font-bold hover:opacity-90 whitespace-nowrap">Crear</button>
                                 </div>
-                                @error('brand_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                @error('brand_ids') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 @error('new_brand_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="w-full md:w-1/5">
