@@ -7,8 +7,10 @@ use App\Models\StoreSetting;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-// SEO Sitemap
-Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+// SEO Sitemap — FIX-06: throttle para limitar crawlers agresivos (máx 30 req/min)
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])
+    ->middleware(['throttle:30,1'])
+    ->name('sitemap');
 
 Route::get('/', function () {
     return view('welcome');

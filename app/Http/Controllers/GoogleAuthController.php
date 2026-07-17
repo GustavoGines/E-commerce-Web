@@ -88,15 +88,31 @@ class GoogleAuthController extends Controller
             \Illuminate\Support\Facades\Log::error('GOOGLE CALLBACK ERROR: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
-            return redirect()->route('login')->with('error', 'Error al iniciar sesión con Google. Por favor, intenta nuevamente.');
+
+            // FIX-07: Mostrar mensaje específico si la cuenta está suspendida.
+            $errorMessage = $e->getMessage() === 'account_suspended'
+                ? 'Tu cuenta ha sido suspendida. Por favor, contacta con soporte si crees que esto es un error.'
+                : 'Error al iniciar sesión con Google. Por favor, intenta nuevamente.';
+
+            return redirect()->route('login')->with('error', $errorMessage);
         }
     }
 
     /**
      * Logs the user in and merges the guest cart into the user's cart.
+     *
+     * @throws \RuntimeException if the user account is suspended.
      */
     private function loginAndMergeCart(User $user): void
     {
+        // FIX-07: Verificar suspensión ANTES de Auth::login().
+        // El middleware CheckBanned solo aplica a usuarios ya logueados.
+        // Sin este guard, un usuario baneado podría eludir la suspensión
+        // usando "Continuar con Google" y obtener una sesión válida.
+        if ($user->is_banned) {
+            throw new \RuntimeException('account_suspended');
+        }
+
         $oldSessionId = Session::getId();
         Auth::login($user);
         request()->session()->regenerate();

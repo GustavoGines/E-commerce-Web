@@ -10,6 +10,74 @@ use App\Models\PageVisit;
 class TrackVisits
 {
     /**
+     * FIX-01: Lista de firmas de User-Agent de bots conocidos.
+     *
+     * Cubre: search engines, herramientas SEO, crawlers de IA,
+     * librerías HTTP genéricas y clientes de API automatizados.
+     * Todas las firmas están en minúsculas; la comparación se hace
+     * con strtolower() para ser case-insensitive sin overhead extra.
+     */
+    private const BOT_SIGNATURES = [
+        // ── Search Engines ───────────────────────────────────────────
+        'googlebot', 'google-inspectiontool', 'googlelighthoue',
+        'bingbot', 'msnbot', 'bingpreview',
+        'slurp',                    // Yahoo
+        'duckduckbot',
+        'baiduspider',
+        'yandexbot', 'yandeximages', 'yandexmedia',
+        'sogou',
+        'exabot',
+        'ia_archiver',              // Wayback Machine
+        'applebot',
+        'naverbot', 'yeti',         // Naver (Korea)
+        'petalbot',                 // Huawei
+        'twitterbot',
+        'facebot', 'facebookexternalhit',
+        'linkedinbot',
+
+        // ── Herramientas SEO / Auditoría ─────────────────────────────
+        'ahrefsbot',
+        'semrushbot',
+        'dotbot',                   // Moz
+        'rogerbot',                 // Moz
+        'mj12bot',                  // Majestic
+        'blexbot',
+        'seokicks',
+        'screaming frog',
+
+        // ── Crawlers de IA / LLM ─────────────────────────────────────
+        'gptbot',                   // OpenAI
+        'chatgpt-user',
+        'claudebot',                // Anthropic
+        'anthropic-ai',
+        'ccbot',                    // CommonCrawl
+        'bytespider',               // TikTok / ByteDance
+        'dataforseobot',
+
+        // ── Librerías HTTP / CLIs ─────────────────────────────────────
+        'curl/',
+        'wget/',
+        'python-requests',
+        'python-urllib',
+        'go-http-client',
+        'java/',
+        'okhttp',
+        'libwww-perl',
+        'lwp-trivial',
+
+        // ── Clientes de API / Testing ─────────────────────────────────
+        'postmanruntime',
+        'insomnia/',
+        'axios/',
+        'node-fetch',
+        'node-http',
+        'got/',                     // Node.js got library
+        'undici',                   // Node.js fetch underlying
+        'httpie',
+        'pycurl',
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  Closure(Request): (Response)  $next
@@ -17,31 +85,68 @@ class TrackVisits
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->isMethod('GET') && !$request->ajax() && !$request->header('X-Livewire')) {
-            $today = now()->format('Y-m-d');
-            
-            if ($request->session()->get('last_visit_date') !== $today) {
-                try {
-                    // Evitar que bots o peticiones sin cookies generen miles de visitas
-                    // comprobando si esa IP ya registró una visita hoy.
-                    $alreadyVisited = PageVisit::where('ip_address', $request->ip())
-                                               ->whereDate('created_at', now()->toDateString())
-                                               ->exists();
-                                               
-                    if (!$alreadyVisited) {
-                        PageVisit::create([
-                            'ip_address' => $request->ip(),
-                            'url' => $request->fullUrl(),
-                            'user_agent' => $request->userAgent(),
-                        ]);
+
+            // FIX-01: Filtrar bots ANTES de cualquier consulta a la DB.
+            // Los bots no mantienen sesión, por lo que siempre pasarían el
+            // check de sesión. Con este guard se descarta en O(n) string match.
+            if (!$this->isBot($request)) {
+                $today = now()->format('Y-m-d');
+
+                if ($request->session()->get('last_visit_date') !== $today) {
+                    try {
+                        // Verificar si esta IP ya registró una visita hoy.
+                        // El índice compuesto (ip_address, created_at) creado en
+                        // la migración FIX-03 hace esta query eficiente.
+                        $alreadyVisited = PageVisit::where('ip_address', $request->ip())
+                                                   ->whereDate('created_at', now()->toDateString())
+                                                   ->exists();
+
+                        if (!$alreadyVisited) {
+                            PageVisit::create([
+                                'ip_address' => $request->ip(),
+                                'url'        => $request->fullUrl(),
+                                'user_agent' => $request->userAgent(),
+                            ]);
+                        }
+
+                        $request->session()->put('last_visit_date', $today);
+                    } catch (\Exception $e) {
+                        // No interrumpir la petición por errores de tracking.
                     }
-                    
-                    $request->session()->put('last_visit_date', $today);
-                } catch (\Exception $e) {
-                    // Ignore errors
                 }
             }
         }
-        
+
         return $next($request);
+    }
+
+    /**
+     * Determina si el request proviene de un bot o herramienta automatizada.
+     *
+     * La detección se basa en coincidencia de subcadenas del User-Agent contra
+     * una lista curada de firmas conocidas (BOT_SIGNATURES). La comparación
+     * es case-insensitive y se ejecuta antes de cualquier acceso a la DB.
+     *
+     * Un User-Agent vacío o nulo se trata siempre como bot, ya que los
+     * navegadores reales siempre envían esta cabecera.
+     */
+    private function isBot(Request $request): bool
+    {
+        $userAgent = $request->userAgent();
+
+        // Sin User-Agent → definitivamente automatizado
+        if (empty($userAgent)) {
+            return true;
+        }
+
+        $ua = strtolower($userAgent);
+
+        foreach (self::BOT_SIGNATURES as $signature) {
+            if (str_contains($ua, $signature)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -15,10 +15,16 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $role = auth()->user()->role;
-        $isAdmin = (is_string($role) && $role === 'admin') || ($role instanceof \App\Enums\UserRole && $role->value === 'admin');
-        
-        if (auth()->check() && $isAdmin) {
+        // Guard 1: el usuario debe estar autenticado.
+        // Esto DEBE evaluarse antes de acceder a auth()->user() para evitar
+        // un TypeError si la sesión está corrupta o el token expiró.
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        // Guard 2: el usuario autenticado debe tener rol de administrador.
+        // Usa el helper isAdmin() del modelo User para centralizar la lógica de rol.
+        if (auth()->user()->isAdmin()) {
             return $next($request);
         }
 

@@ -42,6 +42,19 @@ class LoginForm extends Form
             ]);
         }
 
+        // Verificar si la cuenta está baneada luego de autenticar.
+        // Auth::attempt() loguea al usuario antes de que podamos chequearlo,
+        // por lo que debemos desloguearlo manualmente si está suspendido.
+        if (Auth::user()->is_banned) {
+            Auth::logout();
+            Session::invalidate();
+            Session::regenerateToken();
+
+            throw ValidationException::withMessages([
+                'form.banned' => 'account_suspended',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
 
         app(CartService::class)->mergeGuestCartIntoUserCart(Auth::user(), $oldSessionId);

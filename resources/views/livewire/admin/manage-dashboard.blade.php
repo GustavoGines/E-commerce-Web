@@ -13,6 +13,15 @@ new #[Layout('layouts.app')] class extends Component {
     
     public function resetVisits()
     {
+        // FIX-04: Guard de seguridad en servidor — el wire:confirm del frontend
+        // puede ser eludido con DevTools. Este abort bloquea la acción en producción
+        // de forma definitiva, independientemente de cómo se invoque el método.
+        abort_unless(
+            app()->environment('local', 'staging'),
+            403,
+            'La acción de resetear visitas no está permitida en producción.'
+        );
+
         PageVisit::truncate();
         session()->forget('last_visit_date');
         $this->dispatch('visitsResetted');
@@ -199,7 +208,7 @@ new #[Layout('layouts.app')] class extends Component {
                 <span>Esta semana: {{ number_format($visitsWeek, 0, ',', '.') }}</span>
                 <span>Este mes: {{ number_format($visitsMonth, 0, ',', '.') }}</span>
                 
-                <!-- BOTÓN TEMPORAL DE RESETEO (Eliminar antes de lanzar) -->
+                {{-- Botón de reseteo de visitas (solo funciona en local/staging, bloqueado en producción por FIX-04) --}}
                 <button wire:click="resetVisits" wire:confirm="¿Estás seguro de que quieres borrar el historial de visitas a CERO? Esto no se puede deshacer." 
                         class="absolute right-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white px-2 py-1 rounded text-[9px] uppercase tracking-wider font-bold">
                     Resetear
@@ -391,145 +400,160 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" data-navigate-once></script>
     <script>
-        const initDashboardCharts = () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#9ca3af' : '#4b5563';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#3b82f6';
-            
-            // Configurar defaults globales de Chart.js
-            if(window.Chart) {
-                Chart.defaults.color = textColor;
-                Chart.defaults.font.family = "'Inter', sans-serif";
-            }
+        /**
+         * Dashboard Charts — inicialización robusta para Livewire SPA.
+         */
 
-            // Gráfico 1: Ingresos Diarios
+        const buildCharts = () => {
+            const isDark      = document.documentElement.classList.contains('dark');
+            const textColor   = isDark ? '#9ca3af' : '#4b5563';
+            const gridColor   = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+            const primaryColor = getComputedStyle(document.documentElement)
+                                    .getPropertyValue('--color-primary').trim() || '#DC2626';
+
+            Chart.defaults.color       = textColor;
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // ── Gráfico 1: Ingresos Diarios (línea) ──────────────────────────
             const ctxRevenue = document.getElementById('dailyRevenueChart');
-            if (ctxRevenue && window.Chart) {
-                let existingChart = Chart.getChart(ctxRevenue);
-                if (existingChart) existingChart.destroy();
+            if (ctxRevenue) {
+                const existing = Chart.getChart(ctxRevenue);
+                if (existing) existing.destroy();
 
                 new Chart(ctxRevenue, {
                     type: 'line',
                     data: {
                         labels: @json($dailyRevenueLabels),
-                            datasets: [{
-                                label: 'Ingresos',
-                                data: @json($dailyRevenue),
-                                borderColor: primaryColor,
-                                backgroundColor: 'rgba(' + (isDark ? '255,255,255,0.05' : '59,130,246,0.1') + ')', // simplified transparent
-                                fill: true,
-                                tension: 0.4,
-                                borderWidth: 3,
-                                pointBackgroundColor: primaryColor,
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: isDark ? '#1f2937' : '#fff',
-                                    titleColor: isDark ? '#fff' : '#111827',
-                                    bodyColor: isDark ? '#d1d5db' : '#4b5563',
-                                    borderColor: isDark ? '#374151' : '#e5e7eb',
-                                    borderWidth: 1,
-                                    padding: 12,
-                                    displayColors: false,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return '$' + context.parsed.y.toLocaleString('es-AR');
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: { display: false, drawBorder: false }
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: @json($dailyRevenue),
+                            borderColor: primaryColor,
+                            backgroundColor: isDark
+                                ? 'rgba(255,255,255,0.04)'
+                                : 'rgba(220,38,38,0.07)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: primaryColor,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: isDark ? '#1f2937' : '#fff',
+                                titleColor:      isDark ? '#fff'    : '#111827',
+                                bodyColor:       isDark ? '#d1d5db' : '#4b5563',
+                                borderColor:     isDark ? '#374151' : '#e5e7eb',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: ctx => '$' + ctx.parsed.y.toLocaleString('es-AR'),
                                 },
-                                y: {
-                                    grid: { color: gridColor, drawBorder: false },
-                                    ticks: {
-                                        callback: function(value) {
-                                            if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
-                                            if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'k';
-                                            return '$' + value;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
+                            },
+                        },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: {
+                                    callback: v => {
+                                        if (v >= 1_000_000) return '$' + (v / 1_000_000).toFixed(1) + 'M';
+                                        if (v >= 1_000)     return '$' + (v / 1_000).toFixed(0) + 'k';
+                                        return '$' + v;
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
+            }
 
-            // Gráfico 2: Órdenes por Estado
+            // ── Gráfico 2: Órdenes por Estado (doughnut) ─────────────────────
             const ctxStatus = document.getElementById('ordersStatusChart');
-            if (ctxStatus && window.Chart) {
-                let existingChart = Chart.getChart(ctxStatus);
-                if (existingChart) existingChart.destroy();
+            if (ctxStatus) {
+                const existing = Chart.getChart(ctxStatus);
+                if (existing) existing.destroy();
 
                 const statusData = @json($ordersByStatus);
                 const labels = Object.keys(statusData).map(k => k.charAt(0).toUpperCase() + k.slice(1));
-                const data = Object.values(statusData);
-                
-                // Colors mapping based on our logic
-                const colors = labels.map(label => {
-                    if (label.toLowerCase() === 'pagado' || label.toLowerCase() === 'completado') return '#10b981'; // emerald
-                    if (label.toLowerCase() === 'pendiente') return '#f59e0b'; // amber
-                    if (label.toLowerCase() === 'cancelado') return '#f43f5e'; // rose
-                    return '#6b7280'; // gray
+                const data   = Object.values(statusData);
+                const colors = labels.map(l => {
+                    const v = l.toLowerCase();
+                    if (v === 'pagado' || v === 'completado') return '#10b981';
+                    if (v === 'pendiente')                    return '#f59e0b';
+                    if (v === 'cancelado')                    return '#f43f5e';
+                    return '#6b7280';
                 });
 
                 new Chart(ctxStatus, {
                     type: 'doughnut',
                     data: {
-                        labels: labels,
-                            datasets: [{
-                                data: data,
-                                backgroundColor: colors,
-                                borderWidth: 0,
-                                hoverOffset: 4
-                            }]
+                        labels,
+                        datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' },
+                            },
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '70%',
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' }
-                                }
-                            }
-                        }
-                    });
-                }
-            };
-            
-        // Esperar activamente a que Chart.js esté cargado en memoria por Livewire
-        const checkAndInitCharts = (attempts = 0) => {
-            if (window.Chart && document.getElementById('dailyRevenueChart')) {
-                initDashboardCharts();
-            } else if (attempts < 20) {
-                // Intentar hasta por 1 segundo (20 * 50ms)
-                setTimeout(() => checkAndInitCharts(attempts + 1), 50);
+                    },
+                });
             }
         };
-        
-        checkAndInitCharts();
-        
-        // Ensure it runs on back/forward navigations too if Livewire doesn't re-execute scripts natively
+
+        const initCharts = () => {
+            if (window.Chart) {
+                buildCharts();
+                return;
+            }
+
+            const existing = document.getElementById('chartjs-cdn');
+            if (existing) {
+                let waited = 0;
+                const poll = setInterval(() => {
+                    waited += 100;
+                    if (window.Chart) { clearInterval(poll); buildCharts(); }
+                    else if (waited >= 5000) clearInterval(poll);
+                }, 100);
+                return;
+            }
+
+            const script  = document.createElement('script');
+            script.id     = 'chartjs-cdn';
+            script.src    = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+            script.onload = () => buildCharts();
+            document.head.appendChild(script);
+        };
+
+        // Ejecutar en navegación SPA
         document.addEventListener('livewire:navigated', () => {
+            // Solo intentar cargar si estamos en la vista que tiene los gráficos
             if (document.getElementById('dailyRevenueChart')) {
-                checkAndInitCharts();
+                initCharts();
             }
         });
+        
+        // Ejecutar en primera carga si la página se cargó directamente
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.getElementById('dailyRevenueChart')) initCharts();
+            });
+        } else {
+            if (document.getElementById('dailyRevenueChart')) initCharts();
+        }
     </script>
 </div>

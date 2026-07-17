@@ -1,4 +1,23 @@
 User-agent: *
+# Rutas públicas: tienda, productos y categorías son rastreables
 Allow: /
+Allow: /shop
+Allow: /producto/
+
+# Rutas privadas: no deben indexarse ni rastrearse
+Disallow: /admin
+Disallow: /admin/
+Disallow: /profile
+Disallow: /checkout
+Disallow: /mis-ordenes
+Disallow: /auth/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Limitar la frecuencia de rastreo a 1 request por segundo
+# (respetado por bots bien configurados como Googlebot)
+Crawl-delay: 1
 
 Sitemap: https://jcgelectronica.com.ar/sitemap.xml

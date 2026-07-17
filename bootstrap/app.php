@@ -16,7 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_admin' => IsAdmin::class,
         ]);
 
-        $middleware->trustProxies(at: '*');
+        // FIX-02: Sin proxy/CDN/load-balancer entre el cliente y este VPS.
+        // El dominio apunta directamente a la IP pública del servidor (DonWeb Cloud).
+        // Con at: [] Laravel ignora cualquier header X-Forwarded-For inyectado
+        // por clientes maliciosos y obtiene la IP real desde la conexión TCP.
+        // Si en el futuro se agrega Cloudflare u otro proxy, se deben especificar
+        // sus rangos de IP aquí en lugar de usar el wildcard '*'.
+        $middleware->trustProxies(at: []);
 
         // Excluir el webhook de MercadoPago del CSRF (es un POST server-to-server)
         $middleware->validateCsrfTokens(except: [

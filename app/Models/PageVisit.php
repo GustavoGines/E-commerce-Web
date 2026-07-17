@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PageVisit extends Model
 {
-    protected $guarded = [];
+    protected $fillable = ['ip_address', 'url', 'user_agent'];
     public $timestamps = false;
 
     // Asignar timestamps solo a created_at
