@@ -314,6 +314,31 @@ new #[Layout('layouts.app')] class extends Component {
         }
     }
 
+    public function updatedRetailPrice()
+    {
+        $cost = (float) $this->cost_price;
+        $retail = (float) $this->retail_price;
+        $discount = (float) $this->wholesale_discount;
+
+        if ($cost > 0) {
+            $this->profit_margin = (int) round((($retail / $cost) - 1) * 100);
+        }
+        
+        if ($discount >= 0) {
+            $this->wholesale_price = round($retail * (1 - ($discount / 100)), 2);
+        }
+    }
+
+    public function updatedWholesalePrice()
+    {
+        $retail = (float) $this->retail_price;
+        $wholesale = (float) $this->wholesale_price;
+
+        if ($retail > 0) {
+            $this->wholesale_discount = (int) round((1 - ($wholesale / $retail)) * 100);
+        }
+    }
+
     public function deleteSelected()
     {
         if (count($this->selectedProducts) > 0) {
@@ -929,12 +954,12 @@ new #[Layout('layouts.app')] class extends Component {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Precio Final Lista</label>
-                                    <input wire:model="retail_price" type="number" step="0.01" class="w-full py-3 px-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-3 px-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('retail_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider">Precio Final Mayorista</label>
-                                    <input wire:model="wholesale_price" type="number" step="0.01" class="w-full py-3 px-4 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-xl text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-3 px-4 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-xl text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('wholesale_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -952,7 +977,14 @@ new #[Layout('layouts.app')] class extends Component {
                                     </button>
                                 </div>
                             @endif
-                            <input wire:model="image" type="file" accept="image/*" class="w-full py-2.5 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-300 dark:hover:file:bg-gray-600 shadow-sm dark:shadow-none cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <input wire:model="image" type="file" accept="image/*" class="w-full py-2.5 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-300 dark:hover:file:bg-gray-600 shadow-sm dark:shadow-none cursor-pointer">
+                                
+                                <label class="cursor-pointer shrink-0 flex items-center justify-center p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors shadow-sm" title="Tomar foto con la cámara (Móvil)">
+                                    <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
+                                </label>
+                            </div>
                             @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                             <div wire:loading wire:target="image" class="text-sm text-[var(--color-primary)] mt-2 font-medium">Cargando imagen...</div>
                         </div>
