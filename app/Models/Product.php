@@ -25,7 +25,6 @@ class Product extends Model
         'stock',
         'image_url',
         'category_id',
-        'brand_id',
     ];
 
     protected $casts = [
@@ -84,8 +83,8 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function brand()
+    public function brands()
     {
-        return $this->belongsTo(Brand::class);
+        return $this->belongsToMany(Brand::class);
     }
 }

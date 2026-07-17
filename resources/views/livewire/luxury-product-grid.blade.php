@@ -54,7 +54,7 @@ new class extends Component {
 
     public function with()
     {
-        $query = Product::with(['category', 'brand']);
+        $query = Product::with(['category', 'brands']);
 
         if ($this->selectedCategory) {
             $query->where('category_id', $this->selectedCategory);
