@@ -152,9 +152,13 @@ new #[Layout('layouts.app')] class extends Component {
                             <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6">
                                 <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Agotado
                             </div>
-                        @elseif(auth()->check() && auth()->user()->isAdmin())
-                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Stock Administrador: {{ $product->stock }}
+                        @elseif($product->stock <= ($product->min_stock ?? 5))
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6" title="Stock Disponible">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span> ¡Solo quedan {{ $product->stock }}!
+                            </div>
+                        @else
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#1a1f2c]/40 text-gray-300 border border-white/5 text-[10px] uppercase tracking-widest font-bold rounded-full mb-6" title="Stock Disponible">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Stock: {{ $product->stock }}
                             </div>
                         @endif
 
@@ -377,8 +381,10 @@ new #[Layout('layouts.app')] class extends Component {
                 <div class="flex flex-col justify-center">
                     @if($product->stock <= 0)
                         <span class="inline-block px-3 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-xs uppercase tracking-widest font-bold rounded-full w-max mb-4">Agotado</span>
-                    @elseif(auth()->check() && auth()->user()->isAdmin())
-                        <span class="inline-block px-3 py-1 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/30 text-xs uppercase tracking-widest font-bold rounded-full w-max mb-4" title="Solo visible para Administradores">En Stock: {{ $product->stock }}</span>
+                    @elseif($product->stock <= ($product->min_stock ?? 5))
+                        <span class="inline-block px-3 py-1 bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30 text-xs uppercase tracking-widest font-bold rounded-full w-max mb-4" title="Stock Disponible">¡Solo quedan {{ $product->stock }}!</span>
+                    @else
+                        <span class="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-700 text-xs uppercase tracking-widest font-bold rounded-full w-max mb-4" title="Stock Disponible">Stock: {{ $product->stock }}</span>
                     @endif
 
                     <h1 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-4">{{ $product->name }}</h1>

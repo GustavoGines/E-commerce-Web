@@ -310,8 +310,16 @@ new class extends Component {
 
                                 {{-- Stock Badge --}}
                                 @if($product->stock <= 0)
-                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-red-500/10 text-red-400 border border-red-500/20 backdrop-blur-sm">
+                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-red-500/10 text-red-400 border border-red-500/20 backdrop-blur-sm shadow-sm rounded-none">
                                         Agotado
+                                    </span>
+                                @elseif($product->stock <= ($product->min_stock ?? 5))
+                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-orange-500/10 text-orange-400 border border-orange-500/20 backdrop-blur-sm shadow-sm rounded-none" title="Stock Disponible">
+                                        ¡Quedan {{ $product->stock }}!
+                                    </span>
+                                @else
+                                    <span class="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 bg-[#1a1f2c]/40 text-gray-300 border border-white/5 backdrop-blur-sm shadow-sm rounded-none" title="Stock Disponible">
+                                        Stock: {{ $product->stock }}
                                     </span>
                                 @endif
                             </div>

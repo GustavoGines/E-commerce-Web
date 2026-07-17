@@ -98,10 +98,16 @@ new class extends Component {
                                      bg-rose-500/90 text-white shadow-sm">
                             Agotado
                         </span>
-                    @elseif(auth()->check() && auth()->user()->isAdmin())
+                    @elseif($product->stock <= ($product->min_stock ?? 5))
                         <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
                                      px-2 py-1 rounded-lg backdrop-blur-md
-                                     bg-emerald-500/90 text-white shadow-sm" title="Solo visible para Administradores">
+                                     bg-orange-500/90 text-white shadow-sm" title="Stock Disponible">
+                            ¡Solo quedan {{ $product->stock }}!
+                        </span>
+                    @else
+                        <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
+                                     px-2 py-1 rounded-lg backdrop-blur-md
+                                     bg-slate-800/70 text-white shadow-sm" title="Stock Disponible">
                             Stock: {{ $product->stock }}
                         </span>
                     @endif
