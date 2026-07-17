@@ -879,26 +879,30 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
 
                         <!-- Segunda Fila: Categoría, Marca y Stock -->
-                        <div class="flex flex-col md:flex-row gap-5 mb-5">
+                        <div class="flex flex-col md:flex-row gap-5 mb-6">
+                            <!-- Categoría -->
                             <div class="w-full md:w-1/3">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openCatPrompt: false, newCatName: '' }" @click.outside="openCatPrompt = false">
-                                        Categoría
-                                        <button type="button" @click="openCatPrompt = !openCatPrompt; if(openCatPrompt) $nextTick(() => $refs.catInput.focus())" class="ml-2 bg-[var(--color-primary)] text-white w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors shadow-sm" title="Crear nueva categoría">+</button>
-                                        
-                                        <div x-show="openCatPrompt" style="display:none;" x-transition class="absolute z-50 left-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
-                                            <span class="block text-xs text-gray-500 dark:text-gray-400 mb-2 normal-case font-normal">Nombre de la nueva categoría:</span>
-                                            <div class="flex gap-2">
-                                                <input x-ref="catInput" x-model="newCatName" @keydown.enter.prevent="$wire.createCategoryQuick(newCatName); openCatPrompt = false; newCatName = ''" type="text" class="w-full text-sm py-1.5 px-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                                                <button type="button" @click="if(newCatName) { $wire.createCategoryQuick(newCatName); openCatPrompt = false; newCatName = ''; }" class="bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Crear</button>
+                                <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                                    <span>Categoría</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="catListOpen = true" class="text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Gestionar Categorías">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        </button>
+                                        <div x-data="{ openCatPrompt: false, newCatName: '' }" @click.outside="openCatPrompt = false" class="relative">
+                                            <button type="button" @click="openCatPrompt = !openCatPrompt; if(openCatPrompt) $nextTick(() => $refs.catInput.focus())" class="text-[var(--color-primary)] hover:text-blue-600 transition-colors" title="Crear nueva categoría">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                            </button>
+                                            <div x-show="openCatPrompt" style="display:none;" x-transition class="absolute z-50 right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
+                                                <span class="block text-xs text-gray-500 dark:text-gray-400 mb-2 normal-case font-normal">Nombre de la nueva categoría:</span>
+                                                <div class="flex gap-2">
+                                                    <input x-ref="catInput" x-model="newCatName" @keydown.enter.prevent="$wire.createCategoryQuick(newCatName); openCatPrompt = false; newCatName = ''" type="text" class="w-full text-sm py-1.5 px-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                                    <button type="button" @click="if(newCatName) { $wire.createCategoryQuick(newCatName); openCatPrompt = false; newCatName = ''; }" class="bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Crear</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </label>
-                                    <button type="button" @click="catListOpen = true" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider focus:outline-none">
-                                        Gestionar
-                                    </button>
-                                </div>
-                                <select wire:model="category_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
+                                    </div>
+                                </label>
+                                <select wire:model="category_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[42px]">
                                     <option value="">Seleccione una categoría</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -906,42 +910,97 @@ new #[Layout('layouts.app')] class extends Component {
                                 </select>
                                 @error('category_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
+
+                            <!-- Marca -->
                             <div class="w-full md:w-1/3">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openBrandPrompt: false, newBrandName: '' }" @click.outside="openBrandPrompt = false">
-                                        Marca
-                                        <button type="button" @click="openBrandPrompt = !openBrandPrompt; if(openBrandPrompt) $nextTick(() => $refs.brandInput.focus())" class="ml-2 bg-[var(--color-primary)] text-white w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors shadow-sm" title="Crear nueva marca">+</button>
-                                        
-                                        <div x-show="openBrandPrompt" style="display:none;" x-transition class="absolute z-50 left-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
-                                            <span class="block text-xs text-gray-500 dark:text-gray-400 mb-2 normal-case font-normal">Nombre de la nueva marca:</span>
-                                            <div class="flex gap-2">
-                                                <input x-ref="brandInput" x-model="newBrandName" @keydown.enter.prevent="$wire.createBrandQuick(newBrandName); openBrandPrompt = false; newBrandName = ''" type="text" class="w-full text-sm py-1.5 px-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                                                <button type="button" @click="if(newBrandName) { $wire.createBrandQuick(newBrandName); openBrandPrompt = false; newBrandName = ''; }" class="bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Crear</button>
+                                <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                                    <span>Marca</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="brandListOpen = true" class="text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Gestionar Marcas">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        </button>
+                                        <div x-data="{ openBrandPrompt: false, newBrandName: '' }" @click.outside="openBrandPrompt = false" class="relative">
+                                            <button type="button" @click="openBrandPrompt = !openBrandPrompt; if(openBrandPrompt) $nextTick(() => $refs.brandInput.focus())" class="text-[var(--color-primary)] hover:text-blue-600 transition-colors" title="Crear nueva marca">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                            </button>
+                                            <div x-show="openBrandPrompt" style="display:none;" x-transition class="absolute z-50 right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
+                                                <span class="block text-xs text-gray-500 dark:text-gray-400 mb-2 normal-case font-normal">Nombre de la nueva marca:</span>
+                                                <div class="flex gap-2">
+                                                    <input x-ref="brandInput" x-model="newBrandName" @keydown.enter.prevent="$wire.createBrandQuick(newBrandName); openBrandPrompt = false; newBrandName = ''" type="text" class="w-full text-sm py-1.5 px-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                                    <button type="button" @click="if(newBrandName) { $wire.createBrandQuick(newBrandName); openBrandPrompt = false; newBrandName = ''; }" class="bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Crear</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </label>
-                                    <button type="button" @click="brandListOpen = true" class="text-[10px] font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wider focus:outline-none">
-                                        Gestionar
-                                    </button>
-                                </div>
-                                <div class="flex gap-2">
-                                    <select wire:model="brand_ids" multiple class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors min-h-[100px]">
+                                    </div>
+                                </label>
+                                
+                                <div class="relative" x-data="{
+                                    open: false,
+                                    options: [
                                         @foreach($brands as $brand)
-                                            <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                            { id: '{{ $brand->id }}', name: '{{ addslashes($brand->name) }}' },
                                         @endforeach
-                                    </select>
+                                    ],
+                                    selected: @entangle('brand_ids').live,
+                                    toggle(id) {
+                                        id = String(id);
+                                        let idx = this.selected.findIndex(i => String(i) === id);
+                                        if (idx !== -1) {
+                                            this.selected.splice(idx, 1);
+                                        } else {
+                                            this.selected.push(id);
+                                        }
+                                    },
+                                    getSelectedNames() {
+                                        if (!this.selected || this.selected.length === 0) return [];
+                                        return this.selected.map(id => {
+                                            let opt = this.options.find(o => String(o.id) === String(id));
+                                            return opt ? opt.name : '';
+                                        }).filter(Boolean);
+                                    }
+                                }" @click.outside="open = false">
+                                    <div @click="open = !open" class="w-full min-h-[42px] py-1.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex flex-wrap items-center gap-1.5 transition-colors focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:border-transparent">
+                                        <template x-if="!selected || selected.length === 0">
+                                            <span class="text-gray-500 py-1">Seleccione marcas...</span>
+                                        </template>
+                                        <template x-for="name in getSelectedNames()" :key="name">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
+                                                <span x-text="name"></span>
+                                            </span>
+                                        </template>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                    
+                                    <div x-show="open" style="display:none;" x-transition class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                        <ul class="py-1">
+                                            <template x-for="option in options" :key="option.id">
+                                                <li>
+                                                    <label class="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                                        <input type="checkbox" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                                                               :checked="selected.map(String).includes(String(option.id))"
+                                                               @change="toggle(option.id)">
+                                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300" x-text="option.name"></span>
+                                                    </label>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
                                 </div>
                                 @error('brand_ids') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
+
+                            <!-- Stock -->
                             <div class="w-full md:w-1/3 grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]" title="Stock Actual">Stock Act.</label>
-                                    <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="0">
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider" title="Stock Actual">Stock Act.</label>
+                                    <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[42px]" placeholder="0">
                                     @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]" title="Alerta de Stock Crítico">Alerta Mín.</label>
-                                    <input wire:model="min_stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="2">
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider" title="Alerta de Stock Crítico">Alerta Mín.</label>
+                                    <input wire:model="min_stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[42px]" placeholder="2">
                                     @error('min_stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -988,26 +1047,50 @@ new #[Layout('layouts.app')] class extends Component {
 
 
                         <div class="mb-8" x-data="{ expandedImage: false }">
-                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Imagen del Producto</label>
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Imagen del Producto</label>
+                            
                             @if($current_image_url)
-                                <div class="mb-3 flex items-start space-x-4" :class="expandedImage ? 'flex-col space-x-0 space-y-4' : 'flex-row space-x-4'">
-                                    <img @click="expandedImage = !expandedImage" src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" :class="expandedImage ? 'w-full h-auto max-h-96 object-contain' : 'h-20 w-20 object-cover'" class="rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm cursor-pointer hover:opacity-90 transition-all duration-300 bg-white dark:bg-gray-800" title="Haz clic para agrandar">
-                                    <button type="button" wire:click="removeImage" class="text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 flex items-center p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        Eliminar Imagen
-                                    </button>
+                                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 flex items-start space-x-4 transition-all" :class="expandedImage ? 'flex-col space-x-0 space-y-4' : 'flex-row space-x-4'">
+                                    <div class="relative group cursor-pointer" @click="expandedImage = !expandedImage">
+                                        <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" :class="expandedImage ? 'w-full h-auto max-h-96 object-contain' : 'h-24 w-24 object-cover'" class="rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900 transition-all duration-300">
+                                        <div class="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col justify-center h-full">
+                                        <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Imagen Actual</h5>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Esta es la imagen principal del producto.</p>
+                                        <button type="button" wire:click="removeImage" class="inline-flex items-center text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1.5 rounded-lg transition-colors w-max">
+                                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            Eliminar Imagen
+                                        </button>
+                                    </div>
                                 </div>
                             @endif
-                            <div class="flex items-center gap-3">
-                                <input wire:model="image" type="file" accept="image/*" class="w-full py-2.5 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-300 dark:hover:file:bg-gray-600 shadow-sm dark:shadow-none cursor-pointer">
+
+                            <div class="relative group" x-data="{ isDragging: false }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))">
+                                <label class="flex flex-col items-center justify-center w-full h-32 px-4 transition-all bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)]"
+                                       :class="isDragging ? 'border-[var(--color-primary)] bg-blue-50/50 dark:bg-blue-900/10' : ''">
+                                    
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <div wire:loading.remove wire:target="image" class="p-3 bg-blue-50 dark:bg-gray-800 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300 text-[var(--color-primary)]">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        </div>
+                                        <div wire:loading wire:target="image" class="p-3 mb-3 text-[var(--color-primary)]">
+                                            <svg class="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                        </div>
+                                        <p class="mb-1 text-sm text-gray-500 dark:text-gray-400 font-medium"><span class="text-[var(--color-primary)] font-bold">Haz clic para subir</span> o arrastra la imagen aquí</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">PNG, JPG o WEBP (Máx. 2MB)</p>
+                                    </div>
+                                    <input x-ref="fileInput" wire:model="image" type="file" accept="image/*" class="hidden" />
+                                </label>
                                 
-                                <label class="cursor-pointer shrink-0 flex items-center justify-center p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors shadow-sm" title="Tomar foto con la cámara (Móvil)">
-                                    <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <label class="absolute bottom-3 right-3 cursor-pointer shrink-0 flex items-center justify-center p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all shadow-sm hover:shadow group-hover:scale-105" title="Tomar foto con la cámara (Móvil)">
+                                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                     <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
                                 </label>
                             </div>
-                            @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                            <div wire:loading wire:target="image" class="text-sm text-[var(--color-primary)] mt-2 font-medium">Cargando imagen...</div>
+                            @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-2 block font-medium">{{ $message }}</span> @enderror
                         </div>
                         <div class="flex items-center justify-end bg-gray-50 dark:bg-gray-900/50 -mx-8 -mb-4 px-8 py-5 border-t border-gray-200 dark:border-gray-800">
                             <button type="button" wire:click="$set('showModal', false)" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold py-2.5 px-5 rounded-full transition-colors mr-3">Cancelar</button>
