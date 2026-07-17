@@ -363,14 +363,12 @@ new #[Layout('layouts.app')] class extends Component {
                             </button>
 
                             <!-- Fullscreen Image -->
-                            <div @click.stop class="relative w-full h-full flex items-center justify-center cursor-default">
-                                @if($product->image_url)
-                                    <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain max-w-full max-h-full rounded-lg"
-                                         x-transition:enter="transition ease-out duration-300 transform delay-100"
-                                         x-transition:enter-start="opacity-0 scale-95"
-                                         x-transition:enter-end="opacity-100 scale-100">
-                                @endif
-                            </div>
+                            @if($product->image_url)
+                                <img @click.stop src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain max-w-full max-h-[90vh] rounded-lg cursor-default relative z-[105]"
+                                     x-transition:enter="transition ease-out duration-300 transform delay-100"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100">
+                            @endif
                         </div>
                     </template>
                 </div>
