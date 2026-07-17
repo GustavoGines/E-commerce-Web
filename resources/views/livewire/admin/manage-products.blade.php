@@ -337,17 +337,7 @@ new #[Layout('layouts.app')] class extends Component {
         }
     }
 
-    // --- LÓGICA DE CATEGORÍAS ---
-    public $showCategoryListModal = false;
-    public $showCategoryEditModal = false;
-    public $cat_id = null;
-    public $cat_name = '';
 
-    public function openCategoryList()
-    {
-        $this->loadCategoriesWithCount();
-        $this->showCategoryListModal = true;
-    }
 
     public function loadCategoriesWithCount()
     {
@@ -518,9 +508,7 @@ new #[Layout('layouts.app')] class extends Component {
 <div x-data="{ 
     modalOpen: @entangle('showModal').live, 
     catListOpen: @entangle('showCategoryListModal').live, 
-    catEditOpen: @entangle('showCategoryEditModal').live,
     brandListOpen: @entangle('showBrandListModal').live,
-    brandEditOpen: @entangle('showBrandEditModal').live,
     massUpdateOpen: @entangle('showMassUpdateModal').live,
     colDropdownOpen: false,
     previewImageOpen: false,
