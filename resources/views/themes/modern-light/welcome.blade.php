@@ -35,7 +35,7 @@
                     </p>
                     
                     {{-- Buscador Hero --}}
-                    <div class="max-w-xl mx-auto lg:mx-0 transition-all duration-1000 delay-200 transform relative" 
+                    <div class="max-w-xl mx-auto lg:mx-0 transition-all duration-1000 delay-200 transform relative z-50" 
                          :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
                          x-data="{ 
                             open: false,
