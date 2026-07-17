@@ -124,7 +124,7 @@ new #[Layout('layouts.app')] class extends Component {
             $query->orderBy(Brand::select('name')
                 ->join('brand_product', 'brands.id', '=', 'brand_product.brand_id')
                 ->whereColumn('brand_product.product_id', 'products.id')
-                ->limit(1), $this->sortDirection);
+                ->limit(1), $this->sortDirection)
                   ->select('products.*');
         } else {
             $query->orderBy('products.' . $this->sortField, $this->sortDirection);
