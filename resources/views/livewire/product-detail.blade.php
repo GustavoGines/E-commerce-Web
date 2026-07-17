@@ -326,8 +326,14 @@ new #[Layout('layouts.app')] class extends Component {
         <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl sm:rounded-3xl p-8 mb-12">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <!-- Image Gallery -->
-                <div class="relative group">
-                    <div class="aspect-square bg-gray-100 dark:bg-gray-900/80 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700/50 flex items-center justify-center p-8">
+                <div class="relative group" x-data="{ lightboxOpen: false }">
+                    <!-- Thumbnail -->
+                    <div @click="lightboxOpen = true" class="cursor-pointer aspect-square bg-gray-100 dark:bg-gray-900/80 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700/50 flex items-center justify-center p-8 relative">
+                        <!-- Hint icon -->
+                        <div class="absolute top-4 right-4 bg-white/50 dark:bg-black/50 backdrop-blur-md p-2 rounded-full text-gray-700 dark:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        </div>
+
                         @if($product->image_url)
                             <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain w-full h-full transform group-hover:scale-105 transition-transform duration-500">
                         @else
@@ -336,6 +342,36 @@ new #[Layout('layouts.app')] class extends Component {
                             </svg>
                         @endif
                     </div>
+
+                    <!-- Lightbox Modal -->
+                    <template x-teleport="body">
+                        <div x-show="lightboxOpen" 
+                             style="display: none;" 
+                             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             @keydown.escape.window="lightboxOpen = false">
+                            
+                            <!-- Close Button -->
+                            <button @click="lightboxOpen = false" class="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md z-[110]">
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+
+                            <!-- Fullscreen Image -->
+                            <div @click.outside="lightboxOpen = false" class="relative w-full h-full flex items-center justify-center">
+                                @if($product->image_url)
+                                    <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain max-w-full max-h-full rounded-lg"
+                                         x-transition:enter="transition ease-out duration-300 transform delay-100"
+                                         x-transition:enter-start="opacity-0 scale-95"
+                                         x-transition:enter-end="opacity-100 scale-100">
+                                @endif
+                            </div>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- Info -->
