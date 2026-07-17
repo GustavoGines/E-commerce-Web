@@ -27,14 +27,8 @@ new class extends Component {
     #[Url(as: 'sort')]
     public $sort = 'default';
 
-    public $categories = [];
-    public $brands = [];
-
     public function mount()
     {
-        $this->categories = Category::has('products')->withCount('products')->get();
-        $this->brands = Brand::has('products')->withCount('products')->get();
-        
         if ($this->selectedCategory && !is_numeric($this->selectedCategory)) {
             $cat = Category::where('name', 'like', '%' . $this->selectedCategory . '%')->first();
             if ($cat) {
@@ -112,7 +106,9 @@ new class extends Component {
         return [
             'products' => $query->paginate(15),
             'popularProducts' => \Illuminate\Support\Facades\Cache::remember('popularProducts', 3600, fn() => Product::latest()->take(3)->get()),
-            'recentlyViewedProducts' => $recentlyViewedProducts
+            'recentlyViewedProducts' => $recentlyViewedProducts,
+            'categories' => Category::has('products')->withCount('products')->get(),
+            'brands' => Brand::has('products')->withCount('products')->get()
         ];
     }
 }; ?>
@@ -193,7 +189,7 @@ new class extends Component {
                                 <li>
                                     <button wire:click="setCategory(null)" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory === null ? 'text-[var(--color-primary)] font-bold' : 'text-gray-600 hover:text-gray-900' }}">
                                         <span>Todas</span>
-                                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ $products->total() }}</span>
+                                        <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">{{ \App\Models\Product::count() }}</span>
                                     </button>
                                 </li>
                                 @foreach($categories->take(5) as $category)

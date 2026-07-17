@@ -8,11 +8,9 @@ new class extends Component {
     use Livewire\WithPagination;
 
     public $selectedCategory = null;
-    public $categories = [];
 
     public function mount()
     {
-        $this->categories = Category::has('products')->withCount('products')->get();
     }
 
     public function setCategory($categoryId)
@@ -30,7 +28,9 @@ new class extends Component {
         }
 
         return [
-            'products' => $query->paginate(12)
+            'products' => $query->paginate(12),
+            'categories' => Category::has('products')->withCount('products')->get(),
+            'totalProducts' => \App\Models\Product::count()
         ];
     }
 }; ?>

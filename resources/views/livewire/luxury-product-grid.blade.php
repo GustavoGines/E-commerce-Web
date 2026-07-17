@@ -97,7 +97,9 @@ new class extends Component {
         return [
             'products' => $query->paginate(12),
             'popularProducts' => \Illuminate\Support\Facades\Cache::remember('popularProducts', 3600, fn() => Product::latest()->take(3)->get()),
-            'recentlyViewedProducts' => $recentlyViewedProducts
+            'recentlyViewedProducts' => $recentlyViewedProducts,
+            'categories' => Category::has('products')->withCount('products')->get(),
+            'brands' => Brand::has('products')->withCount('products')->get()
         ];
     }
 }; ?>
@@ -189,15 +191,16 @@ new class extends Component {
                         <h4 class="text-white font-bold text-sm tracking-widest uppercase mb-4 pb-4 border-b border-white/10">Categorías</h4>
                         <ul class="space-y-3">
                             <li>
-                                <button wire:click="setCategory(null)" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory === null ? 'text-[var(--color-primary)] font-bold' : 'text-gray-400 hover:text-white' }}">
-                                    <span>Todas</span>
-                                    <span class="text-[10px] bg-white/5 px-2 py-0.5 rounded-full">{{ $products->total() }}</span>
+                                <button wire:click="setCategory(null)" class="w-full flex items-center justify-between text-[13px] font-medium transition-colors group {{ $selectedCategory === null ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-1.5 h-1.5 rounded-full transition-colors {{ $selectedCategory === null ? 'bg-[var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]' : 'bg-transparent group-hover:bg-gray-600' }}"></div>
+                                        <span>Todas</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors {{ $selectedCategory === null ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]' : 'bg-white/5 text-gray-500' }}">{{ \App\Models\Product::count() }}</span>
                                 </button>
                             </li>
                             @foreach($categories as $category)
                                 <li>
-                                    <button wire:click="setCategory({{ $category->id }})" class="w-full flex items-center justify-between text-sm transition-colors {{ $selectedCategory == $category->id ? 'text-[var(--color-primary)] font-bold' : 'text-gray-400 hover:text-white' }}">
-                                        <span>{{ $category->name }}</span>
                                         <span class="text-[10px] bg-white/5 px-2 py-0.5 rounded-full">{{ $category->products_count }}</span>
                                     </button>
                                 </li>
