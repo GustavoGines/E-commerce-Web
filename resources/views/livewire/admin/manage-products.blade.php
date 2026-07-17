@@ -34,6 +34,8 @@ new #[Layout('layouts.app')] class extends Component {
     public $categories = [];
     public $brands = [];
     
+    public $new_brand_name = '';
+    
     public $showModal = false;
 
     public $sortField = 'id';
@@ -226,6 +228,19 @@ new #[Layout('layouts.app')] class extends Component {
         $product->delete();
         $this->loadProducts();
         $this->dispatch('notify', message: 'Producto eliminado correctamente.');
+    }
+
+    public function createBrandQuick()
+    {
+        $this->validate(['new_brand_name' => 'required|string|max:255']);
+        $brand = Brand::create([
+            'name' => $this->new_brand_name,
+            'slug' => \Illuminate\Support\Str::slug($this->new_brand_name)
+        ]);
+        $this->loadBrandsWithCount();
+        $this->brand_id = $brand->id;
+        $this->new_brand_name = '';
+        $this->dispatch('notify', message: 'Marca creada y seleccionada exitosamente.');
     }
 
     public function resetFields()
@@ -742,13 +757,20 @@ new #[Layout('layouts.app')] class extends Component {
                                         Gestionar
                                     </a>
                                 </div>
-                                <select wire:model="brand_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
-                                    <option value="">Sin marca</option>
-                                    @foreach($brands as $brand)
-                                        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="flex gap-2">
+                                    <select wire:model="brand_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
+                                        <option value="">Sin marca</option>
+                                        @foreach($brands as $brand)
+                                            <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex gap-2 mt-2">
+                                    <input wire:model="new_brand_name" type="text" placeholder="O crear nueva..." class="w-full py-1.5 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    <button type="button" wire:click="createBrandQuick" class="px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-xs font-bold hover:opacity-90 whitespace-nowrap">Crear</button>
+                                </div>
                                 @error('brand_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                @error('new_brand_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="w-full md:w-1/5">
                                 <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]">Stock</label>
@@ -801,7 +823,7 @@ new #[Layout('layouts.app')] class extends Component {
                             <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Imagen del Producto</label>
                             @if($current_image_url)
                                 <div class="mb-3 flex items-start space-x-4">
-                                    <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" class="h-20 w-20 object-cover rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm">
+                                    <img @click="previewImageUrl = '{{ asset('storage/' . $current_image_url) }}'; previewImageOpen = true" src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" class="h-20 w-20 object-cover rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Haz clic para agrandar">
                                     <button type="button" wire:click="removeImage" class="text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 flex items-center p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         Eliminar Imagen
