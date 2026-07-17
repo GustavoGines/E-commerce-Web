@@ -347,7 +347,8 @@ new #[Layout('layouts.app')] class extends Component {
                     <template x-teleport="body">
                         <div x-show="lightboxOpen" 
                              style="display: none;" 
-                             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8"
+                             @click="lightboxOpen = false"
+                             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100"
@@ -362,7 +363,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </button>
 
                             <!-- Fullscreen Image -->
-                            <div @click.outside="lightboxOpen = false" class="relative w-full h-full flex items-center justify-center">
+                            <div @click.stop class="relative w-full h-full flex items-center justify-center cursor-default">
                                 @if($product->image_url)
                                     <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="object-contain max-w-full max-h-full rounded-lg"
                                          x-transition:enter="transition ease-out duration-300 transform delay-100"
