@@ -91,35 +91,40 @@ new class extends Component {
                         </div>
                     @endif
 
-                    {{-- Stock Badge --}}
-                    @if($product->stock <= 0)
-                        <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
-                                     px-2 py-1 rounded-lg backdrop-blur-md
-                                     bg-rose-500/90 text-white shadow-sm">
-                            Agotado
-                        </span>
-                    @elseif(auth()->check() && auth()->user()->isAdmin())
-                        <span class="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wider
-                                     px-2 py-1 rounded-lg backdrop-blur-md
-                                     bg-emerald-500/90 text-white shadow-sm" title="Solo visible para Administradores">
-                            Stock: {{ $product->stock }}
-                        </span>
-                    @endif
-
                     {{-- Overlay on hover --}}
                     <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent
-                                opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
                 </a>
 
-                {{-- Contenido --}}
-                <div class="flex flex-col flex-grow p-5">
-                    <div class="flex-grow">
+                {{-- Contenido de la Tarjeta --}}
+                <div class="p-4 bg-white flex flex-col flex-grow relative z-20">
+                    <div class="flex justify-between items-start mb-2 gap-2">
                         @if($product->category)
-                            <span class="text-[10px] font-bold uppercase tracking-widest
-                                         text-slate-400 dark:text-slate-500 mb-1.5 block">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-primary)] opacity-80 block truncate">
                                 {{ $product->category->name }}
                             </span>
+                        @else
+                            <span></span>
                         @endif
+
+                        {{-- Stock Badge --}}
+                        @if($product->stock <= 0)
+                            <span class="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-700 shadow-sm whitespace-nowrap">
+                                Agotado
+                            </span>
+                        @elseif($product->stock <= ($product->min_stock ?? 5))
+                            <span class="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 shadow-sm whitespace-nowrap" title="Stock Disponible">
+                                ¡Quedan {{ $product->stock }}!
+                            </span>
+                        @else
+                            <span class="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 shadow-sm whitespace-nowrap" title="Stock Disponible">
+                                Stock: {{ $product->stock }}
+                            </span>
+                        @endif
+                    </div>
+                    
+                    <div class="flex-grow">
                         <a href="{{ route('product.detail', $product->slug) }}" wire:navigate>
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-100
                                        leading-snug group-hover:text-[var(--color-primary)]

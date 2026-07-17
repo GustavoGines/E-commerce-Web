@@ -27,6 +27,7 @@ new #[Layout('layouts.app')] class extends Component {
     public $retail_price = 0;
     public $wholesale_price = 0;
     public $stock = 0;
+    public $min_stock = 2;
     public $image;
     public $current_image_url;
     public $delete_image = false;
@@ -166,6 +167,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->retail_price = (float) $product->retail_price;
         $this->wholesale_price = (float) $product->wholesale_price;
         $this->stock = $product->stock;
+        $this->min_stock = $product->min_stock ?? 2;
         $this->current_image_url = $product->image_url;
         $this->showModal = true;
     }
@@ -185,6 +187,7 @@ new #[Layout('layouts.app')] class extends Component {
             'retail_price' => 'required|numeric|min:0',
             'wholesale_price' => 'required|numeric|min:0|lte:retail_price',
             'stock' => 'required|integer|min:0',
+            'min_stock' => 'required|integer|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -201,6 +204,7 @@ new #[Layout('layouts.app')] class extends Component {
             'retail_price' => $this->retail_price,
             'wholesale_price' => $this->wholesale_price,
             'stock' => $this->stock,
+            'min_stock' => $this->min_stock,
         ];
 
         if ($this->delete_image && $this->product_id) {
@@ -284,6 +288,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->retail_price = 0;
         $this->wholesale_price = 0;
         $this->stock = 0;
+        $this->min_stock = 2;
         $this->image = null;
         $this->current_image_url = null;
         $this->delete_image = false;
@@ -311,6 +316,31 @@ new #[Layout('layouts.app')] class extends Component {
             if ($discount >= 0) {
                 $this->wholesale_price = round($this->retail_price * (1 - ($discount / 100)), 2);
             }
+        }
+    }
+
+    public function updatedRetailPrice()
+    {
+        $cost = (float) $this->cost_price;
+        $retail = (float) $this->retail_price;
+        $discount = (float) $this->wholesale_discount;
+
+        if ($cost > 0) {
+            $this->profit_margin = (int) round((($retail / $cost) - 1) * 100);
+        }
+        
+        if ($discount >= 0) {
+            $this->wholesale_price = round($retail * (1 - ($discount / 100)), 2);
+        }
+    }
+
+    public function updatedWholesalePrice()
+    {
+        $retail = (float) $this->retail_price;
+        $wholesale = (float) $this->wholesale_price;
+
+        if ($retail > 0) {
+            $this->wholesale_discount = (int) round((1 - ($wholesale / $retail)) * 100);
         }
     }
 
@@ -841,7 +871,7 @@ new #[Layout('layouts.app')] class extends Component {
 
                         <!-- Segunda Fila: Categoría, Marca y Stock -->
                         <div class="flex flex-col md:flex-row gap-5 mb-5">
-                            <div class="w-full md:w-2/5">
+                            <div class="w-full md:w-1/3">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openCatPrompt: false, newCatName: '' }" @click.outside="openCatPrompt = false">
                                         Categoría
@@ -867,7 +897,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 </select>
                                 @error('category_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div class="w-full md:w-2/5">
+                            <div class="w-full md:w-1/3">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="flex items-center text-gray-700 dark:text-gray-400 text-xs font-bold uppercase tracking-wider relative" x-data="{ openBrandPrompt: false, newBrandName: '' }" @click.outside="openBrandPrompt = false">
                                         Marca
@@ -894,10 +924,17 @@ new #[Layout('layouts.app')] class extends Component {
                                 </div>
                                 @error('brand_ids') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div class="w-full md:w-1/5">
-                                <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]">Stock</label>
-                                <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="0">
-                                @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            <div class="w-full md:w-1/3 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]" title="Stock Actual">Stock Act.</label>
+                                    <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="0">
+                                    @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider mt-[2px]" title="Alerta de Stock Crítico">Alerta Mín.</label>
+                                    <input wire:model="min_stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="2">
+                                    @error('min_stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                </div>
                             </div>
                         </div>
                         
@@ -910,7 +947,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     @error('cost_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Ganancia Minor. (%)</label>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Margen de Ganancia (%)</label>
                                     <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('profit_margin') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
@@ -929,12 +966,12 @@ new #[Layout('layouts.app')] class extends Component {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Precio Final Lista</label>
-                                    <input wire:model="retail_price" type="number" step="0.01" class="w-full py-3 px-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-3 px-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('retail_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider">Precio Final Mayorista</label>
-                                    <input wire:model="wholesale_price" type="number" step="0.01" class="w-full py-3 px-4 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-xl text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-3 px-4 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-xl text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('wholesale_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -952,7 +989,14 @@ new #[Layout('layouts.app')] class extends Component {
                                     </button>
                                 </div>
                             @endif
-                            <input wire:model="image" type="file" accept="image/*" class="w-full py-2.5 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-300 dark:hover:file:bg-gray-600 shadow-sm dark:shadow-none cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <input wire:model="image" type="file" accept="image/*" class="w-full py-2.5 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-300 dark:hover:file:bg-gray-600 shadow-sm dark:shadow-none cursor-pointer">
+                                
+                                <label class="cursor-pointer shrink-0 flex items-center justify-center p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors shadow-sm" title="Tomar foto con la cámara (Móvil)">
+                                    <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
+                                </label>
+                            </div>
                             @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                             <div wire:loading wire:target="image" class="text-sm text-[var(--color-primary)] mt-2 font-medium">Cargando imagen...</div>
                         </div>

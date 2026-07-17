@@ -322,23 +322,35 @@ new class extends Component {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 @endif
-                                
-                                {{-- Stock Badge --}}
-                                @if($product->stock <= 0)
-                                    <span class="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-100 text-red-700">
-                                        Agotado
-                                    </span>
-                                @endif
                             </a>
 
                             {{-- Contenido de la Tarjeta (Más compacto) --}}
                             <div class="flex flex-col flex-grow p-3 bg-white">
                                 <div class="flex-grow">
-                                    @if($product->category)
-                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1 block truncate">
-                                            {{ $product->category->name }}
-                                        </span>
-                                    @endif
+                                    <div class="flex justify-between items-start mb-1 gap-2">
+                                        @if($product->category)
+                                            <span class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block truncate">
+                                                {{ $product->category->name }}
+                                            </span>
+                                        @else
+                                            <span></span>
+                                        @endif
+
+                                        {{-- Stock Badge --}}
+                                        @if($product->stock <= 0)
+                                            <span class="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 shadow-sm whitespace-nowrap">
+                                                Agotado
+                                            </span>
+                                        @elseif($product->stock <= ($product->min_stock ?? 5))
+                                            <span class="shrink-0 text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200 shadow-sm whitespace-nowrap" title="Stock Disponible">
+                                                ¡Quedan {{ $product->stock }}!
+                                            </span>
+                                        @else
+                                            <span class="shrink-0 text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 shadow-sm whitespace-nowrap" title="Stock Disponible">
+                                                Stock: {{ $product->stock }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     @if($product->sku)
                                         <span class="text-[9px] font-mono font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-1 py-0.5 rounded inline-block mb-1.5">
                                             SKU: {{ $product->sku }}

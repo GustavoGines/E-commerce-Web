@@ -74,8 +74,8 @@ new #[Layout('layouts.app')] class extends Component {
             ->avg('total') ?? 0;
 
         // Top 5 Productos sin stock
-        $outOfStock = Product::where('stock', '<=', 0)->take(5)->get();
-        $outOfStockCount = Product::where('stock', '<=', 0)->count();
+        $outOfStock = Product::whereColumn('stock', '<=', 'min_stock')->take(5)->get();
+        $outOfStockCount = Product::whereColumn('stock', '<=', 'min_stock')->count();
 
         // Top 5 Productos más vendidos (solo de órdenes pagadas/completadas)
         $topSelling = \App\Models\OrderItem::select('product_id', DB::raw('SUM(quantity) as total_sold'))
