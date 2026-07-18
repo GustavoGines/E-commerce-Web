@@ -1180,19 +1180,28 @@ new #[Layout('layouts.app')] class extends Component {
                             
                             <div class="flex flex-col sm:flex-row gap-3">
                                 @if($current_image_url)
-                                    <div class="w-full sm:w-auto p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center space-x-3 transition-all duration-300 shrink-0">
-                                        <div class="relative group cursor-pointer shrink-0" @click="previewImageUrl = '{{ asset('storage/' . $current_image_url) }}'; previewImageOpen = true">
-                                            <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" class="h-14 w-14 sm:h-16 sm:w-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900 hover:opacity-80 transition-opacity" title="Clic para agrandar">
-                                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <svg class="w-5 h-5 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
-                                            </div>
+                                    <div class="w-full sm:w-auto p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 shrink-0">
+                                        <!-- Imagen expandida (al hacer click) -->
+                                        <div x-show="expandedImage" x-transition class="mb-2 cursor-pointer" @click="expandedImage = false" title="Clic para reducir">
+                                            <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual ampliada" class="w-full max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-md">
+                                            <p class="text-center text-[10px] text-gray-400 mt-1">Tocá para reducir</p>
                                         </div>
-                                        <div class="flex flex-col flex-1">
-                                            <h5 class="text-[10px] sm:text-xs font-bold text-gray-900 dark:text-white mb-0.5">Imagen Actual</h5>
-                                            <button type="button" wire:click="removeImage" class="inline-flex items-center text-[10px] font-bold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors w-max mt-1">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                Borrar
-                                            </button>
+
+                                        <!-- Fila normal con miniatura + borrar -->
+                                        <div class="flex items-center space-x-3">
+                                            <div class="relative group cursor-pointer shrink-0" @click="expandedImage = !expandedImage" title="Clic para agrandar">
+                                                <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" class="h-14 w-14 sm:h-16 sm:w-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900 hover:opacity-80 transition-opacity">
+                                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity bg-black/10 rounded-lg">
+                                                    <svg class="w-5 h-5 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col flex-1">
+                                                <h5 class="text-[10px] sm:text-xs font-bold text-gray-900 dark:text-white mb-0.5">Imagen Actual</h5>
+                                                <button type="button" wire:click="removeImage" class="inline-flex items-center text-[10px] font-bold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors w-max mt-1">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                    Borrar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 @endif
