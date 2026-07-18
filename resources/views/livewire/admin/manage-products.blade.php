@@ -830,13 +830,16 @@ new #[Layout('layouts.app')] class extends Component {
             <!-- Vista Móvil para Productos (Tarjetas) -->
             <div class="block md:hidden space-y-2.5">
                 @foreach($products as $product)
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2.5 shadow-sm relative {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-[var(--color-primary)]' : '' }}">
+                <div 
+                    class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2.5 shadow-sm relative cursor-pointer active:bg-gray-50 dark:active:bg-gray-700/50 transition-colors {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-[var(--color-primary)]' : '' }}"
+                    @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }"
+                >
                     <div class="flex items-center gap-2.5">
                         <!-- Izquierda: Checkbox + Imagen -->
-                        <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex items-center gap-2 shrink-0" @click.stop>
                             <input type="checkbox" value="{{ $product->id }}" wire:model.live="selectedProducts" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-4 h-4">
                             @if($product->image_url)
-                                <img src="{{ asset('storage/' . $product->image_url) }}" class="h-10 w-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer" @click="previewImageUrl = '{{ asset('storage/' . $product->image_url) }}'; previewImageOpen = true">
+                                <img src="{{ asset('storage/' . $product->image_url) }}" class="h-10 w-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer" @click.stop="previewImageUrl = '{{ asset('storage/' . $product->image_url) }}'; previewImageOpen = true">
                             @else
                                 <div class="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 text-[8px] uppercase font-bold tracking-tighter shrink-0">Sin img</div>
                             @endif
@@ -859,17 +862,14 @@ new #[Layout('layouts.app')] class extends Component {
                                 </div>
                             </div>
                             
-                            <!-- Renglón 2: Precio y Botones -->
+                            <!-- Renglón 2: Precio y Botón eliminar -->
                             <div class="flex justify-between items-center">
                                 <div class="flex items-baseline gap-1.5">
                                     <div class="text-[10px] font-medium text-gray-400 line-through">${{ number_format($product->retail_price, 2) }}</div>
                                     <div class="text-sm font-black text-[var(--color-primary)]">${{ number_format($product->wholesale_price, 2) }}</div>
                                 </div>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <button @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }" title="Editar" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                    </button>
-                                    <button wire:click="delete({{ $product->id }})" wire:confirm="¿Seguro de eliminar?" title="Eliminar" class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                                <div @click.stop>
+                                    <button wire:click="delete({{ $product->id }})" wire:confirm="¿Seguro de eliminar?" title="Eliminar" class="p-1 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
