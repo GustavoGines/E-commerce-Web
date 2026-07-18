@@ -110,7 +110,7 @@ new class extends Component {
                 {{-- Columna 2: Navegación --}}
                 <div class="text-center md:text-left">
                     <h5 class="text-[10px] font-black text-gray-100 uppercase tracking-widest mb-4">Navegación</h5>
-                    <ul class="space-y-3">
+                    <ul class="grid grid-cols-2 gap-y-3 gap-x-4 text-left inline-grid md:grid">
                         <li><a href="{{ route('home') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Inicio</a></li>
                         <li><a href="{{ route('shop') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Tienda</a></li>
                         @auth
