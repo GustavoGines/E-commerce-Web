@@ -66,6 +66,9 @@ new #[Layout('layouts.app')] class extends Component {
         'stock' => true,
     ];
 
+    #[Livewire\Attributes\Url(as: 'edit')]
+    public $edit_id = null;
+
     public function mount()
     {
         $user = auth()->user();
@@ -75,6 +78,11 @@ new #[Layout('layouts.app')] class extends Component {
 
         $this->loadCategoriesWithCount();
         $this->loadBrandsWithCount();
+
+        if ($this->edit_id) {
+            $this->edit($this->edit_id);
+            $this->edit_id = null; // Clear it so it disappears from URL automatically
+        }
     }
 
     public function updatedVisibleColumns()
