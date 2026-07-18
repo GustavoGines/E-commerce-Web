@@ -9,7 +9,7 @@
 
     <!-- Modal -->
     <div x-show="open" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <!-- Overlay -->
             <div x-show="open" 
                  x-transition:enter="ease-out duration-300" 
@@ -30,7 +30,7 @@
                  x-transition:leave="ease-in duration-200" 
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                 class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                 class="inline-block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full max-h-[90vh] overflow-y-auto relative w-full">
                 
                 <div class="px-8 pt-8 pb-4">
                     <div class="flex justify-between items-center mb-6">
