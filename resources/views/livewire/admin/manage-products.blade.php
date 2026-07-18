@@ -967,7 +967,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <!-- Segunda Fila: Categoría, Marca y Stock -->
                         <div class="grid grid-cols-3 gap-3 sm:gap-5 mb-5">
                             <!-- Categoría -->
-                            <div class="col-span-1">
+                            <div class="col-span-3 sm:col-span-1">
                                 <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">
                                     <span>Categoría</span>
                                     <div class="flex items-center gap-2">
@@ -998,7 +998,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             <!-- Marca -->
-                            <div class="col-span-2 sm:col-span-1">
+                            <div class="col-span-3 sm:col-span-2">
                                 <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">
                                     <span>Marca</span>
                                     <div class="flex items-center gap-2">
@@ -1089,16 +1089,16 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             <!-- Stock -->
-                            <div class="col-span-3 sm:col-span-1 flex flex-col justify-end mt-2 sm:mt-0">
-                                <div class="flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-200 dark:border-gray-700 h-[38px]">
-                                    <div class="flex items-center gap-1.5 flex-1">
-                                        <label class="text-gray-600 dark:text-gray-400 text-[9px] font-bold uppercase tracking-wider pl-1 whitespace-nowrap" title="Stock Actual">Stock</label>
-                                        <input wire:model="stock" type="number" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-sm px-2 py-1 focus:ring-1 focus:ring-[var(--color-primary)] text-center h-[28px]" placeholder="0">
+                            <div class="col-span-3 flex flex-col justify-end mt-2 sm:mt-0">
+                                <div class="flex items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg border border-gray-200 dark:border-gray-700 h-[44px]">
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <label class="text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider pl-2 whitespace-nowrap" title="Stock Actual">Stock Act.</label>
+                                        <input wire:model="stock" type="number" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm px-3 py-1.5 focus:ring-1 focus:ring-[var(--color-primary)] text-center h-[32px]" placeholder="0">
                                     </div>
-                                    <div class="w-px h-5 bg-gray-300 dark:bg-gray-600"></div>
-                                    <div class="flex items-center gap-1.5 flex-1">
-                                        <label class="text-gray-600 dark:text-gray-400 text-[9px] font-bold uppercase tracking-wider whitespace-nowrap" title="Alerta de Stock Crítico">Mín.</label>
-                                        <input wire:model="min_stock" type="number" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-sm px-2 py-1 focus:ring-1 focus:ring-[var(--color-primary)] text-center h-[28px]" placeholder="2">
+                                    <div class="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <label class="text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap" title="Alerta de Stock Crítico">Alerta Mín.</label>
+                                        <input wire:model="min_stock" type="number" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm px-3 py-1.5 focus:ring-1 focus:ring-[var(--color-primary)] text-center h-[32px]" placeholder="2">
                                     </div>
                                 </div>
                                 @if($errors->has('stock') || $errors->has('min_stock'))
