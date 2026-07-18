@@ -1086,14 +1086,14 @@ new #[Layout('layouts.app')] class extends Component {
                             <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Imagen del Producto</label>
                             
                             @if($current_image_url)
-                                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 flex items-start space-x-4 transition-all" :class="expandedImage ? 'flex-col space-x-0 space-y-4' : 'flex-row space-x-4'">
+                                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 flex transition-all duration-300" :class="expandedImage ? 'flex-col items-center text-center space-y-4' : 'flex-row items-start space-x-4'">
                                     <div class="relative group cursor-pointer" @click="expandedImage = !expandedImage">
-                                        <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" :class="expandedImage ? 'w-full h-auto max-h-96 object-contain' : 'h-24 w-24 object-cover'" class="rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900 transition-all duration-300">
+                                        <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" :class="expandedImage ? 'w-auto h-auto max-h-96 max-w-full object-contain' : 'h-24 w-24 object-cover'" class="rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900 transition-all duration-300">
                                         <div class="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col justify-center h-full">
+                                    <div class="flex flex-col justify-center h-full" :class="expandedImage ? 'items-center w-full' : 'items-start'">
                                         <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Imagen Actual</h5>
                                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Esta es la imagen principal del producto.</p>
                                         <button type="button" wire:click="removeImage" class="inline-flex items-center text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1.5 rounded-lg transition-colors w-max">
