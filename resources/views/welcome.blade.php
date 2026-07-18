@@ -1,6 +1,5 @@
 @php
-    $theme = app('activeTheme') ?? 'stealth';
-    $theme = app('activeTheme') ?? 'stealth';
+    $theme = app('activeTheme') ?? 'modern-light';
 @endphp
 
 @include('themes.' . $theme . '.welcome')

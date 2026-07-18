@@ -61,7 +61,7 @@
 
         /* Typography sizing for Hero */
         .hero-title {
-            font-size: clamp(3.5rem, 8vw, 5.5rem);
+            font-size: clamp(2.5rem, 10vw, 5.5rem);
             line-height: 1.05;
             letter-spacing: -0.02em;
         }
@@ -282,7 +282,7 @@
                     {{-- Ambient backdrop --}}
                     <div class="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-primary)]/10"></div>
                     
-                    <div class="p-12 md:p-20 flex-1 relative z-10">
+                    <div class="p-8 md:p-20 flex-1 relative z-10">
                         <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">
                             Poder sin<br>compromisos.
                         </h2>

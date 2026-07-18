@@ -1,7 +1,7 @@
 @php
-    $theme = app('activeTheme') ?? 'stealth';
+    $theme = app('activeTheme') ?? 'modern-light';
     if (!view()->exists('themes.' . $theme . '.shop')) {
-        $theme = 'stealth';
+        $theme = 'modern-light';
     }
 @endphp
 

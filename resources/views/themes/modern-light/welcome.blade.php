@@ -14,10 +14,12 @@
         {{-- ════════════════════════════════════════════════════════
              HERO SECTION — Limpio, centrado en Búsqueda
         ════════════════════════════════════════════════════════ --}}
-        <section class="relative bg-gray-50 border-b border-gray-100 overflow-hidden" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
+        <section class="relative z-20 bg-gray-50 border-b border-gray-100" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
             {{-- Elementos decorativos de fondo --}}
-            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-red-50 opacity-50 blur-3xl pointer-events-none transition-all duration-1000 transform" :class="loaded ? 'scale-100 translate-y-0' : 'scale-50 -translate-y-12'"></div>
-            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-gray-100 opacity-50 blur-3xl pointer-events-none transition-all duration-1000 delay-300 transform" :class="loaded ? 'scale-100 translate-x-0' : 'scale-50 -translate-x-12'"></div>
+            <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-red-50 opacity-50 blur-3xl transition-all duration-1000 transform" :class="loaded ? 'scale-100 translate-y-0' : 'scale-50 -translate-y-12'"></div>
+                <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-gray-100 opacity-50 blur-3xl transition-all duration-1000 delay-300 transform" :class="loaded ? 'scale-100 translate-x-0' : 'scale-50 -translate-x-12'"></div>
+            </div>
             
             <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-12">
                 
@@ -34,80 +36,10 @@
                         Tenemos el catálogo más completo de controles remotos para TV, Smart TV, Aire Acondicionado y TV Box. Busca por marca o modelo.
                     </p>
                     
-                    {{-- Buscador Hero --}}
-                    <div class="max-w-xl mx-auto lg:mx-0 transition-all duration-1000 delay-200 transform relative z-50" 
-                         :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
-                         x-data="{ 
-                            open: false,
-                            q: '',
-                            history: JSON.parse(localStorage.getItem('searchHistory') || '[]'),
-                            addHistory(term) {
-                                if(!term || term.trim().length < 2) return;
-                                term = term.trim();
-                                let arr = this.history.filter(i => i.toLowerCase() !== term.toLowerCase());
-                                arr.unshift(term);
-                                if(arr.length > 5) arr.pop();
-                                this.history = arr;
-                                localStorage.setItem('searchHistory', JSON.stringify(arr));
-                            },
-                            removeHistory(term, e) {
-                                if(e) e.stopPropagation();
-                                this.history = this.history.filter(i => i !== term);
-                                localStorage.setItem('searchHistory', JSON.stringify(this.history));
-                            }
-                         }"
-                         @click.away="open = false">
-                        <form action="{{ route('shop') }}" method="GET" class="relative flex items-center group" @submit="addHistory(q)">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:scale-110 group-focus-within:text-[var(--color-primary)]">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </div>
-                            <input type="text" name="q" x-model="q" @focus="open = true" autocomplete="off" placeholder="Ej: Control Samsung, Noblex, Aire Surrey..." 
-                                   class="block w-full pl-11 pr-32 py-4 border border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-lg shadow-sm transition-all duration-300 hover:shadow-md focus:shadow-[0_0_20px_rgba(220,38,38,0.2)] bg-white/90 backdrop-blur-sm">
-                            <button type="submit" 
-                                    class="absolute right-2 top-2 bottom-2 px-6 rounded-full text-white font-bold transition-all duration-300 active:scale-95 hover:shadow-lg hover:shadow-red-500/30"
-                                    style="background-color: var(--color-primary);">
-                                Buscar
-                            </button>
-                        </form>
-
-                        <!-- Dropdown de Historial -->
-                        <div x-show="open && history.length > 0" 
-                             style="display: none;"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-100 translate-y-0"
-                             x-transition:leave-end="opacity-0 translate-y-1"
-                             class="absolute z-50 mt-2 w-full rounded-2xl shadow-xl border border-gray-200 bg-white overflow-hidden text-left">
-                            
-                            <div class="py-2">
-                                <div class="px-4 py-2 flex items-center justify-between">
-                                    <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        Búsquedas Recientes
-                                    </h4>
-                                    <button type="button" @click="history = []; localStorage.removeItem('searchHistory')" class="text-[10px] text-gray-400 hover:text-red-500 hover:underline">Borrar todas</button>
-                                </div>
-                                <ul class="divide-y divide-gray-100">
-                                    <template x-for="item in history" :key="item">
-                                        <li>
-                                            <a :href="'{{ route('shop') }}?q=' + encodeURIComponent(item)" class="w-full flex items-center px-4 py-3 transition-colors group hover:bg-gray-50">
-                                                <svg class="h-4 w-4 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                                </svg>
-                                                <span class="flex-1 text-sm font-medium text-gray-700 group-hover:text-[var(--color-primary)] text-left truncate" x-text="item"></span>
-                                                <button type="button" @click.prevent="removeHistory(item, $event)" class="text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                </button>
-                                            </a>
-                                        </li>
-                                    </template>
-                                </ul>
-                            </div>
-                        </div>
+                    {{-- Buscador Hero (Live Search) --}}
+                    <div class="transition-all duration-1000 delay-200 transform relative z-50" 
+                         :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+                        @livewire('search-bar', ['variant' => 'hero'])
                     </div>
                     
                     {{-- Marcas --}}
@@ -210,7 +142,7 @@
         ════════════════════════════════════════════════════════ --}}
         <section class="py-16 bg-white border-b border-gray-100" x-data="{ intersecting: false }" x-intersect.once="intersecting = true">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-1000 delay-100 transform" :class="intersecting ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-1000 delay-100 transform" :class="intersecting ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'">
                     
                     <a href="{{ route('shop', ['categoria' => 'TV']) }}" class="group relative h-32 md:h-40 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center bg-gray-900 hover:shadow-[0_8px_30px_rgba(220,38,38,0.2)] transition-all duration-300">
                         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80 z-10"></div>
