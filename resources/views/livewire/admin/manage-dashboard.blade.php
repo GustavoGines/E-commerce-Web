@@ -150,12 +150,12 @@ new #[Layout('layouts.app')] class extends Component {
     </div>
 
     <!-- KPIs -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
         <!-- Ingresos Mes -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
             <div>
-                <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Facturación del Mes</p>
-                <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">${{ number_format($revenueMonth, 0, ',', '.') }}</h3>
+                <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Facturación del Mes</p>
+                <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">${{ number_format($revenueMonth, 0, ',', '.') }}</h3>
             </div>
             <div class="mt-4 flex items-center gap-1.5 text-xs font-bold {{ $revenueGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,10 +166,10 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
 
         <!-- Ingresos Hoy -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
             <div>
-                <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">La Caja de Hoy</p>
-                <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">${{ number_format($revenueToday, 0, ',', '.') }}</h3>
+                <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">La Caja de Hoy</p>
+                <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">${{ number_format($revenueToday, 0, ',', '.') }}</h3>
             </div>
             <div class="mt-4 flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
                 <span>{{ $ordersTodayCount }} ventas hoy</span>
@@ -177,10 +177,10 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
 
         <!-- Ticket Promedio -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
             <div>
-                <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Ticket Promedio</p>
-                <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">${{ number_format($avgTicket, 0, ',', '.') }}</h3>
+                <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Ticket Promedio</p>
+                <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">${{ number_format($avgTicket, 0, ',', '.') }}</h3>
             </div>
             <div class="mt-4 flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
                 <span>Del mes actual</span>
@@ -188,10 +188,10 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
 
         <!-- Órdenes Pendientes -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 {{ $pendingCritical > 0 ? 'ring-2 ring-rose-500 ring-inset' : '' }}">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 {{ $pendingCritical > 0 ? 'ring-2 ring-rose-500 ring-inset' : '' }}">
             <div>
-                <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Pedidos Colgados</p>
-                <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ $pendingCritical }}</h3>
+                <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Pedidos Colgados</p>
+                <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ $pendingCritical }}</h3>
             </div>
             <div class="mt-4 flex items-center gap-1.5 text-xs font-bold {{ $pendingCritical > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400' }}">
                 <span>> 24hs sin atender</span>
@@ -199,10 +199,10 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
 
         <!-- Visitas a la página -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 group">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 group">
             <div>
-                <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Visitas a la Tienda</p>
-                <h3 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ number_format($visitsToday, 0, ',', '.') }}</h3>
+                <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Visitas a la Tienda</p>
+                <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ number_format($visitsToday, 0, ',', '.') }}</h3>
             </div>
             <div class="mt-4 flex flex-col gap-0.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 relative">
                 <span>Esta semana: {{ number_format($visitsWeek, 0, ',', '.') }}</span>
