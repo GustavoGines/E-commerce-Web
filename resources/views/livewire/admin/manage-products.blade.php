@@ -924,23 +924,23 @@ new #[Layout('layouts.app')] class extends Component {
                     </h3>
                     <form wire:submit="save">
                         <!-- Primera Fila: Nombre y SKU -->
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4">
-                            <div class="sm:col-span-3">
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-5 mb-4">
+                            <div class="col-span-2 sm:col-span-3">
                                 <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">Nombre</label>
                                 <input wire:model="name" type="text" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                 @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">SKU / Código</label>
-                                <input wire:model="sku" type="text" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="Ej: RM-304">
+                            <div class="col-span-1">
+                                <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider truncate">SKU / Cód.</label>
+                                <input wire:model="sku" type="text" class="w-full py-2 px-2 sm:px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="RM-304">
                                 @error('sku') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <!-- Segunda Fila: Categoría, Marca y Stock -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-5">
+                        <div class="grid grid-cols-3 gap-3 sm:gap-5 mb-5">
                             <!-- Categoría -->
-                            <div>
+                            <div class="col-span-1">
                                 <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">
                                     <span>Categoría</span>
                                     <div class="flex items-center gap-2">
@@ -961,17 +961,17 @@ new #[Layout('layouts.app')] class extends Component {
                                         </div>
                                     </div>
                                 </label>
-                                <select wire:model="category_id" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]">
-                                    <option value="">Seleccione una categoría</option>
+                                <select wire:model="category_id" class="w-full py-2 px-1 sm:px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]">
+                                    <option value="">Categoría</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('category_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                @error('category_id') <span class="text-red-500 text-[10px] mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <!-- Marca -->
-                            <div>
+                            <div class="col-span-2 sm:col-span-1">
                                 <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">
                                     <span>Marca</span>
                                     <div class="flex items-center gap-2">
@@ -1023,9 +1023,9 @@ new #[Layout('layouts.app')] class extends Component {
                                         }).filter(Boolean);
                                     }
                                 }" @click.outside="open = false; search = ''">
-                                    <div @click="open = !open" class="w-full min-h-[38px] py-1 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex flex-wrap items-center gap-1.5 transition-colors focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:border-transparent">
+                                    <div @click="open = !open" class="w-full min-h-[38px] py-1 px-2 sm:px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex flex-wrap items-center gap-1.5 transition-colors focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:border-transparent">
                                         <template x-if="!selected || selected.length === 0">
-                                            <span class="text-gray-500 py-1 text-sm">Seleccione marcas...</span>
+                                            <span class="text-gray-500 py-1 text-sm">Marcas...</span>
                                         </template>
                                         <template x-for="name in getSelectedNames()" :key="name">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
@@ -1062,7 +1062,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             <!-- Stock -->
-                            <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                            <div class="col-span-3 sm:col-span-1 grid grid-cols-2 gap-3 sm:gap-4 mt-2 sm:mt-0">
                                 <div>
                                     <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider" title="Stock Actual">Stock Act.</label>
                                     <input wire:model="stock" type="number" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]" placeholder="0">
@@ -1076,71 +1076,73 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
                         
-                        <div class="p-4 sm:p-5 mb-4 sm:mb-5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
+                        <div class="p-3 sm:p-5 mb-4 sm:mb-5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
                             <h4 class="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">Calculadora Inteligente de Precios</h4>
                             
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5 mb-2">
-                                <!-- Costo y Margen en misma fila -->
+                            <div class="grid grid-cols-3 gap-2 sm:gap-5 mb-2">
+                                <!-- Costo -->
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Costo">Costo</label>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[9px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Costo">Costo</label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-bold text-sm">$</span>
+                                        <div class="absolute inset-y-0 left-0 pl-1.5 sm:pl-2.5 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-bold text-xs sm:text-sm">$</span>
                                         </div>
-                                        <input wire:model.live.debounce.300ms="cost_price" type="number" step="0.01" class="w-full py-2 pl-6 pr-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                        <input wire:model.live.debounce.300ms="cost_price" type="number" step="0.01" class="w-full py-2 pl-4 sm:pl-6 pr-1 sm:pr-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     </div>
-                                    @error('cost_price') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                    @error('cost_price') <span class="text-red-500 text-[9px] sm:text-[10px]">{{ $message }}</span> @enderror
                                 </div>
+                                <!-- Margen -->
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Margen">Margen</label>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[9px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Margen">Margen</label>
                                     <div class="relative">
-                                        <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2 pl-3 pr-6 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-bold text-sm">%</span>
+                                        <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2 pl-2 sm:pl-3 pr-4 sm:pr-6 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                        <div class="absolute inset-y-0 right-0 pr-1.5 sm:pr-2 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-bold text-xs sm:text-sm">%</span>
                                         </div>
                                     </div>
-                                    @error('profit_margin') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                    @error('profit_margin') <span class="text-red-500 text-[9px] sm:text-[10px]">{{ $message }}</span> @enderror
                                 </div>
                                 
                                 <!-- Precio Lista -->
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Precio Final Lista">Precio Lista</label>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[9px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Precio Final Lista">P. Lista</label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-bold text-sm">$</span>
+                                        <div class="absolute inset-y-0 left-0 pl-1.5 sm:pl-2.5 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-bold text-xs sm:text-sm">$</span>
                                         </div>
-                                        <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-2 pl-6 pr-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                        <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-2 pl-4 sm:pl-6 pr-1 sm:pr-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-xs sm:text-sm text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     </div>
-                                    @error('retail_price') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                    @error('retail_price') <span class="text-red-500 text-[9px] sm:text-[10px]">{{ $message }}</span> @enderror
                                 </div>
 
-                                <!-- Llevando y Desc. Mayorista -->
+                                <!-- Llevando -->
                                 <div>
-                                    <label class="block text-[var(--color-primary)] text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Llevando (Cant.)">Cant. May.</label>
-                                    <input wire:model="wholesale_min_quantity" type="number" min="1" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 3">
-                                    @error('wholesale_min_quantity') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                    <label class="block text-[var(--color-primary)] text-[9px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Llevando (Cant.)">Cant. M.</label>
+                                    <input wire:model="wholesale_min_quantity" type="number" min="1" class="w-full py-2 px-2 sm:px-3 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    @error('wholesale_min_quantity') <span class="text-red-500 text-[9px] sm:text-[10px]">{{ $message }}</span> @enderror
                                 </div>
+                                <!-- Desc. Mayorista -->
                                 <div>
-                                    <label class="block text-[var(--color-primary)] text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Desc. Mayorista">Desc. May.</label>
+                                    <label class="block text-[var(--color-primary)] text-[9px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Desc. Mayorista">Desc. M.</label>
                                     <div class="relative">
-                                        <input wire:model.live.debounce.300ms="wholesale_discount" type="number" class="w-full py-2 pl-3 pr-6 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 20">
-                                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                                            <span class="text-[var(--color-primary)] opacity-70 font-bold text-sm">%</span>
+                                        <input wire:model.live.debounce.300ms="wholesale_discount" type="number" class="w-full py-2 pl-2 sm:pl-3 pr-4 sm:pr-6 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                        <div class="absolute inset-y-0 right-0 pr-1.5 sm:pr-2 flex items-center pointer-events-none">
+                                            <span class="text-[var(--color-primary)] opacity-70 font-bold text-xs sm:text-sm">%</span>
                                         </div>
                                     </div>
-                                    @error('wholesale_discount') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                    @error('wholesale_discount') <span class="text-red-500 text-[9px] sm:text-[10px]">{{ $message }}</span> @enderror
                                 </div>
 
                                 <!-- Precio Mayorista -->
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-[var(--color-primary)] text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Precio Final Mayorista">Precio Mayorista</label>
+                                <div>
+                                    <label class="block text-[var(--color-primary)] text-[9px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Precio Final Mayorista">P. Mayorista</label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                            <span class="text-[var(--color-primary)] opacity-70 font-bold text-sm">$</span>
+                                        <div class="absolute inset-y-0 left-0 pl-1.5 sm:pl-2.5 flex items-center pointer-events-none">
+                                            <span class="text-[var(--color-primary)] opacity-70 font-bold text-xs sm:text-sm">$</span>
                                         </div>
-                                        <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-2 pl-6 pr-2 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-sm text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                        <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-2 pl-4 sm:pl-6 pr-1 sm:pr-2 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-xs sm:text-sm text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     </div>
-                                    @error('wholesale_price') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                    @error('wholesale_price') <span class="text-red-500 text-[9px] sm:text-[10px]">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
