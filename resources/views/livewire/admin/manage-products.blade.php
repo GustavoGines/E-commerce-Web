@@ -865,7 +865,7 @@ new #[Layout('layouts.app')] class extends Component {
                             <!-- Renglón 2: Precio y Botón eliminar -->
                             <div class="flex justify-between items-center">
                                 <div class="flex items-baseline gap-1.5">
-                                    <div class="text-[10px] font-medium text-gray-400 line-through">${{ number_format($product->retail_price, 2) }}</div>
+                                    <div class="text-[10px] font-medium text-gray-400">${{ number_format($product->retail_price, 2) }}</div>
                                     <div class="text-sm font-black text-[var(--color-primary)]">${{ number_format($product->wholesale_price, 2) }}</div>
                                 </div>
                                 <div @click.stop>
