@@ -924,24 +924,24 @@ new #[Layout('layouts.app')] class extends Component {
                     </h3>
                     <form wire:submit="save">
                         <!-- Primera Fila: Nombre y SKU -->
-                        <div class="flex flex-col md:flex-row gap-5 mb-4">
-                            <div class="w-full md:w-4/5">
-                                <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Nombre</label>
-                                <input wire:model="name" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4">
+                            <div class="sm:col-span-3">
+                                <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">Nombre</label>
+                                <input wire:model="name" type="text" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors">
                                 @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div class="w-full md:w-1/5">
-                                <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">SKU / Código</label>
-                                <input wire:model="sku" type="text" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="Ej: RM-304">
+                            <div class="sm:col-span-1">
+                                <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">SKU / Código</label>
+                                <input wire:model="sku" type="text" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors" placeholder="Ej: RM-304">
                                 @error('sku') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <!-- Segunda Fila: Categoría, Marca y Stock -->
-                        <div class="flex flex-col md:flex-row gap-5 mb-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-5">
                             <!-- Categoría -->
-                            <div class="w-full md:w-1/3">
-                                <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                            <div>
+                                <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">
                                     <span>Categoría</span>
                                     <div class="flex items-center gap-2">
                                         <button type="button" @click="catListOpen = true" class="text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Gestionar Categorías">
@@ -961,7 +961,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         </div>
                                     </div>
                                 </label>
-                                <select wire:model="category_id" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[42px]">
+                                <select wire:model="category_id" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]">
                                     <option value="">Seleccione una categoría</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -971,8 +971,8 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             <!-- Marca -->
-                            <div class="w-full md:w-1/3">
-                                <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                            <div>
+                                <label class="flex justify-between items-center text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider">
                                     <span>Marca</span>
                                     <div class="flex items-center gap-2">
                                         <button type="button" @click="brandListOpen = true" class="text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Gestionar Marcas">
@@ -1023,9 +1023,9 @@ new #[Layout('layouts.app')] class extends Component {
                                         }).filter(Boolean);
                                     }
                                 }" @click.outside="open = false; search = ''">
-                                    <div @click="open = !open" class="w-full min-h-[42px] py-1.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex flex-wrap items-center gap-1.5 transition-colors focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:border-transparent">
+                                    <div @click="open = !open" class="w-full min-h-[38px] py-1 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex flex-wrap items-center gap-1.5 transition-colors focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:border-transparent">
                                         <template x-if="!selected || selected.length === 0">
-                                            <span class="text-gray-500 py-1">Seleccione marcas...</span>
+                                            <span class="text-gray-500 py-1 text-sm">Seleccione marcas...</span>
                                         </template>
                                         <template x-for="name in getSelectedNames()" :key="name">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
@@ -1062,134 +1062,136 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             <!-- Stock -->
-                            <div class="w-full md:w-1/3 grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-3 sm:gap-4">
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider" title="Stock Actual">Stock Act.</label>
-                                    <input wire:model="stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[42px]" placeholder="0">
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider" title="Stock Actual">Stock Act.</label>
+                                    <input wire:model="stock" type="number" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]" placeholder="0">
                                     @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider" title="Alerta de Stock Crítico">Alerta Mín.</label>
-                                    <input wire:model="min_stock" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[42px]" placeholder="2">
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider" title="Alerta de Stock Crítico">Alerta Mín.</label>
+                                    <input wire:model="min_stock" type="number" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]" placeholder="2">
                                     @error('min_stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="p-4 sm:p-5 mb-4 sm:mb-5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
-                            <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Calculadora Inteligente de Precios</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-2">
-                                <!-- Primera fila: Precios de Lista -->
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Costo">Costo</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-bold">$</span>
-                                        </div>
-                                        <input wire:model.live.debounce.300ms="cost_price" type="number" step="0.01" class="w-full py-2.5 pl-7 pr-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                                    </div>
-                                    @error('cost_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Margen de Ganancia">Margen de Ganancia</label>
-                                    <div class="relative">
-                                        <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2.5 pl-3 pr-7 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-bold">%</span>
-                                        </div>
-                                    </div>
-                                    @error('profit_margin') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Precio Final Lista">Precio Final Lista</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-bold">$</span>
-                                        </div>
-                                        <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-2.5 pl-7 pr-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
-                                    </div>
-                                    @error('retail_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-
-                                <!-- Segunda fila: Precios Mayoristas -->
-                                <div>
-                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Llevando (Cant.)">Llevando (Cant.)</label>
-                                    <input wire:model="wholesale_min_quantity" type="number" min="1" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 3">
-                                    @error('wholesale_min_quantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Desc. Mayorista">Desc. Mayorista</label>
-                                    <div class="relative">
-                                        <input wire:model.live.debounce.300ms="wholesale_discount" type="number" class="w-full py-2.5 pl-3 pr-7 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 20">
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <span class="text-[var(--color-primary)] opacity-70 font-bold">%</span>
-                                        </div>
-                                    </div>
-                                    @error('wholesale_discount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Precio Final Mayorista">Precio Final Mayorista</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-[var(--color-primary)] opacity-70 font-bold">$</span>
-                                        </div>
-                                        <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-2.5 pl-7 pr-3 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
-                                    </div>
-                                    @error('wholesale_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div class="mb-8" x-data="{ expandedImage: false }">
-                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Imagen del Producto</label>
+                        <div class="p-4 sm:p-5 mb-4 sm:mb-5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
+                            <h4 class="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">Calculadora Inteligente de Precios</h4>
                             
-                            @if($current_image_url)
-                                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 flex transition-all duration-300" :class="expandedImage ? 'flex-col items-center text-center space-y-4' : 'flex-row items-start space-x-4'">
-                                    <div class="relative group cursor-pointer" @click="expandedImage = !expandedImage">
-                                        <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" :class="expandedImage ? 'w-auto h-auto max-h-96 max-w-full object-contain' : 'h-24 w-24 object-cover'" class="rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900 transition-all duration-300">
-                                        <div class="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5 mb-2">
+                                <!-- Costo y Margen en misma fila -->
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Costo">Costo</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-bold text-sm">$</span>
                                         </div>
+                                        <input wire:model.live.debounce.300ms="cost_price" type="number" step="0.01" class="w-full py-2 pl-6 pr-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     </div>
-                                    <div class="flex flex-col justify-center h-full" :class="expandedImage ? 'items-center w-full' : 'items-start'">
-                                        <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Imagen Actual</h5>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Esta es la imagen principal del producto.</p>
-                                        <button type="button" wire:click="removeImage" class="inline-flex items-center text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1.5 rounded-lg transition-colors w-max">
-                                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                            Eliminar Imagen
-                                        </button>
-                                    </div>
+                                    @error('cost_price') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                                 </div>
-                            @endif
-
-                            <div class="relative group" x-data="{ isDragging: false }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))">
-                                <label class="flex flex-col items-center justify-center w-full h-24 md:h-32 px-4 transition-all bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)]"
-                                       :class="isDragging ? 'border-[var(--color-primary)] bg-blue-50/50 dark:bg-blue-900/10' : ''">
-                                    
-                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <div wire:loading.remove wire:target="image" class="p-3 bg-blue-50 dark:bg-gray-800 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300 text-[var(--color-primary)]">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Margen">Margen</label>
+                                    <div class="relative">
+                                        <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2 pl-3 pr-6 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
+                                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-bold text-sm">%</span>
                                         </div>
-                                        <div wire:loading wire:target="image" class="p-3 mb-3 text-[var(--color-primary)]">
-                                            <svg class="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                        </div>
-                                        <p class="mb-1 text-sm text-gray-500 dark:text-gray-400 font-medium"><span class="text-[var(--color-primary)] font-bold">Haz clic para subir</span> o arrastra la imagen aquí</p>
-                                        <p class="text-xs text-gray-400 dark:text-gray-500">PNG, JPG o WEBP (Máx. 2MB)</p>
                                     </div>
-                                    <input x-ref="fileInput" wire:model="image" type="file" accept="image/*" class="hidden" />
-                                </label>
+                                    @error('profit_margin') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                </div>
                                 
-                                <label class="absolute bottom-3 right-3 cursor-pointer shrink-0 flex items-center justify-center p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all shadow-sm hover:shadow group-hover:scale-105" title="Tomar foto con la cámara (Móvil)">
-                                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
-                                </label>
+                                <!-- Precio Lista -->
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Precio Final Lista">Precio Lista</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-bold text-sm">$</span>
+                                        </div>
+                                        <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-2 pl-6 pr-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    </div>
+                                    @error('retail_price') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                </div>
+
+                                <!-- Llevando y Desc. Mayorista -->
+                                <div>
+                                    <label class="block text-[var(--color-primary)] text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Llevando (Cant.)">Cant. May.</label>
+                                    <input wire:model="wholesale_min_quantity" type="number" min="1" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 3">
+                                    @error('wholesale_min_quantity') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-[var(--color-primary)] text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Desc. Mayorista">Desc. May.</label>
+                                    <div class="relative">
+                                        <input wire:model.live.debounce.300ms="wholesale_discount" type="number" class="w-full py-2 pl-3 pr-6 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 20">
+                                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                            <span class="text-[var(--color-primary)] opacity-70 font-bold text-sm">%</span>
+                                        </div>
+                                    </div>
+                                    @error('wholesale_discount') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                </div>
+
+                                <!-- Precio Mayorista -->
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="block text-[var(--color-primary)] text-[10px] sm:text-xs font-bold mb-1 uppercase tracking-wider truncate" title="Precio Final Mayorista">Precio Mayorista</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                            <span class="text-[var(--color-primary)] opacity-70 font-bold text-sm">$</span>
+                                        </div>
+                                        <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-2 pl-6 pr-2 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-sm text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
+                                    </div>
+                                    @error('wholesale_price') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                </div>
                             </div>
-                            @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-2 block font-medium">{{ $message }}</span> @enderror
                         </div>
-                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 bg-gray-50 dark:bg-gray-900/50 -mx-4 sm:-mx-8 -mb-4 px-4 sm:px-8 py-4 sm:py-5 border-t border-gray-200 dark:border-gray-800">
-                            <button type="button" wire:click="$set('showModal', false)" class="w-full sm:w-auto text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold py-2.5 px-5 rounded-full transition-colors border border-gray-200 sm:border-transparent">Cancelar</button>
-                            <button type="submit" class="w-full sm:w-auto text-white font-bold py-2.5 px-8 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">Guardar Producto</button>
+
+
+                        <div class="mb-4" x-data="{ expandedImage: false }">
+                            <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-2 uppercase tracking-wider">Imagen del Producto</label>
+                            
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                @if($current_image_url)
+                                    <div class="w-full sm:w-auto p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center space-x-3 transition-all duration-300 shrink-0">
+                                        <div class="relative group cursor-pointer shrink-0" @click="expandedImage = !expandedImage">
+                                            <img src="{{ asset('storage/' . $current_image_url) }}" alt="Imagen actual" class="h-14 w-14 sm:h-16 sm:w-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-900">
+                                        </div>
+                                        <div class="flex flex-col flex-1">
+                                            <h5 class="text-[10px] sm:text-xs font-bold text-gray-900 dark:text-white mb-0.5">Imagen Actual</h5>
+                                            <button type="button" wire:click="removeImage" class="inline-flex items-center text-[10px] font-bold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors w-max mt-1">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                Borrar
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="relative group flex-1" x-data="{ isDragging: false }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))">
+                                    <label class="flex flex-col items-center justify-center w-full h-[76px] sm:h-[84px] px-2 transition-all bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)]"
+                                           :class="isDragging ? 'border-[var(--color-primary)] bg-blue-50/50 dark:bg-blue-900/10' : ''">
+                                        
+                                        <div class="flex flex-col items-center justify-center text-center">
+                                            <div wire:loading.remove wire:target="image" class="text-[var(--color-primary)] mb-1">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            </div>
+                                            <div wire:loading wire:target="image" class="mb-1 text-[var(--color-primary)]">
+                                                <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                            </div>
+                                            <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium leading-tight"><span class="text-[var(--color-primary)] font-bold">Subir</span> o soltar img.</p>
+                                        </div>
+                                        <input x-ref="fileInput" wire:model="image" type="file" accept="image/*" class="hidden" />
+                                    </label>
+                                    
+                                    <label class="absolute bottom-1 right-1 cursor-pointer shrink-0 flex items-center justify-center p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all shadow-sm" title="Cámara">
+                                        <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
+                                    </label>
+                                </div>
+                            </div>
+                            @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="flex flex-row items-center justify-center gap-2 sm:gap-3 bg-gray-50 dark:bg-gray-900/50 -mx-4 sm:-mx-8 -mb-4 px-4 sm:px-8 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-800">
+                            <button type="button" wire:click="$set('showModal', false)" class="flex-1 sm:w-auto sm:flex-none text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold py-2 sm:py-2.5 px-3 sm:px-5 rounded-lg sm:rounded-full transition-colors border border-gray-200 bg-white sm:border-transparent text-sm">Cancelar</button>
+                            <button type="submit" class="flex-1 sm:w-auto sm:flex-none text-white font-bold py-2 sm:py-2.5 px-3 sm:px-8 rounded-lg sm:rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-sm" style="background-color: var(--color-primary);">Guardar</button>
                         </div>
                     </form>
                 </div>
