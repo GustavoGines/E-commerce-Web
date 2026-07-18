@@ -115,7 +115,11 @@ new class extends Component {
                         <li><a href="{{ route('shop') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Catálogo Completo</a></li>
                         @auth
                             @if(optional(auth()->user())->isAdmin())
-                                <li><a href="{{ route('admin.orders') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Panel de Administración</a></li>
+                                <li><a href="{{ route('admin.dashboard') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Dashboard Admin</a></li>
+                                <li><a href="{{ route('admin.orders') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Gestión de Órdenes</a></li>
+                                <li><a href="{{ route('admin.products') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Gestión de Productos</a></li>
+                                <li><a href="{{ route('admin.users') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Gestión de Usuarios</a></li>
+                                <li><a href="{{ route('admin.settings') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Configuración Tienda</a></li>
                             @else
                                 <li><a href="{{ route('my-orders') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Mis Órdenes</a></li>
                                 <li><a href="{{ route('profile') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Mi Perfil</a></li>
