@@ -139,11 +139,11 @@ new #[Layout('layouts.app')] class extends Component {
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Panel de Control</h1>
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Resumen de estadísticas y salud del negocio</p>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ route('admin.orders') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <a href="{{ route('admin.orders') }}" class="w-full sm:w-auto inline-flex justify-center items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 Ver Órdenes
             </a>
-            <a href="{{ route('admin.products') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
+            <a href="{{ route('admin.products') }}" class="w-full sm:w-auto inline-flex justify-center items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
                 Gestionar Productos
             </a>
         </div>
@@ -247,7 +247,7 @@ new #[Layout('layouts.app')] class extends Component {
                 <h3 class="text-base font-black tracking-tight text-gray-900 dark:text-white">Últimas Órdenes</h3>
                 <a href="{{ route('admin.orders') }}" class="text-xs font-bold uppercase tracking-wider text-[var(--color-primary)] hover:underline">Ver todas</a>
             </div>
-            <div class="overflow-x-auto flex-grow">
+            <div class="overflow-x-auto flex-grow hidden md:block">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr>
@@ -280,11 +280,41 @@ new #[Layout('layouts.app')] class extends Component {
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-sm font-semibold text-gray-400 dark:text-gray-500">No hay órdenes registradas.</td>
+                            <td colspan="5" class="px-6 py-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400">No hay órdenes recientes</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Vista Móvil para Órdenes (Tarjetas) -->
+            <div class="block md:hidden divide-y divide-gray-100 dark:divide-gray-700/50">
+                @forelse($latestOrders as $order)
+                    <div class="p-4 flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-black text-gray-900 dark:text-white">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</span>
+                            <span class="px-2 py-0.5 inline-flex text-[10px] font-black uppercase tracking-widest rounded-md 
+                                @if($order->status === 'pagado' || $order->status === 'completado') bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
+                                @elseif($order->status === 'pendiente') bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400
+                                @elseif($order->status === 'cancelado') bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400
+                                @else bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 @endif">
+                                {{ $order->status }}
+                            </span>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-900 dark:text-white">{{ $order->user?->name ?? 'Invitado' }}</div>
+                            <div class="text-xs font-medium text-gray-500">{{ $order->user?->email }}</div>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-sm font-black text-[var(--color-primary)]">${{ number_format($order->total, 2) }}</span>
+                            <span class="text-xs font-medium text-gray-500">{{ $order->created_at->diffForHumans() }}</span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-6 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
+                        No hay órdenes recientes
+                    </div>
+                @endforelse
             </div>
         </div>
 

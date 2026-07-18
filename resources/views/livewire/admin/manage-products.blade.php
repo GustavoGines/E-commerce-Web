@@ -611,7 +611,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-3 items-center">
+                <div class="flex flex-wrap gap-2 items-center">
                     
                     <button type="button" @click="massUpdateOpen = true" class="group flex items-center justify-center p-2.5 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-800 border border-slate-200 dark:border-gray-700 shadow-sm text-slate-700 dark:text-slate-200 font-bold">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -665,7 +665,7 @@ new #[Layout('layouts.app')] class extends Component {
                 </div>
             </div>
 
-            <div class="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700/50 shadow-sm dark:shadow-none transition-colors">
+            <div class="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700/50 shadow-sm dark:shadow-none transition-colors hidden md:block">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700/50 text-left">
                     <thead class="bg-gray-50 dark:bg-gray-900/50 transition-colors">
                         <tr>
@@ -791,7 +791,58 @@ new #[Layout('layouts.app')] class extends Component {
                         </tr>
                         @endforeach
                     </tbody>
+                    </tbody>
                 </table>
+            </div>
+
+            <!-- Vista Móvil para Productos (Tarjetas) -->
+            <div class="block md:hidden space-y-4">
+                @foreach($products as $product)
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm relative {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-[var(--color-primary)]' : '' }}">
+                    <div class="absolute top-4 right-4 z-10">
+                        <input type="checkbox" value="{{ $product->id }}" wire:model.live="selectedProducts" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]">
+                    </div>
+                    <div class="flex gap-4">
+                        @if($product->image_url)
+                            <img src="{{ asset('storage/' . $product->image_url) }}" class="h-16 w-16 rounded-xl object-cover border border-gray-200 dark:border-gray-600 shrink-0 cursor-pointer" @click="previewImageUrl = '{{ asset('storage/' . $product->image_url) }}'; previewImageOpen = true">
+                        @else
+                            <div class="h-16 w-16 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-tighter shrink-0">Sin img</div>
+                        @endif
+                        <div class="flex flex-col flex-grow justify-center pr-6">
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white">{{ $product->name }}</h4>
+                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">{{ $product->category ? $product->category->name : 'Sin cat.' }}</span>
+                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">{{ $product->brands->pluck('name')->join(', ') ?: 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-700/50 pt-4">
+                        <div>
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Precio / Mayorista</div>
+                            <div class="text-sm font-bold text-gray-900 dark:text-white">
+                                ${{ number_format($product->retail_price, 2) }} 
+                                <span class="text-[var(--color-primary)] ml-1">${{ number_format($product->wholesale_price, 2) }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Stock</div>
+                            @if($product->stock > 0)
+                                <span class="text-sm font-bold text-green-600 dark:text-green-400">{{ $product->stock }} un.</span>
+                            @else
+                                <span class="text-sm font-bold text-red-600 dark:text-red-400">Agotado</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="mt-4 flex gap-2 border-t border-gray-100 dark:border-gray-700/50 pt-4">
+                        <button @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar
+                        </button>
+                        <button wire:click="delete({{ $product->id }})" wire:confirm="¿Seguro de eliminar?" class="flex items-center justify-center px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                @endforeach
             </div>
             
             {{-- Paginación PERF-02 --}}

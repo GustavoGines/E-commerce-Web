@@ -156,7 +156,7 @@ new #[Layout('layouts.app')] class extends Component {
     </div>
 
     <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto hidden md:block">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-900">
                     <tr>
@@ -234,6 +234,67 @@ new #[Layout('layouts.app')] class extends Component {
                 </tbody>
             </table>
         </div>
+
+        <!-- Vista Móvil para Usuarios (Tarjetas) -->
+        <div class="block md:hidden divide-y divide-gray-100 dark:divide-gray-700/50">
+            @forelse($users as $user)
+            <div class="p-4 flex flex-col gap-3">
+                <div class="flex justify-between items-start">
+                    <div class="flex flex-col">
+                        <div class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            {{ $user->name }}
+                            @if($user->is_banned)
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50">
+                                    Bloqueado
+                                </span>
+                            @endif
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
+                        @if($user->phone)
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                {{ $user->phone }}
+                            </div>
+                        @endif
+                    </div>
+                    <div class="text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                        {{ $user->orders_count }} órdenes
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-2 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                    <select wire:change="updateRole({{ $user->id }}, $event.target.value)" 
+                            class="py-1.5 pl-3 pr-8 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 focus:ring-[var(--color-primary)] {{ $user->id === auth()->id() ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            @if($user->id === auth()->id()) disabled @endif>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->value }}" @if(optional($user->role)->value === $role->value) selected @endif>
+                                {{ $role->label() }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <div class="flex items-center gap-1">
+                        <button wire:click="editUser({{ $user->id }})" class="text-gray-400 hover:text-[var(--color-primary)] p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+
+                        @if($user->id !== auth()->id())
+                            <button wire:click="toggleBan({{ $user->id }})" wire:confirm="¿Seguro que quieres {{ $user->is_banned ? 'desbloquear' : 'bloquear' }} a este usuario?" class="{{ $user->is_banned ? 'text-red-600 bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/50' : 'text-gray-400 bg-gray-50 dark:bg-gray-800 border border-transparent' }} p-2 rounded-lg">
+                                @if($user->is_banned)
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                                @else
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                @endif
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @empty
+                <div class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">No se encontraron usuarios.</div>
+            @endforelse
+        </div>
+
         <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
             {{ $users->links() }}
         </div>
@@ -247,9 +308,9 @@ new #[Layout('layouts.app')] class extends Component {
             <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showEditModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             
-            <div class="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                <form wire:submit.prevent="saveUser">
-                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full max-h-[90vh] flex flex-col">
+                <form wire:submit.prevent="saveUser" class="flex flex-col overflow-hidden">
+                    <div class="overflow-y-auto p-6">
                         <h3 class="text-lg leading-6 font-black text-gray-900 dark:text-white mb-4" id="modal-title">
                             Editar Usuario
                         </h3>

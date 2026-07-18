@@ -315,8 +315,8 @@ new #[Layout('layouts.app')] class extends Component {
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end">
-                    <button class="text-white font-bold py-3 px-8 rounded-full transition-all hover:opacity-90 shadow-lg hover:shadow-xl hover:-translate-y-0.5" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);" type="submit">
+                <div class="flex flex-col sm:flex-row items-center justify-end">
+                    <button class="w-full sm:w-auto text-white font-bold py-3 px-8 rounded-full transition-all hover:opacity-90 shadow-lg hover:shadow-xl hover:-translate-y-0.5" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);" type="submit">
                         Guardar Configuración
                     </button>
                 </div>
