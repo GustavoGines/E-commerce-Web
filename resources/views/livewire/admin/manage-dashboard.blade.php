@@ -139,12 +139,12 @@ new #[Layout('layouts.app')] class extends Component {
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Panel de Control</h1>
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Resumen de estadísticas y salud del negocio</p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <a href="{{ route('admin.orders') }}" class="w-full sm:w-auto inline-flex justify-center items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                Ver Órdenes
+        <div class="grid grid-cols-2 sm:flex sm:flex-row gap-2 w-full sm:w-auto">
+            <a href="{{ route('admin.orders') }}" class="w-full inline-flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                Órdenes
             </a>
-            <a href="{{ route('admin.products') }}" class="w-full sm:w-auto inline-flex justify-center items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
-                Gestionar Productos
+            <a href="{{ route('admin.products') }}" class="w-full inline-flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
+                Productos
             </a>
         </div>
     </div>
@@ -224,7 +224,7 @@ new #[Layout('layouts.app')] class extends Component {
             <div class="mb-4">
                 <h3 class="text-base font-black tracking-tight text-gray-900 dark:text-white">Ingresos (Últimos 30 días)</h3>
             </div>
-            <div class="h-64 relative">
+            <div class="h-48 sm:h-64 relative">
                 <canvas id="dailyRevenueChart"></canvas>
             </div>
         </div>
@@ -234,7 +234,7 @@ new #[Layout('layouts.app')] class extends Component {
             <div class="mb-4">
                 <h3 class="text-base font-black tracking-tight text-gray-900 dark:text-white">Estado de Órdenes (Mes)</h3>
             </div>
-            <div class="h-64 relative flex justify-center">
+            <div class="h-48 sm:h-64 relative flex justify-center">
                 <canvas id="ordersStatusChart"></canvas>
             </div>
         </div>
