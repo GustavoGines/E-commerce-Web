@@ -91,10 +91,10 @@ new class extends Component {
                 
                 {{-- Columna 1: Brand Info --}}
                 <div class="lg:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-                    <div class="mb-4 relative h-12 w-full flex justify-center md:justify-start items-center">
+                    <div class="mb-6 w-full flex justify-center md:justify-start items-center">
                         @php $settings = \App\Models\StoreSetting::getSettings(); @endphp
                         @if(isset($settings) && $settings->logo_url)
-                            <img src="{{ asset('storage/logos/logo-cjg-horizontal.png') }}" alt="Logo" class="pointer-events-none drop-shadow-md brightness-0 invert opacity-90" style="max-height: 38px; width: auto;">
+                            <img src="{{ asset('storage/logos/logo-cjg-horizontal.png') }}" alt="Logo" class="pointer-events-none drop-shadow-md brightness-0 invert opacity-90" style="width: 220px; height: auto;">
                         @else
                             <div class="flex items-center gap-2">
                                 <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z"/></svg>
