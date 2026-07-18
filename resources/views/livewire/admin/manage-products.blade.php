@@ -32,9 +32,6 @@ new #[Layout('layouts.app')] class extends Component {
     public $current_image_url;
     public $delete_image = false;
     
-    public $categories = [];
-    public $brands = [];
-    
     public $new_brand_name = '';
     
     public $showModal = false;
@@ -77,9 +74,6 @@ new #[Layout('layouts.app')] class extends Component {
         if ($user && $user->table_preferences) {
             $this->visibleColumns = array_merge($this->visibleColumns, $user->table_preferences);
         }
-
-        $this->loadCategoriesWithCount();
-        $this->loadBrandsWithCount();
 
         if ($this->edit_id) {
             $this->edit($this->edit_id);
@@ -172,7 +166,9 @@ new #[Layout('layouts.app')] class extends Component {
 
         // PERF-02: Paginación — solo carga $perPage registros a la vez
         return [
-            'products' => $query->paginate($this->perPage)
+            'products' => $query->paginate($this->perPage),
+            'categories' => Category::withCount('products')->orderBy('name')->get(),
+            'brands' => Brand::withCount('products')->orderBy('name')->get(),
         ];
     }
 
@@ -286,7 +282,6 @@ new #[Layout('layouts.app')] class extends Component {
             ['slug' => \Illuminate\Support\Str::slug($name)],
             ['name' => $name]
         );
-        $this->loadBrandsWithCount();
         $this->brand_ids[] = (string)$brand->id;
         $this->dispatch('notify', message: 'Marca creada y seleccionada exitosamente.');
     }
@@ -300,7 +295,6 @@ new #[Layout('layouts.app')] class extends Component {
             ['slug' => \Illuminate\Support\Str::slug($name)],
             ['name' => $name]
         );
-        $this->loadCategoriesWithCount();
         $this->category_id = $category->id;
         $this->dispatch('notify', message: 'Categoría creada y seleccionada exitosamente.');
     }
@@ -401,15 +395,7 @@ new #[Layout('layouts.app')] class extends Component {
 
 
 
-    public function loadCategoriesWithCount()
-    {
-        $this->categories = Category::withCount('products')->get();
-    }
 
-    public function loadBrandsWithCount()
-    {
-        $this->brands = Brand::withCount('products')->get();
-    }
 
     public function editBrand($id)
     {
@@ -440,7 +426,6 @@ new #[Layout('layouts.app')] class extends Component {
             Brand::create(['name' => $this->manageBrandName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Marca creada exitosamente.');
         }
-        $this->loadBrandsWithCount();
         $this->manageBrandId = null;
         $this->manageBrandName = '';
     }
@@ -453,7 +438,6 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
         $brand->delete();
-        $this->loadBrandsWithCount();
         $this->dispatch('notify', message: 'Marca eliminada exitosamente.');
     }
 
@@ -486,7 +470,6 @@ new #[Layout('layouts.app')] class extends Component {
             Category::create(['name' => $this->manageCategoryName, 'slug' => $slug]);
             $this->dispatch('notify', message: 'Categoría creada exitosamente.');
         }
-        $this->loadCategoriesWithCount();
         $this->manageCategoryId = null;
         $this->manageCategoryName = '';
     }
@@ -499,7 +482,6 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
         $cat->delete();
-        $this->loadCategoriesWithCount();
         $this->dispatch('notify', message: 'Categoría eliminada exitosamente.');
     }
 
