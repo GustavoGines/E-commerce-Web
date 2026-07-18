@@ -1107,17 +1107,21 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             <!-- Stock -->
-                            <div class="col-span-3 sm:col-span-1 grid grid-cols-2 gap-3 sm:gap-4 mt-2 sm:mt-0">
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider" title="Stock Actual">Stock Act.</label>
-                                    <input wire:model="stock" type="number" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]" placeholder="0">
-                                    @error('stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            <div class="col-span-3 sm:col-span-1 flex flex-col justify-end mt-2 sm:mt-0">
+                                <div class="flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-200 dark:border-gray-700 h-[38px]">
+                                    <div class="flex items-center gap-1.5 flex-1">
+                                        <label class="text-gray-600 dark:text-gray-400 text-[9px] font-bold uppercase tracking-wider pl-1 whitespace-nowrap" title="Stock Actual">Stock</label>
+                                        <input wire:model="stock" type="number" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-sm px-2 py-1 focus:ring-1 focus:ring-[var(--color-primary)] text-center h-[28px]" placeholder="0">
+                                    </div>
+                                    <div class="w-px h-5 bg-gray-300 dark:bg-gray-600"></div>
+                                    <div class="flex items-center gap-1.5 flex-1">
+                                        <label class="text-gray-600 dark:text-gray-400 text-[9px] font-bold uppercase tracking-wider whitespace-nowrap" title="Alerta de Stock Crítico">Mín.</label>
+                                        <input wire:model="min_stock" type="number" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-sm px-2 py-1 focus:ring-1 focus:ring-[var(--color-primary)] text-center h-[28px]" placeholder="2">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-400 text-[10px] sm:text-xs font-bold mb-1.5 uppercase tracking-wider" title="Alerta de Stock Crítico">Alerta Mín.</label>
-                                    <input wire:model="min_stock" type="number" class="w-full py-2 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors h-[38px]" placeholder="2">
-                                    @error('min_stock') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                                </div>
+                                @if($errors->has('stock') || $errors->has('min_stock'))
+                                    <div class="text-red-500 text-[10px] mt-1 leading-tight">Error en stock</div>
+                                @endif
                             </div>
                         </div>
                         
