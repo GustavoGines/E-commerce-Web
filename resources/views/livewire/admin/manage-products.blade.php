@@ -1381,8 +1381,16 @@ new #[Layout('layouts.app')] class extends Component {
                                             <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ $brand->products()->count() }}</span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button wire:click="editBrand({{ $brand->id }})" class="text-[var(--color-primary)] hover:opacity-80 font-bold mr-4">Editar</button>
-                                            <button wire:click="deleteBrand({{ $brand->id }})" wire:confirm="¿Eliminar la marca {{ $brand->name }}? Esta acción no se puede deshacer." class="text-red-600 hover:text-red-800 dark:hover:text-red-400 font-bold transition-colors">Eliminar</button>
+                                            <div class="flex justify-end items-center gap-2 sm:gap-4">
+                                                <button wire:click="editBrand({{ $brand->id }})" title="Editar" class="text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 p-1.5 sm:p-0 rounded-lg font-bold transition-colors flex items-center">
+                                                    <span class="hidden sm:inline">Editar</span>
+                                                    <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                </button>
+                                                <button wire:click="deleteBrand({{ $brand->id }})" wire:confirm="¿Eliminar la marca {{ $brand->name }}? Esta acción no se puede deshacer." title="Eliminar" class="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 sm:p-0 rounded-lg font-bold transition-colors flex items-center">
+                                                    <span class="hidden sm:inline">Eliminar</span>
+                                                    <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endif
@@ -1468,8 +1476,16 @@ new #[Layout('layouts.app')] class extends Component {
                                             <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ $category->products()->count() }}</span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button wire:click="editCategory({{ $category->id }})" class="text-[var(--color-primary)] hover:opacity-80 font-bold mr-4">Editar</button>
-                                            <button wire:click="deleteCategory({{ $category->id }})" wire:confirm="¿Eliminar la categoría {{ $category->name }}? Esta acción no se puede deshacer." class="text-red-600 hover:text-red-800 dark:hover:text-red-400 font-bold transition-colors">Eliminar</button>
+                                            <div class="flex justify-end items-center gap-2 sm:gap-4">
+                                                <button wire:click="editCategory({{ $category->id }})" title="Editar" class="text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 p-1.5 sm:p-0 rounded-lg font-bold transition-colors flex items-center">
+                                                    <span class="hidden sm:inline">Editar</span>
+                                                    <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                </button>
+                                                <button wire:click="deleteCategory({{ $category->id }})" wire:confirm="¿Eliminar la categoría {{ $category->name }}? Esta acción no se puede deshacer." title="Eliminar" class="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 sm:p-0 rounded-lg font-bold transition-colors flex items-center">
+                                                    <span class="hidden sm:inline">Eliminar</span>
+                                                    <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endif
