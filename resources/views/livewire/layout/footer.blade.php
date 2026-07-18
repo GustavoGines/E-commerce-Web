@@ -112,20 +112,21 @@ new class extends Component {
                     <h5 class="text-[10px] font-black text-gray-100 uppercase tracking-widest mb-4">Navegación</h5>
                     <ul class="space-y-3">
                         <li><a href="{{ route('home') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Inicio</a></li>
-                        <li><a href="{{ route('shop') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Catálogo Completo</a></li>
+                        <li><a href="{{ route('shop') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Tienda</a></li>
                         @auth
                             @if(optional(auth()->user())->isAdmin())
-                                <li><a href="{{ route('admin.dashboard') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Dashboard Admin</a></li>
+                                <li><a href="{{ route('admin.dashboard') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Panel</a></li>
                                 <li><a href="{{ route('admin.orders') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Gestión de Órdenes</a></li>
-                                <li><a href="{{ route('admin.products') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Gestión de Productos</a></li>
-                                <li><a href="{{ route('admin.users') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Gestión de Usuarios</a></li>
-                                <li><a href="{{ route('admin.settings') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Configuración Tienda</a></li>
+                                <li><a href="{{ route('admin.products') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Productos</a></li>
+                                <li><a href="{{ route('admin.users') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Usuarios</a></li>
+                                <li><a href="{{ route('admin.settings') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Configuración</a></li>
                             @else
                                 <li><a href="{{ route('my-orders') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Mis Órdenes</a></li>
                                 <li><a href="{{ route('profile') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Mi Perfil</a></li>
                             @endif
                         @else
-                            <li><a href="{{ route('login') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Iniciar Sesión / Registro</a></li>
+                            <li><a href="{{ route('login') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Iniciar Sesión</a></li>
+                            <li><a href="{{ route('register') }}" wire:navigate class="text-gray-400 hover:text-white text-sm font-medium transition-colors">Registrarse</a></li>
                         @endauth
                     </ul>
                 </div>
