@@ -1167,26 +1167,47 @@ new #[Layout('layouts.app')] class extends Component {
                                     </div>
                                 @endif
 
-                                <div class="relative group flex-1" x-data="{ isDragging: false }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))">
-                                    <label class="flex flex-col items-center justify-center w-full h-[76px] sm:h-[84px] px-2 transition-all bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)]"
-                                           :class="isDragging ? 'border-[var(--color-primary)] bg-blue-50/50 dark:bg-blue-900/10' : ''">
+                                <div class="relative group flex-1 w-full" x-data="{ isDragging: false }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))">
+                                    <div class="grid grid-cols-2 gap-2 sm:block h-[76px] sm:h-[84px]">
+                                        <!-- Galería / Drop Zone (Desktop) -->
+                                        <label class="flex flex-col items-center justify-center w-full h-full px-2 transition-all bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 sm:border-2 sm:border-dashed rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)]"
+                                               :class="isDragging ? 'border-[var(--color-primary)] bg-blue-50/50 dark:bg-blue-900/10' : ''">
+                                            
+                                            <div class="flex flex-col items-center justify-center text-center">
+                                                <div wire:loading.remove wire:target="image" class="text-[var(--color-primary)] mb-1">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                </div>
+                                                <div wire:loading wire:target="image" class="mb-1 text-[var(--color-primary)]">
+                                                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                                </div>
+                                                <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium leading-tight">
+                                                    <span class="text-[var(--color-primary)] font-bold sm:hidden">Galería</span>
+                                                    <span class="hidden sm:inline"><span class="text-[var(--color-primary)] font-bold">Subir</span> o soltar img.</span>
+                                                </p>
+                                            </div>
+                                            <input x-ref="fileInput" wire:model="image" type="file" accept="image/*" class="hidden" />
+                                        </label>
                                         
-                                        <div class="flex flex-col items-center justify-center text-center">
-                                            <div wire:loading.remove wire:target="image" class="text-[var(--color-primary)] mb-1">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        <!-- Cámara Absolute Button (Desktop Only) -->
+                                        <label class="hidden sm:flex absolute bottom-1 right-1 cursor-pointer shrink-0 items-center justify-center p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all shadow-sm" title="Cámara">
+                                            <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                            <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
+                                        </label>
+
+                                        <!-- Cámara Full Button (Mobile Only) -->
+                                        <label class="sm:hidden flex flex-col items-center justify-center w-full h-full px-2 transition-all bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 hover:border-[var(--color-primary)]">
+                                            <div class="flex flex-col items-center justify-center text-center">
+                                                <div wire:loading.remove wire:target="image" class="text-gray-600 dark:text-gray-400 mb-1">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                </div>
+                                                <div wire:loading wire:target="image" class="mb-1 text-gray-600 dark:text-gray-400">
+                                                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                                </div>
+                                                <p class="text-[10px] text-gray-600 dark:text-gray-400 font-bold leading-tight">Cámara</p>
                                             </div>
-                                            <div wire:loading wire:target="image" class="mb-1 text-[var(--color-primary)]">
-                                                <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                            </div>
-                                            <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium leading-tight"><span class="text-[var(--color-primary)] font-bold">Subir</span> o soltar img.</p>
-                                        </div>
-                                        <input x-ref="fileInput" wire:model="image" type="file" accept="image/*" class="hidden" />
-                                    </label>
-                                    
-                                    <label class="absolute bottom-1 right-1 cursor-pointer shrink-0 flex items-center justify-center p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all shadow-sm" title="Cámara">
-                                        <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                        <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
-                                    </label>
+                                            <input wire:model="image" type="file" accept="image/*" capture="environment" class="hidden">
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
