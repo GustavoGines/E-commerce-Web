@@ -918,8 +918,8 @@ new #[Layout('layouts.app')] class extends Component {
                     </div>
                 </div>
 
-                <div class="px-8 pt-8 pb-4">
-                    <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-8 tracking-tight">
+                <div class="px-4 sm:px-8 pt-6 sm:pt-8 pb-4">
+                    <h3 class="text-xl sm:text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-6 sm:mb-8 tracking-tight">
                         {{ $product_id ? 'Editar Producto' : 'Nuevo Producto' }}
                     </h3>
                     <form wire:submit="save">
@@ -1076,7 +1076,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
                         
-                        <div class="p-5 mb-5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
+                        <div class="p-4 sm:p-5 mb-4 sm:mb-5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
                             <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Calculadora Inteligente de Precios</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-2">
                                 <!-- Primera fila: Precios de Lista -->
@@ -1187,9 +1187,9 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                             @error('image') <span class="text-red-500 dark:text-red-400 text-xs mt-2 block font-medium">{{ $message }}</span> @enderror
                         </div>
-                        <div class="flex items-center justify-end bg-gray-50 dark:bg-gray-900/50 -mx-8 -mb-4 px-8 py-5 border-t border-gray-200 dark:border-gray-800">
-                            <button type="button" wire:click="$set('showModal', false)" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold py-2.5 px-5 rounded-full transition-colors mr-3">Cancelar</button>
-                            <button type="submit" class="text-white font-bold py-2.5 px-8 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">Guardar Producto</button>
+                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 bg-gray-50 dark:bg-gray-900/50 -mx-4 sm:-mx-8 -mb-4 px-4 sm:px-8 py-4 sm:py-5 border-t border-gray-200 dark:border-gray-800">
+                            <button type="button" wire:click="$set('showModal', false)" class="w-full sm:w-auto text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold py-2.5 px-5 rounded-full transition-colors border border-gray-200 sm:border-transparent">Cancelar</button>
+                            <button type="submit" class="w-full sm:w-auto text-white font-bold py-2.5 px-8 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" style="background-color: var(--color-primary); box-shadow: 0 4px 14px 0 var(--color-primary-glow);">Guardar Producto</button>
                         </div>
                     </form>
                 </div>
@@ -1205,9 +1205,9 @@ new #[Layout('layouts.app')] class extends Component {
             <div x-show="massUpdateOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/60 dark:bg-[#0b0f19]/90 backdrop-blur-md transition-opacity" @click="massUpdateOpen = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
             <div x-show="massUpdateOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-                <div class="px-8 pt-8 pb-4">
-                    <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-6 tracking-tight flex items-center">
-                        💸 Actualización Masiva de Precios
+                <div class="px-4 sm:px-8 pt-6 sm:pt-8 pb-4">
+                    <h3 class="text-xl sm:text-2xl leading-6 font-bold text-gray-900 dark:text-white mb-6 tracking-tight flex items-center">
+                        💸 Actualización Masiva
                     </h3>
                     
                     <form wire:submit="applyMassUpdate">
@@ -1235,7 +1235,7 @@ new #[Layout('layouts.app')] class extends Component {
                             @endif
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase">Acción</label>
                                 <select wire:model="massType" class="w-full py-3 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white">
@@ -1252,7 +1252,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase">Valor (Número)</label>
                                 <input wire:model="massValue" type="number" step="0.01" min="0" class="w-full py-3 px-4 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-xl text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
@@ -1278,9 +1278,9 @@ new #[Layout('layouts.app')] class extends Component {
                             </label>
                         </div>
 
-                        <div class="flex items-center justify-end bg-gray-50 dark:bg-gray-900/50 -mx-8 -mb-4 px-8 py-5 border-t border-gray-200 dark:border-gray-800">
-                            <button type="button" @click="massUpdateOpen = false" class="text-gray-600 dark:text-gray-400 font-bold py-2.5 px-5 hover:text-gray-900 dark:hover:text-white transition-colors mr-3">Cancelar</button>
-                            <button type="submit" class="text-white font-bold py-2.5 px-8 rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700 transition-all">🚀 Aplicar Actualización</button>
+                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 bg-gray-50 dark:bg-gray-900/50 -mx-4 sm:-mx-8 -mb-4 px-4 sm:px-8 py-4 sm:py-5 border-t border-gray-200 dark:border-gray-800">
+                            <button type="button" @click="massUpdateOpen = false" class="w-full sm:w-auto text-gray-600 dark:text-gray-400 font-bold py-2.5 px-5 border border-gray-200 sm:border-transparent rounded-full hover:text-gray-900 dark:hover:text-white transition-colors">Cancelar</button>
+                            <button type="submit" class="w-full sm:w-auto text-white font-bold py-2.5 px-8 rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700 transition-all">🚀 Aplicar Actualización</button>
                         </div>
                     </form>
                 </div>
@@ -1304,10 +1304,10 @@ new #[Layout('layouts.app')] class extends Component {
                  x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
                  class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full relative">
                 
-                <div class="px-8 pt-8 pb-8">
+                <div class="px-4 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-4">
-                            <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Marcas</h3>
+                            <h3 class="text-xl sm:text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Marcas</h3>
                             <button wire:click="$set('manageBrandId', 'new'); $set('manageBrandName', '')" class="bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">➕ Nueva Marca</button>
                         </div>
                         <button @click="brandListOpen = false" class="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none">
@@ -1391,10 +1391,10 @@ new #[Layout('layouts.app')] class extends Component {
                  x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
                  class="inline-block align-bottom bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full relative">
                 
-                <div class="px-8 pt-8 pb-8">
+                <div class="px-4 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-4">
-                            <h3 class="text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión de Categorías</h3>
+                            <h3 class="text-xl sm:text-2xl leading-6 font-bold text-gray-900 dark:text-white tracking-tight">Gestión Categorías</h3>
                             <button wire:click="$set('manageCategoryId', 'new'); $set('manageCategoryName', '')" class="bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">➕ Nueva Categoría</button>
                         </div>
                         <button @click="catListOpen = false" class="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none">
