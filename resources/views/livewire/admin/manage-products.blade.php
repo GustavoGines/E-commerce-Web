@@ -1021,35 +1021,35 @@ new #[Layout('layouts.app')] class extends Component {
                             <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Calculadora Inteligente de Precios</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-2">
                                 <!-- Primera fila: Precios de Lista -->
-                                <div class="flex flex-col justify-end h-full">
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Costo ($)</label>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Costo ($)">Costo ($)</label>
                                     <input wire:model.live.debounce.300ms="cost_price" type="number" step="0.01" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('cost_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
-                                <div class="flex flex-col justify-end h-full">
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Margen de Ganancia (%)</label>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Margen de Ganancia (%)">Margen de Ganancia (%)</label>
                                     <input wire:model.live.debounce.300ms="profit_margin" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('profit_margin') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
-                                <div class="flex flex-col justify-end h-full">
-                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Precio Final Lista</label>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Precio Final Lista">Precio Final Lista</label>
                                     <input wire:model.live.debounce.500ms="retail_price" type="number" step="0.01" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('retail_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
                                 <!-- Segunda fila: Precios Mayoristas -->
-                                <div class="flex flex-col justify-end h-full">
-                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider">Llevando (Cant.)</label>
+                                <div>
+                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Llevando (Cant.)">Llevando (Cant.)</label>
                                     <input wire:model="wholesale_min_quantity" type="number" min="1" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 3">
                                     @error('wholesale_min_quantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
-                                <div class="flex flex-col justify-end h-full">
-                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider">Desc. Mayorista (%)</label>
+                                <div>
+                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Desc. Mayorista (%)">Desc. Mayorista (%)</label>
                                     <input wire:model.live.debounce.300ms="wholesale_discount" type="number" class="w-full py-2.5 px-3 bg-white dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Ej: 20">
                                     @error('wholesale_discount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
-                                <div class="flex flex-col justify-end h-full">
-                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider">Precio Final Mayorista</label>
+                                <div>
+                                    <label class="block text-[var(--color-primary)] text-xs font-bold mb-2 uppercase tracking-wider truncate" title="Precio Final Mayorista">Precio Final Mayorista</label>
                                     <input wire:model.live.debounce.500ms="wholesale_price" type="number" step="0.01" class="w-full py-2.5 px-3 bg-blue-50/50 dark:bg-gray-900 border border-[var(--color-primary)]/40 rounded-lg text-[var(--color-primary)] font-bold focus:ring-2 focus:ring-[var(--color-primary)]">
                                     @error('wholesale_price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
