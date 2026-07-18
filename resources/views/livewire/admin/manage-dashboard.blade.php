@@ -373,20 +373,20 @@ new #[Layout('layouts.app')] class extends Component {
                     <ul class="space-y-3">
                         @foreach($outOfStock as $product)
                             <li>
-                                <a href="{{ route('admin.products', ['edit' => $product->id]) }}" class="flex items-center justify-between p-3 bg-rose-50/50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-900/20 hover:scale-[1.02] hover:shadow-md transition-all cursor-pointer group">
+                                <a href="{{ route('admin.products', ['edit' => $product->id]) }}" class="flex items-center justify-between p-3 bg-rose-50/50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-900/20 hover:bg-rose-100/50 dark:hover:bg-rose-900/30 transition-colors cursor-pointer">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm p-1 group-hover:shadow transition-shadow">
+                                        <div class="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm p-1">
                                             @if($product->image_url)
                                                 <img src="{{ asset('storage/' . $product->image_url) }}" class="max-w-full max-h-full object-contain">
                                             @endif
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">{{ $product->name }}</p>
+                                            <p class="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{{ $product->name }}</p>
                                             <p class="text-[10px] text-rose-500 font-bold tracking-widest uppercase mt-0.5">SKU: {{ $product->sku ?? 'N/A' }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <span class="px-2 py-1 bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest rounded group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                                        <span class="px-2 py-1 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded shadow-sm">
                                             + Stock
                                         </span>
                                     </div>
