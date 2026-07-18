@@ -848,48 +848,47 @@ new #[Layout('layouts.app')] class extends Component {
             <!-- Vista Móvil para Productos (Tarjetas) -->
             <div class="block md:hidden space-y-4">
                 @foreach($products as $product)
-                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm relative {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-[var(--color-primary)]' : '' }}">
-                    <div class="absolute top-4 right-4 z-10">
-                        <input type="checkbox" value="{{ $product->id }}" wire:model.live="selectedProducts" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 shadow-sm relative {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-[var(--color-primary)]' : '' }}">
+                    <div class="absolute top-3 right-3 z-10">
+                        <input type="checkbox" value="{{ $product->id }}" wire:model.live="selectedProducts" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-4 h-4">
                     </div>
-                    <div class="flex gap-4">
+                    
+                    <div class="flex gap-3">
                         @if($product->image_url)
-                            <img src="{{ asset('storage/' . $product->image_url) }}" class="h-16 w-16 rounded-xl object-cover border border-gray-200 dark:border-gray-600 shrink-0 cursor-pointer" @click="previewImageUrl = '{{ asset('storage/' . $product->image_url) }}'; previewImageOpen = true">
+                            <img src="{{ asset('storage/' . $product->image_url) }}" class="h-12 w-12 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shrink-0 cursor-pointer" @click="previewImageUrl = '{{ asset('storage/' . $product->image_url) }}'; previewImageOpen = true">
                         @else
-                            <div class="h-16 w-16 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-tighter shrink-0">Sin img</div>
+                            <div class="h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 text-[9px] uppercase font-bold tracking-tighter shrink-0">Sin img</div>
                         @endif
-                        <div class="flex flex-col flex-grow justify-center pr-6">
-                            <h4 class="text-sm font-bold text-gray-900 dark:text-white">{{ $product->name }}</h4>
-                            <div class="flex flex-wrap items-center gap-2 mt-1">
-                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">{{ $product->category ? $product->category->name : 'Sin cat.' }}</span>
-                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">{{ $product->brands->pluck('name')->join(', ') ?: 'N/A' }}</span>
+                        
+                        <div class="flex flex-col justify-center pr-6 overflow-hidden">
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-tight mb-1 truncate">{{ $product->name }}</h4>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $product->category ? $product->category->name : 'Sin cat.' }}</span>
+                                <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{{ $product->brands->pluck('name')->join(', ') ?: 'N/A' }}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-700/50 pt-4">
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Precio / Mayorista</div>
-                            <div class="text-sm font-bold text-gray-900 dark:text-white">
-                                ${{ number_format($product->retail_price, 2) }} 
-                                <span class="text-[var(--color-primary)] ml-1">${{ number_format($product->wholesale_price, 2) }}</span>
+                    
+                    <div class="mt-2.5 flex items-center justify-between border-t border-gray-100 dark:border-gray-700/50 pt-2.5">
+                        <div class="flex items-center gap-2">
+                            <div class="text-sm font-black text-gray-900 dark:text-white">${{ number_format($product->retail_price, 2) }}</div>
+                            <div class="text-xs font-bold text-[var(--color-primary)]">${{ number_format($product->wholesale_price, 2) }}</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="text-xs font-bold {{ $product->stock > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                {{ $product->stock > 0 ? $product->stock . ' un.' : 'Agotado' }}
+                            </div>
+                            
+                            <div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-3">
+                                <button @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }" title="Editar" class="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button wire:click="delete({{ $product->id }})" wire:confirm="¿Seguro de eliminar?" title="Eliminar" class="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Stock</div>
-                            @if($product->stock > 0)
-                                <span class="text-sm font-bold text-green-600 dark:text-green-400">{{ $product->stock }} un.</span>
-                            @else
-                                <span class="text-sm font-bold text-red-600 dark:text-red-400">Agotado</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="mt-4 flex gap-2 border-t border-gray-100 dark:border-gray-700/50 pt-4">
-                        <button @click="if(!isProductLoading) { isProductLoading = true; modalOpen = true; $wire.edit({{ $product->id }}).then(() => isProductLoading = false) }" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar
-                        </button>
-                        <button wire:click="delete({{ $product->id }})" wire:confirm="¿Seguro de eliminar?" class="flex items-center justify-center px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
                     </div>
                 </div>
                 @endforeach
