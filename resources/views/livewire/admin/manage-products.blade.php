@@ -882,29 +882,29 @@ new #[Layout('layouts.app')] class extends Component {
             
             {{-- Paginación PERF-02 --}}
             @if($products->hasPages())
-            <div class="mt-6 flex items-center justify-between">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
                     Mostrando {{ $products->firstItem() }}–{{ $products->lastItem() }}
                     de <span class="font-bold">{{ $products->total() }}</span> productos
                 </p>
                 <div class="flex items-center gap-1">
                     {{-- Anterior --}}
                     @if($products->onFirstPage())
-                        <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">‹ Ant.</span>
+                        <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed whitespace-nowrap">‹ Ant.</span>
                     @else
-                        <button wire:click="previousPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">‹ Ant.</button>
+                        <button wire:click="previousPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors whitespace-nowrap">‹ Ant.</button>
                     @endif
 
                     {{-- Página actual --}}
-                    <span class="px-3 py-1.5 rounded-lg text-sm font-bold text-white" style="background-color: var(--color-primary);">
+                    <span class="px-3 py-1.5 rounded-lg text-sm font-bold text-white whitespace-nowrap" style="background-color: var(--color-primary);">
                         {{ $products->currentPage() }} / {{ $products->lastPage() }}
                     </span>
 
                     {{-- Siguiente --}}
                     @if($products->hasMorePages())
-                        <button wire:click="nextPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Sig. ›</button>
+                        <button wire:click="nextPage" class="px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors whitespace-nowrap">Sig. ›</button>
                     @else
-                        <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed">Sig. ›</span>
+                        <span class="px-3 py-1.5 rounded-lg text-sm text-gray-300 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed whitespace-nowrap">Sig. ›</span>
                     @endif
                 </div>
             </div>
