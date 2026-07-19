@@ -273,14 +273,19 @@ new #[Layout('layouts.app')] class extends Component {
                             </span>
                             <span class="text-xs text-gray-500">{{ $order->created_at->format('d/m/Y H:i') }}</span>
                         </div>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest
-                            @if($order->status === 'pendiente') bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400
-                            @elseif($order->status === 'pagado') bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400
-                            @elseif($order->status === 'completado') bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400
-                            @elseif($order->status === 'cancelado') bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400
-                            @endif">
-                            {{ $order->status }}
-                        </span>
+                        <div @click.stop>
+                            <select wire:key="select-mob-{{ $order->id }}-{{ $order->status }}" wire:change="updateStatus({{ $order->id }}, $event.target.value)" class="text-[10px] uppercase font-bold py-1 px-2 border-0 rounded-md ring-1 ring-inset focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors cursor-pointer outline-none
+                                @if($order->status === 'pendiente') bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-500/10 dark:text-yellow-500 dark:ring-yellow-500/20
+                                @elseif($order->status === 'pagado') bg-blue-50 text-blue-800 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-500 dark:ring-blue-500/20
+                                @elseif($order->status === 'completado') bg-green-50 text-green-800 ring-green-600/20 dark:bg-green-500/10 dark:text-green-500 dark:ring-green-500/20
+                                @elseif($order->status === 'cancelado') bg-red-50 text-red-800 ring-red-600/20 dark:bg-red-500/10 dark:text-red-500 dark:ring-red-500/20
+                                @endif">
+                                <option value="pendiente" {{ $order->status === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                <option value="pagado" {{ $order->status === 'pagado' ? 'selected' : '' }}>Pagado</option>
+                                <option value="completado" {{ $order->status === 'completado' ? 'selected' : '' }}>Completado</option>
+                                <option value="cancelado" {{ $order->status === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Info Cliente -->
@@ -294,17 +299,10 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="text-lg font-black text-[var(--color-primary)]">
                             ${{ number_format($order->total, 2) }}
                         </div>
-                        <div class="flex items-center gap-2">
-                            <select wire:key="select-mob-{{ $order->id }}-{{ $order->status }}" wire:change="updateStatus({{ $order->id }}, $event.target.value)" class="text-[10px] uppercase font-bold py-1.5 px-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:ring-[var(--color-primary)]">
-                                <option value="pendiente" {{ $order->status === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="pagado" {{ $order->status === 'pagado' ? 'selected' : '' }}>Pagado</option>
-                                <option value="completado" {{ $order->status === 'completado' ? 'selected' : '' }}>Completado</option>
-                                <option value="cancelado" {{ $order->status === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
-                            </select>
-                            <button wire:click="deleteOrder({{ $order->id }})" wire:confirm="¿Seguro?" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 p-1.5 rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            </button>
-                        </div>
+                        <button wire:click="deleteOrder({{ $order->id }})" wire:confirm="¿Seguro que querés eliminar esta orden?" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/50 py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1 text-[10px] font-bold uppercase">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Borrar
+                        </button>
                     </div>
 
                     <!-- Detalles Expandibles (Mobile) -->
@@ -341,7 +339,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <ul class="divide-y divide-gray-100 dark:divide-gray-700/50">
                             @foreach($order->items as $item)
                                 <li class="py-2 flex justify-between gap-2">
-                                    <div class="text-xs font-medium">{{ $item->product_name }}</div>
+                                    <div class="text-xs font-medium">{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</div>
                                     <div class="text-xs whitespace-nowrap text-right">
                                         {{ $item->quantity }} × ${{ number_format($item->price, 2) }}
                                     </div>
@@ -358,24 +356,24 @@ new #[Layout('layouts.app')] class extends Component {
 
         {{-- Paginación PERF-02 --}}
         @if($orders->hasPages())
-            <div class="px-6 py-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                <div>
+            <div class="mt-4 px-2 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 dark:text-gray-400 gap-4 sm:gap-0">
+                <div class="text-center sm:text-left">
                 Mostrando {{ $orders->firstItem() }}–{{ $orders->lastItem() }} 
                 de <span class="font-bold">{{ $orders->total() }}</span> órdenes
                 </div>
                 <div class="flex items-center gap-2">
                 @if($orders->onFirstPage())
-                    <button disabled class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-md cursor-not-allowed">Anterior</button>
+                    <button disabled class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700 rounded-md cursor-not-allowed whitespace-nowrap">Anterior</button>
                 @else
-                    <button wire:click="previousPage" class="px-3 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Anterior</button>
+                    <button wire:click="previousPage" class="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">Anterior</button>
                 @endif
-                <span class="px-2">
+                <span class="px-2 font-bold whitespace-nowrap">
                     {{ $orders->currentPage() }} / {{ $orders->lastPage() }}
                 </span>
                 @if($orders->hasMorePages())
-                    <button wire:click="nextPage" class="px-3 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Siguiente</button>
+                    <button wire:click="nextPage" class="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">Siguiente</button>
                 @else
-                    <button disabled class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-md cursor-not-allowed">Siguiente</button>
+                    <button disabled class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700 rounded-md cursor-not-allowed whitespace-nowrap">Siguiente</button>
                 @endif
                 </div>
             </div>
