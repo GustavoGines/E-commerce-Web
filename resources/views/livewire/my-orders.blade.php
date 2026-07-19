@@ -87,7 +87,7 @@ new #[Layout('layouts.app')] class extends Component {
     }
 }; ?>
 
-<div>
+<div x-data="{ previewImageOpen: false, previewImageUrl: '' }">
     <x-slot name="header">
         @if(auth()->check() && auth()->user()->isAdmin())
             <div class="flex items-center space-x-6">
@@ -196,7 +196,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         <div class="flex items-center gap-2">
                                             <div class="w-8 h-8 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex-shrink-0 overflow-hidden">
                                                 @if($item->product && $item->product->image_url)
-                                                    <img src="{{ asset('storage/' . $item->product->image_url) }}" class="w-full h-full object-cover">
+                                                    <img src="{{ asset('storage/' . $item->product->image_url) }}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" @click.stop="previewImageUrl = '{{ asset('storage/' . $item->product->image_url) }}'; previewImageOpen = true">
                                                 @endif
                                             </div>
                                             <div class="flex flex-col">
@@ -285,6 +285,37 @@ new #[Layout('layouts.app')] class extends Component {
 
         <div class="mt-6">
             {{ $orders->links() }}
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div x-show="previewImageOpen" class="fixed z-50 inset-0 overflow-y-auto" style="z-index: 60;" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div x-show="previewImageOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
+                 @click="previewImageOpen = false" aria-hidden="true"></div>
+
+            <div x-show="previewImageOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="inline-block align-bottom rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle max-w-4xl w-full">
+                <div class="relative">
+                    <button @click="previewImageOpen = false" class="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 transition-colors z-10 backdrop-blur-md">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <img :src="previewImageUrl" class="w-full h-auto max-h-[85vh] object-contain bg-transparent mx-auto">
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -126,7 +126,7 @@ new #[Layout('layouts.app')] class extends Component {
     }
 }; ?>
 
-<div x-data="{ openFilter: false }">
+<div x-data="{ openFilter: false, previewImageOpen: false, previewImageUrl: '' }">
     <x-slot name="header">
         <div class="flex items-center space-x-6">
             <a href="{{ route('admin.orders') }}" wire:navigate class="font-semibold text-xl text-[var(--color-primary)] leading-tight">
@@ -281,7 +281,14 @@ new #[Layout('layouts.app')] class extends Component {
                                         </li>
                                         @foreach($order->items as $item)
                                             <li class="px-4 py-3 flex justify-between items-center text-sm">
-                                                <div class="font-medium text-gray-900 dark:text-white">{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</div>
+                                                <div class="font-medium text-gray-900 dark:text-white flex items-center gap-3">
+                                                    <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0">
+                                                        @if($item->product && $item->product->image_url)
+                                                            <img src="{{ asset('storage/' . $item->product->image_url) }}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" @click.stop="previewImageUrl = '{{ asset('storage/' . $item->product->image_url) }}'; previewImageOpen = true">
+                                                        @endif
+                                                    </div>
+                                                    <span>{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</span>
+                                                </div>
                                                 <div class="text-gray-500 dark:text-gray-400 text-right">
                                                     {{ $item->quantity }} × ${{ number_format($item->price, 2) }} = <span class="font-bold text-gray-900 dark:text-white">${{ number_format($item->quantity * $item->price, 2) }}</span>
                                                 </div>
@@ -387,7 +394,14 @@ new #[Layout('layouts.app')] class extends Component {
                         <ul class="divide-y divide-dashed divide-gray-200 dark:divide-gray-700">
                             @foreach($order->items as $item)
                                 <li class="py-1 flex justify-between gap-2 items-center">
-                                    <div class="text-[11px] font-medium text-gray-800 dark:text-gray-200 truncate">{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</div>
+                                    <div class="flex items-center gap-2 max-w-[70%]">
+                                        <div class="w-7 h-7 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex-shrink-0 overflow-hidden">
+                                            @if($item->product && $item->product->image_url)
+                                                <img src="{{ asset('storage/' . $item->product->image_url) }}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" @click.stop="previewImageUrl = '{{ asset('storage/' . $item->product->image_url) }}'; previewImageOpen = true">
+                                            @endif
+                                        </div>
+                                        <div class="text-[11px] font-medium text-gray-800 dark:text-gray-200 truncate">{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</div>
+                                    </div>
                                     <div class="text-[10px] whitespace-nowrap text-right text-gray-500">
                                         {{ $item->quantity }}x ${{ number_format($item->price, 2) }}
                                     </div>
@@ -426,5 +440,36 @@ new #[Layout('layouts.app')] class extends Component {
                 </div>
             </div>
         @endif
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div x-show="previewImageOpen" class="fixed z-50 inset-0 overflow-y-auto" style="z-index: 60;" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div x-show="previewImageOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
+                 @click="previewImageOpen = false" aria-hidden="true"></div>
+
+            <div x-show="previewImageOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="inline-block align-bottom rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle max-w-4xl w-full">
+                <div class="relative">
+                    <button @click="previewImageOpen = false" class="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 transition-colors z-10 backdrop-blur-md">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <img :src="previewImageUrl" class="w-full h-auto max-h-[85vh] object-contain bg-transparent mx-auto">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
