@@ -430,55 +430,83 @@ new class extends Component
     </div>
 
     {{-- ── Menú Móvil desplegable ── --}}
+    {{-- ── Menú Móvil desplegable ── --}}
     <div :class="{'block': open, 'hidden': !open}"
          class="hidden sm:hidden transition-colors duration-300 {{ $isLuxury ? 'bg-[#0a0f1c] border-t border-white/5' : 'bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800' }}">
-        <div class="pt-2 pb-3 space-y-1 px-4">
-            <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate>🏠 Inicio</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>🛍️ Tienda</x-responsive-nav-link>
+        <div class="pt-4 pb-3 space-y-1 px-4">
+            <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate>
+                <span class="w-5 text-center">🏠</span> <span>Inicio</span>
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('shop')" :active="request()->routeIs('shop')" wire:navigate>
+                <span class="w-5 text-center">🛍️</span> <span>Tienda</span>
+            </x-responsive-nav-link>
             @if(auth()->check() && optional(auth()->user())->isAdmin())
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" wire:navigate>
-                    📊 Panel
+                    <span class="w-5 text-center">📊</span> <span>Panel</span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" wire:navigate>
-                    🏷️ Productos
+                    <span class="w-5 text-center">🏷️</span> <span>Productos</span>
                 </x-responsive-nav-link>
             @endif
         </div>
 
         @auth
         <div class="pt-4 pb-3 {{ $isLuxury ? 'border-t border-white/5' : 'border-t border-slate-200 dark:border-slate-800' }}">
-            <div class="px-4 mb-3">
-                <div class="font-bold text-slate-800 dark:text-slate-200"
-                     x-data="{{ json_encode(['name' => optional(auth()->user())->name ?? 'Usuario']) }}"
-                     x-text="name"
-                     x-on:profile-updated.window="name = $event.detail.name"></div>
-                <div class="text-sm text-slate-500 dark:text-slate-400">{{ optional(auth()->user())->email }}</div>
+            <div class="px-4 mb-4 mx-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex items-center gap-3 border border-slate-100 dark:border-slate-700/50">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0"
+                     style="background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #7c3aed))">
+                    {{ strtoupper(substr(optional(auth()->user())->name ?? 'U', 0, 1)) }}
+                </div>
+                <div class="overflow-hidden">
+                    <div class="font-bold text-slate-800 dark:text-slate-200 text-sm truncate"
+                         x-data="{{ json_encode(['name' => optional(auth()->user())->name ?? 'Usuario']) }}"
+                         x-text="name"
+                         x-on:profile-updated.window="name = $event.detail.name"></div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ optional(auth()->user())->email }}</div>
+                </div>
             </div>
             <div class="space-y-1 px-4">
                 @if(optional(auth()->user())->isAdmin())
                     <x-responsive-nav-link :href="route('admin.orders')" wire:navigate>
-                        <div class="flex justify-between items-center w-full">
-                            <span>Gestión de Órdenes</span>
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center gap-3">
+                                <span class="w-5 text-center">📦</span> <span>Gestión de Órdenes</span>
+                            </div>
                             @if($pendingOrdersCount > 0)
                                 <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $pendingOrdersCount }}</span>
                             @endif
                         </div>
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.users')" wire:navigate>Usuarios</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.settings')" wire:navigate>Configuración</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.users')" wire:navigate>
+                        <span class="w-5 text-center">👥</span> <span>Usuarios</span>
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.settings')" wire:navigate>
+                        <span class="w-5 text-center">⚙️</span> <span>Configuración</span>
+                    </x-responsive-nav-link>
                 @else
-                    <x-responsive-nav-link :href="route('my-orders')" wire:navigate>Mis Órdenes</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('my-orders')" wire:navigate>
+                        <span class="w-5 text-center">🛍</span> <span>Mis Órdenes</span>
+                    </x-responsive-nav-link>
                 @endif
-                <x-responsive-nav-link :href="route('profile')" wire:navigate>Mi Perfil</x-responsive-nav-link>
-                <button wire:click="logout" class="w-full text-start">
-                    <x-responsive-nav-link>Cerrar Sesión</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('profile')" wire:navigate>
+                    <span class="w-5 text-center">👤</span> <span>Mi Perfil</span>
+                </x-responsive-nav-link>
+                <div class="my-2 border-t border-slate-100 dark:border-slate-800/60 mx-4"></div>
+                <button wire:click="logout" class="w-full text-start focus:outline-none">
+                    <x-responsive-nav-link class="!text-red-500 hover:!text-red-600 hover:!bg-red-50 dark:hover:!bg-red-900/20">
+                        <span class="w-5 text-center">🚪</span> <span>Cerrar Sesión</span>
+                    </x-responsive-nav-link>
                 </button>
             </div>
         </div>
         @else
         <div class="pt-4 pb-3 space-y-1 px-4 {{ $isLuxury ? 'border-t border-white/5' : 'border-t border-slate-200 dark:border-slate-800' }}">
-            <x-responsive-nav-link :href="route('login')">Iniciar Sesión</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('register')">Registrarse</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('login')">
+                <span class="w-5 text-center">🔑</span> <span>Iniciar Sesión</span>
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('register')">
+                <span class="w-5 text-center">📝</span> <span>Registrarse</span>
+            </x-responsive-nav-link>
         </div>
         @endauth
     </div>

@@ -12,9 +12,11 @@ El estado de tu pedido ha sido actualizado a **Pagado** y ya estamos preparando 
 | **Forma de Entrega:** | {{ $order->delivery_label }} |
 </x-mail::table>
 
-<x-mail::button :url="route('my-orders')" color="success">
-Ver Detalles del Pedido
+<x-mail::button :url="route('checkout.success', $order)" color="success">
+Ver Comprobante de Pago
 </x-mail::button>
+
+O podés ver todo tu historial ingresando a [Mis Compras]({{ route('my-orders') }}).
 
 ¡Gracias por tu compra!<br>
 {{ config('app.name') }}

@@ -13,15 +13,6 @@ new #[Layout('layouts.app')] class extends Component {
     
     public function resetVisits()
     {
-        // FIX-04: Guard de seguridad en servidor — el wire:confirm del frontend
-        // puede ser eludido con DevTools. Este abort bloquea la acción en producción
-        // de forma definitiva, independientemente de cómo se invoque el método.
-        abort_unless(
-            app()->environment('local', 'staging'),
-            403,
-            'La acción de resetear visitas no está permitida en producción.'
-        );
-
         PageVisit::truncate();
         session()->forget('last_visit_date');
         $this->dispatch('visitsResetted');
@@ -208,7 +199,7 @@ new #[Layout('layouts.app')] class extends Component {
                 <span>Esta semana: {{ number_format($visitsWeek, 0, ',', '.') }}</span>
                 <span>Este mes: {{ number_format($visitsMonth, 0, ',', '.') }}</span>
                 
-                {{-- Botón de reseteo de visitas (solo funciona en local/staging, bloqueado en producción por FIX-04) --}}
+                {{-- Botón de reseteo de visitas --}}
                 <button wire:click="resetVisits" wire:confirm="¿Estás seguro de que quieres borrar el historial de visitas a CERO? Esto no se puede deshacer." 
                         class="absolute right-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white px-2 py-1 rounded text-[9px] uppercase tracking-wider font-bold">
                     Resetear
