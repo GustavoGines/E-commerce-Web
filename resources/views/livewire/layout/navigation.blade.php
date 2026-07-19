@@ -409,8 +409,14 @@ new class extends Component
                 @endif
 
                 <button @click="open = !open"
-                        class="p-2 rounded-xl {{ $isModernLight ? 'text-white hover:bg-white/10' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all"
+                        class="relative p-2 rounded-xl {{ $isModernLight ? 'text-white hover:bg-white/10' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all"
                         aria-label="Menú">
+                    @if(optional(auth()->user())->isAdmin() && $pendingOrdersCount > 0)
+                        <span class="absolute top-1 right-1 flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-gray-900"></span>
+                        </span>
+                    @endif
                     <svg class="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': !open}" class="inline-flex"
                               stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -450,7 +456,14 @@ new class extends Component
             </div>
             <div class="space-y-1 px-4">
                 @if(optional(auth()->user())->isAdmin())
-                    <x-responsive-nav-link :href="route('admin.orders')" wire:navigate>Gestión de Órdenes</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.orders')" wire:navigate>
+                        <div class="flex justify-between items-center w-full">
+                            <span>Gestión de Órdenes</span>
+                            @if($pendingOrdersCount > 0)
+                                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $pendingOrdersCount }}</span>
+                            @endif
+                        </div>
+                    </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.users')" wire:navigate>Usuarios</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings')" wire:navigate>Configuración</x-responsive-nav-link>
                 @else
