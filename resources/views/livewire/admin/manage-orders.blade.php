@@ -10,7 +10,18 @@ use Livewire\WithPagination;
 new #[Layout('layouts.app')] class extends Component {
     use WithPagination;
 
-    // $orders NO es propiedad pública — se obtiene via computed + paginate()
+    public $search = '';
+    public $filter_status = '';
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterStatus()
+    {
+        $this->resetPage();
+    }
 
     public function mount()
     {
@@ -19,11 +30,25 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function with(): array
     {
+        $query = Order::with(['user', 'items.product']);
+
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('id', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('user', function ($qu) {
+                      $qu->where('name', 'like', '%' . $this->search . '%')
+                         ->orWhere('email', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        if (!empty($this->filter_status)) {
+            $query->where('status', $this->filter_status);
+        }
+
         // PERF-02: Solo carga 30 órdenes por página en lugar de toda la tabla
         return [
-            'orders' => Order::with(['user', 'items.product'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(30)
+            'orders' => $query->orderBy('created_at', 'desc')->paginate(30)
         ];
     }
 
@@ -116,8 +141,28 @@ new #[Layout('layouts.app')] class extends Component {
 
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
         <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700/50 shadow-xl dark:shadow-2xl sm:rounded-3xl p-6 transition-colors duration-300">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight mb-6">Todas las Órdenes</h3>
             
+            <!-- Filtros (PC y Móvil) -->
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                <div class="flex-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar por ID, nombre o email..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all outline-none">
+                </div>
+                <div class="w-full sm:w-48">
+                    <select wire:model.live="filter_status" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all outline-none cursor-pointer">
+                        <option value="">Todos los Estados</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="pagado">Pagado</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700/50 shadow-sm transition-colors hidden md:block">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700/50 text-left">
                     <thead class="bg-gray-50 dark:bg-gray-900/50 transition-colors">
@@ -260,88 +305,91 @@ new #[Layout('layouts.app')] class extends Component {
                 </table>
             </div>
 
-            <!-- Vista Móvil para Órdenes (Tarjetas) -->
-            <div class="block md:hidden space-y-4 mt-6">
+            <!-- Vista Móvil para Órdenes (Tarjetas Compactas) -->
+            <div class="block md:hidden space-y-2 mt-4">
                 @forelse($orders as $order)
-                <div x-data="{ expanded: false }" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm relative transition-all" :class="expanded ? 'ring-2 ring-[var(--color-primary)]' : ''">
-                    <!-- Cabecera Tarjeta -->
-                    <div class="flex justify-between items-start mb-3 cursor-pointer" @click="expanded = !expanded">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-black text-gray-900 dark:text-white flex items-center gap-1">
-                                #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
-                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                            </span>
-                            <span class="text-xs text-gray-500">{{ $order->created_at->format('d/m/Y H:i') }}</span>
+                <div x-data="{ expanded: false }" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2.5 shadow-sm relative transition-all" :class="expanded ? 'ring-1 ring-[var(--color-primary)]' : ''">
+                    
+                    <!-- Fila Principal Contraída -->
+                    <div class="flex justify-between items-center cursor-pointer" @click="expanded = !expanded">
+                        <div class="flex flex-col gap-0.5 max-w-[60%]">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-sm font-black text-gray-900 dark:text-white leading-none">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                <span class="w-1.5 h-1.5 rounded-full 
+                                    @if($order->status === 'pendiente') bg-yellow-400
+                                    @elseif($order->status === 'pagado') bg-blue-400
+                                    @elseif($order->status === 'completado') bg-green-400
+                                    @elseif($order->status === 'cancelado') bg-red-400
+                                    @endif"></span>
+                            </div>
+                            <span class="text-[11px] text-gray-500 font-medium truncate">{{ $order->user->name }}</span>
                         </div>
-                        <div @click.stop>
-                            <select wire:key="select-mob-{{ $order->id }}-{{ $order->status }}" wire:change="updateStatus({{ $order->id }}, $event.target.value)" class="text-[10px] uppercase font-bold py-1 px-2 border-0 rounded-md ring-1 ring-inset focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors cursor-pointer outline-none
-                                @if($order->status === 'pendiente') bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-500/10 dark:text-yellow-500 dark:ring-yellow-500/20
-                                @elseif($order->status === 'pagado') bg-blue-50 text-blue-800 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-500 dark:ring-blue-500/20
-                                @elseif($order->status === 'completado') bg-green-50 text-green-800 ring-green-600/20 dark:bg-green-500/10 dark:text-green-500 dark:ring-green-500/20
-                                @elseif($order->status === 'cancelado') bg-red-50 text-red-800 ring-red-600/20 dark:bg-red-500/10 dark:text-red-500 dark:ring-red-500/20
-                                @endif">
-                                <option value="pendiente" {{ $order->status === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="pagado" {{ $order->status === 'pagado' ? 'selected' : '' }}>Pagado</option>
-                                <option value="completado" {{ $order->status === 'completado' ? 'selected' : '' }}>Completado</option>
-                                <option value="cancelado" {{ $order->status === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
-                            </select>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-black text-[var(--color-primary)]">${{ number_format($order->total, 2) }}</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </div>
-                    </div>
-
-                    <!-- Info Cliente -->
-                    <div class="mb-4">
-                        <div class="text-sm font-bold text-gray-900 dark:text-white">{{ $order->user->name }}</div>
-                        <div class="text-xs text-gray-500">{{ $order->user->email }}</div>
-                    </div>
-
-                    <!-- Total y Acciones -->
-                    <div class="flex justify-between items-center border-t border-gray-100 dark:border-gray-700/50 pt-3">
-                        <div class="text-lg font-black text-[var(--color-primary)]">
-                            ${{ number_format($order->total, 2) }}
-                        </div>
-                        <button wire:click="deleteOrder({{ $order->id }})" wire:confirm="¿Seguro que querés eliminar esta orden?" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/50 py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1 text-[10px] font-bold uppercase">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            Borrar
-                        </button>
                     </div>
 
                     <!-- Detalles Expandibles (Mobile) -->
-                    <div x-show="expanded" x-transition x-cloak class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/50">
-                        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Detalles de la Orden</div>
+                    <div x-show="expanded" x-transition x-cloak class="mt-2.5 pt-2.5 border-t border-gray-100 dark:border-gray-700/50">
                         
-                        <div class="space-y-3 mb-4">
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50">
-                                <div class="text-[10px] font-bold text-gray-400 uppercase mb-1">Forma de Entrega</div>
-                                <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ $order->delivery_method === 'envio' ? 'Envío a domicilio' : 'Retiro en Local' }}</div>
-                                @if($order->delivery_address)
-                                    <div class="mt-1 text-xs text-gray-500">{{ $order->delivery_address }}</div>
-                                @endif
+                        <!-- Controles de Estado y Borrar -->
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2 w-full" @click.stop>
+                                <select wire:key="select-mob-{{ $order->id }}-{{ $order->status }}" wire:change="updateStatus({{ $order->id }}, $event.target.value)" class="flex-1 text-[10px] uppercase font-bold py-1 px-2 border-0 rounded-md ring-1 ring-inset focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors cursor-pointer outline-none
+                                    @if($order->status === 'pendiente') bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-500/10 dark:text-yellow-500 dark:ring-yellow-500/20
+                                    @elseif($order->status === 'pagado') bg-blue-50 text-blue-800 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-500 dark:ring-blue-500/20
+                                    @elseif($order->status === 'completado') bg-green-50 text-green-800 ring-green-600/20 dark:bg-green-500/10 dark:text-green-500 dark:ring-green-500/20
+                                    @elseif($order->status === 'cancelado') bg-red-50 text-red-800 ring-red-600/20 dark:bg-red-500/10 dark:text-red-500 dark:ring-red-500/20
+                                    @endif">
+                                    <option value="pendiente" {{ $order->status === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                    <option value="pagado" {{ $order->status === 'pagado' ? 'selected' : '' }}>Pagado</option>
+                                    <option value="completado" {{ $order->status === 'completado' ? 'selected' : '' }}>Completado</option>
+                                    <option value="cancelado" {{ $order->status === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
+                                </select>
+                                <span class="text-[10px] text-gray-400 whitespace-nowrap">{{ $order->created_at->format('d/m/y H:i') }}</span>
                             </div>
-                            
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50">
-                                <div class="text-[10px] font-bold text-gray-400 uppercase mb-1">Contacto</div>
-                                @if($order->phone && $order->phone !== '-')
-                                    <div class="text-xs font-bold mb-2">{{ $order->phone }}</div>
-                                    @php
-                                        $cleanPhone = preg_replace('/[^0-9]/', '', $order->phone);
-                                        $waMessage = urlencode("Hola {$order->user->name}, te escribo por tu orden #".str_pad($order->id, 5, '0', STR_PAD_LEFT).".");
-                                    @endphp
-                                    <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMessage }}" target="_blank" rel="noopener noreferrer" class="inline-flex w-full justify-center items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold">
-                                        WhatsApp
-                                    </a>
-                                @else
-                                    <div class="text-xs text-gray-500 italic">No especificado</div>
-                                @endif
+                            <button wire:click="deleteOrder({{ $order->id }})" wire:confirm="¿Seguro que querés eliminar esta orden?" class="ml-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 py-1 px-2 rounded-md transition-colors flex items-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Mini Info -->
+                        <div class="space-y-1.5 mb-3 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                            <div class="flex items-start gap-1.5 text-xs">
+                                <span class="text-gray-400">🚚</span> 
+                                <div>
+                                    <span class="font-bold text-gray-700 dark:text-gray-300">{{ $order->delivery_method === 'envio' ? 'Envío' : 'Retiro' }}</span>
+                                    @if($order->delivery_address) <span class="text-gray-500 block text-[10px] leading-tight">{{ $order->delivery_address }}</span> @endif
+                                </div>
                             </div>
+                            @if($order->phone && $order->phone !== '-')
+                            <div class="flex items-center justify-between text-xs pt-1 border-t border-gray-200 dark:border-gray-700/50">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-gray-400">📞</span>
+                                    <span class="font-bold text-gray-700 dark:text-gray-300">{{ $order->phone }}</span>
+                                </div>
+                                @php
+                                    $cleanPhone = preg_replace('/[^0-9]/', '', $order->phone);
+                                    $waMessage = urlencode("Hola {$order->user->name}, te escribo por tu orden #".str_pad($order->id, 5, '0', STR_PAD_LEFT).".");
+                                @endphp
+                                <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMessage }}" target="_blank" class="flex items-center gap-1 bg-green-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"></path></svg>
+                                    Chat
+                                </a>
+                            </div>
+                            @endif
                         </div>
 
-                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Productos</div>
-                        <ul class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                        <!-- Mini Ticket Productos -->
+                        <div class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Productos</div>
+                        <ul class="divide-y divide-dashed divide-gray-200 dark:divide-gray-700">
                             @foreach($order->items as $item)
-                                <li class="py-2 flex justify-between gap-2">
-                                    <div class="text-xs font-medium">{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</div>
-                                    <div class="text-xs whitespace-nowrap text-right">
-                                        {{ $item->quantity }} × ${{ number_format($item->price, 2) }}
+                                <li class="py-1 flex justify-between gap-2 items-center">
+                                    <div class="text-[11px] font-medium text-gray-800 dark:text-gray-200 truncate">{{ $item->product ? $item->product->name : '⚠ Producto Eliminado' }}</div>
+                                    <div class="text-[10px] whitespace-nowrap text-right text-gray-500">
+                                        {{ $item->quantity }}x ${{ number_format($item->price, 2) }}
                                     </div>
                                 </li>
                             @endforeach
