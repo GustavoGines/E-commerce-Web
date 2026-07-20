@@ -204,7 +204,11 @@ new class extends Component {
                         &copy; {{ date('Y') }} {{ $storeName }}. Todos los derechos reservados.
                     </p>
                     <p class="text-gray-600 text-[10px]">
-                        Diseñado para la mejor experiencia móvil.
+                        Desarrollado por
+                        <a href="https://portfolio-two-smoky-75.vercel.app/" target="_blank" rel="noopener noreferrer"
+                           class="text-gray-400 hover:text-white transition-colors duration-200 font-semibold">
+                            Gustavo Ginés
+                        </a>
                     </p>
                 </div>
             </div>
