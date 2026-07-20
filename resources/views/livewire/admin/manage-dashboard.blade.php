@@ -193,7 +193,10 @@ new #[Layout('layouts.app')] class extends Component {
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 group">
             <div>
                 <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Visitas a la Tienda</p>
-                <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ number_format($visitsToday, 0, ',', '.') }}</h3>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ number_format($visitsToday, 0, ',', '.') }}</h3>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">hoy</span>
+                </div>
             </div>
             <div class="mt-4 flex flex-col gap-0.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 relative">
                 <span>Esta semana: {{ number_format($visitsWeek, 0, ',', '.') }}</span>

@@ -87,16 +87,19 @@ class TrackVisits
         if ($request->isMethod('GET') && !$request->ajax() && !$request->header('X-Livewire')) {
 
             // FIX-01: Filtrar bots ANTES de cualquier consulta a la DB.
-            // Los bots no mantienen sesión, por lo que siempre pasarían el
-            // check de sesión. Con este guard se descarta en O(n) string match.
             if (!$this->isBot($request)) {
+
+                // No contar visitas de administradores — evita que la navegación
+                // por el panel de admin infle el contador de visitas de la tienda.
+                $user = $request->user();
+                if ($user && $user->isAdmin()) {
+                    return $next($request);
+                }
+
                 $today = now()->format('Y-m-d');
 
                 if ($request->session()->get('last_visit_date') !== $today) {
                     try {
-                        // Verificar si esta IP ya registró una visita hoy.
-                        // El índice compuesto (ip_address, created_at) creado en
-                        // la migración FIX-03 hace esta query eficiente.
                         $alreadyVisited = PageVisit::where('ip_address', $request->ip())
                                                    ->whereDate('created_at', now()->toDateString())
                                                    ->exists();
