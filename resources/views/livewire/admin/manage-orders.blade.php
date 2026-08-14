@@ -246,7 +246,14 @@ new #[Layout('layouts.app')] class extends Component {
                                         
                                         @php
                                             $totalQty = $order->items->sum('quantity');
-                                            $canRecalculate = $order->status === 'pendiente' && $totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN && $order->role_applied !== 'por_volumen' && $order->role_applied !== 'vip_mayorista';
+                                            $isAlreadyWholesale = true;
+                                            foreach($order->items as $item) {
+                                                if($item->product && $item->price > $item->product->wholesale_price) {
+                                                    $isAlreadyWholesale = false;
+                                                    break;
+                                                }
+                                            }
+                                            $canRecalculate = $order->status === 'pendiente' && $totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN && !$isAlreadyWholesale;
                                         @endphp
                                         @if($canRecalculate)
                                             <button wire:click="recalculateToWholesale({{ $order->id }})" wire:confirm="¿Aplicar descuento mayorista a esta orden? El total bajará automáticamente." class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors p-1" title="Aplicar Mayorista">

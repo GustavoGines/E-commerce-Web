@@ -160,7 +160,7 @@ new #[Layout('layouts.app')] class extends Component {
                     'city'            => $this->theme === 'modern-light' ? '-' : $this->city,
                     'state'           => $this->theme === 'modern-light' ? '-' : $this->state,
                     'zip_code'        => $this->theme === 'modern-light' ? '-' : $this->zip_code,
-                    'role_applied'    => (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'vip_mayorista' : 'por_volumen',
+                    'role_applied'    => (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'vip_mayorista' : (array_sum($this->cart) >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN ? 'por_volumen' : null),
                     'delivery_method' => $this->theme === 'modern-light' ? 'retiro' : 'envio',   // BUG-12 FIX
                     'payment_method'  => $this->theme === 'modern-light' ? 'whatsapp' : 'mercadopago', // BUG-12 FIX
                 ]);
