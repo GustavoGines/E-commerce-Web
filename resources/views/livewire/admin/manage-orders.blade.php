@@ -344,9 +344,12 @@ new #[Layout('layouts.app')] class extends Component {
                                                 </div>
                                             </li>
                                         @endforeach
-                                        <li class="px-4 py-3 flex justify-between items-center bg-gray-50 dark:bg-gray-900/30 font-bold text-sm">
-                                            <span class="text-gray-700 dark:text-gray-300">TOTAL</span>
-                                            <span class="text-[var(--color-primary)]">${{ number_format($order->total, 2) }}</span>
+                                        <li class="px-3 py-3 sm:px-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center rounded-b-xl">
+                                            <div class="flex flex-col">
+                                                <span class="text-gray-700 dark:text-gray-300 font-bold tracking-wide">TOTAL</span>
+                                                <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 mt-0.5">{{ $order->items->sum('quantity') }} unidades en total</span>
+                                            </div>
+                                            <span class="text-lg font-black text-[var(--color-primary)]">${{ number_format($order->total, 2) }}</span>
                                         </li>
                                     </ul>
                                 </td>
