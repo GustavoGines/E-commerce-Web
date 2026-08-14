@@ -49,8 +49,9 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function getPrice($product, $quantity): float
     {
+        $cartTotalQuantity = array_sum($this->cart);
         // DRY-01: Lógica centralizada en PricingService
-        return app(PricingService::class)->unitPrice($product, $quantity, auth()->user());
+        return app(PricingService::class)->unitPrice($product, $quantity, auth()->user(), $cartTotalQuantity);
     }
 
     public function calculateSubtotal()

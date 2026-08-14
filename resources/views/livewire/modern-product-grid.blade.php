@@ -387,7 +387,7 @@ new class extends Component {
                                                 <p class="text-lg font-black text-emerald-600 leading-none">${{ number_format($product->wholesale_price, 2) }}</p>
                                             @else
                                                 <p class="text-lg font-black text-[var(--color-primary)] leading-none">${{ number_format($product->retail_price, 2) }}</p>
-                                                <p class="text-[10px] text-gray-500 font-bold leading-tight mt-1">Llevando 10 o más queda en <span class="text-emerald-600">${{ number_format($product->wholesale_price, 2) }}</span></p>
+                                                <p class="text-[10px] text-gray-500 font-bold leading-tight mt-1">Llevando {{ \App\Services\PricingService::GLOBAL_WHOLESALE_MIN }} artículos en total queda en <span class="text-emerald-600">${{ number_format($product->wholesale_price, 2) }}</span></p>
                                             @endif
                                         </div>
                                     </div>

@@ -47,8 +47,11 @@ new class extends Component {
 
     public function getPrice($product, $quantity): float
     {
+        // Pasamos array_sum($this->cart) como cartTotalQuantity
+        $cartTotalQuantity = array_sum($this->cart);
+        
         // DRY-01: Lógica centralizada en PricingService
-        return app(PricingService::class)->unitPrice($product, $quantity, auth()->user());
+        return app(PricingService::class)->unitPrice($product, $quantity, auth()->user(), $cartTotalQuantity);
     }
 
     public function calculateSubtotal($products)
@@ -127,8 +130,12 @@ new class extends Component {
 <div x-data="{ 
         isClearing: false,
         itemTotals: {},
+        itemQuantities: {},
         get globalSubtotal() {
             return Object.values(this.itemTotals).reduce((a, b) => a + b, 0);
+        },
+        get globalQuantity() {
+            return Object.values(this.itemQuantities).reduce((a, b) => a + b, 0);
         },
         formatMoney(value) {
             return new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(value);
@@ -215,13 +222,13 @@ new class extends Component {
                                                         stock: {{ $product->stock }},
                                                         isDeleted: false,
                                                         isVip: {{ (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'true' : 'false' }},
-                                                        minWholesaleQty: {{ $product->wholesale_min_quantity }},
+                                                        minWholesaleQty: {{ \App\Services\PricingService::GLOBAL_WHOLESALE_MIN }},
                                                         retailPrice: {{ $product->retail_price }},
                                                         wholesalePrice: {{ $product->wholesale_price }},
                                                         timeout: null,
                                                         
                                                         get isWholesale() {
-                                                            return this.isVip || this.qty >= this.minWholesaleQty;
+                                                            return this.isVip || globalQuantity >= this.minWholesaleQty;
                                                         },
                                                         get currentUnitPrice() {
                                                             return this.isWholesale ? this.wholesalePrice : this.retailPrice;
@@ -257,7 +264,10 @@ new class extends Component {
                                                             else if(parsed < 1) { qty = 1; sync(); }
                                                         });
                                                     "
-                                                    x-effect="itemTotals[{{ $productId }}] = itemTotal"
+                                                    x-effect="
+                                                        itemTotals[{{ $productId }}] = itemTotal;
+                                                        itemQuantities[{{ $productId }}] = parseInt(qty) || 0;
+                                                    "
                                                 >
                                                     <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border {{ $theme === 'luxury' ? 'border-white/10 bg-[#0a0f1c]/50' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800' }} p-2">
                                                         @if($product->image_url)

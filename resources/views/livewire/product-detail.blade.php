@@ -183,7 +183,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     </span>
                                 </div>
                                 <div class="flex justify-between items-end">
-                                    <span class="text-xs text-gray-400 uppercase tracking-wider">Mínimo {{ $product->wholesale_min_quantity }} uds.</span>
+                                    <span class="text-xs text-gray-400 uppercase tracking-wider">Mínimo {{ \App\Services\PricingService::GLOBAL_WHOLESALE_MIN }} uds. en total</span>
                                     <span class="text-2xl font-black text-emerald-400">${{ number_format($product->wholesale_price, 2) }} <span class="text-[10px] opacity-70">c/u</span></span>
                                 </div>
                             </div>
@@ -417,7 +417,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         </span>
                                         Precio Mayorista
                                     </span>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1 uppercase tracking-wider">Llevando 10 o más unidades</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1 uppercase tracking-wider">Llevando {{ \App\Services\PricingService::GLOBAL_WHOLESALE_MIN }} o más artículos en total</p>
                                 </div>
                                 <div class="text-right flex flex-col items-end">
                                     <span class="text-2xl sm:text-3xl font-black tracking-tighter text-emerald-900 dark:text-emerald-100">${{ number_format($product->wholesale_price, 2) }}</span>

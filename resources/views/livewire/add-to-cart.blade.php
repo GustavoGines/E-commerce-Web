@@ -107,8 +107,20 @@ new class extends Component {
             </button>
         </div>
     @else
-        <button disabled class="w-full py-3.5 px-4 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-xl font-bold tracking-wide cursor-not-allowed">
-            Sin Stock
-        </button>
+        <div class="flex {{ $compact ? 'flex-col items-center gap-2' : 'items-center gap-4' }} w-full opacity-80">
+            <!-- Placeholder para mantener la misma altura que el selector de cantidad -->
+            <div class="flex items-center border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-800/20 p-1 flex-shrink-0 {{ $compact ? 'w-full h-[42px]' : 'w-32 sm:w-36 h-[50px]' }} justify-center">
+                <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Agotado</span>
+            </div>
+            <!-- Botón deshabilitado del mismo tamaño que el Añadir normal -->
+            <button disabled class="w-full sm:flex-1 flex items-center justify-center {{ $compact ? 'py-2.5 px-2' : 'py-3.5 px-4' }} rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold tracking-wide cursor-not-allowed shadow-sm border border-gray-200/50 dark:border-gray-600/50">
+                <svg class="w-5 h-5 {{ $compact ? 'mr-1 sm:mr-2' : 'mr-2' }} opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                <span class="{{ $compact ? 'text-sm font-black' : 'text-sm sm:text-base' }}">
+                    Sin Stock
+                </span>
+            </button>
+        </div>
     @endif
 </div>

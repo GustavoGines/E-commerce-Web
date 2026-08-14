@@ -23,7 +23,7 @@ new #[Layout('layouts.app')] class extends Component {
     public $cost_price = 0;
     public $profit_margin = 0;
     public $wholesale_discount = 0;
-    public $wholesale_min_quantity = 3;
+    public $wholesale_min_quantity = 10;
     public $retail_price = 0;
     public $wholesale_price = 0;
     public $stock = 0;
@@ -191,7 +191,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->cost_price = (float) $product->cost_price;
         $this->profit_margin = (int) $product->profit_margin;
         $this->wholesale_discount = (int) $product->wholesale_discount;
-        $this->wholesale_min_quantity = $product->wholesale_min_quantity ?? 3;
+        $this->wholesale_min_quantity = $product->wholesale_min_quantity ?? 10;
         $this->retail_price = (float) $product->retail_price;
         $this->wholesale_price = (float) $product->wholesale_price;
         $this->stock = $product->stock;
@@ -310,7 +310,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->cost_price = 0;
         $this->profit_margin = 0;
         $this->wholesale_discount = 0;
-        $this->wholesale_min_quantity = 3;
+        $this->wholesale_min_quantity = 10;
         $this->retail_price = 0;
         $this->wholesale_price = 0;
         $this->stock = 0;

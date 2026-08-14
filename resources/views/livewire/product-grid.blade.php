@@ -152,7 +152,7 @@ new class extends Component {
                                         </span>
                                         Precio Mayorista
                                     </span>
-                                    <div class="relative group cursor-help mt-0.5" title="Descuento automático al llevar {{ $product->wholesale_min_quantity }} o más unidades">
+                                    <div class="relative group cursor-help mt-0.5" title="Descuento automático al llevar {{ \App\Services\PricingService::GLOBAL_WHOLESALE_MIN }} o más artículos en total">
                                         <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-lg blur opacity-30 group-hover:opacity-70 transition duration-500"></div>
                                         <span class="relative flex items-center gap-1 text-xs font-black text-emerald-900 dark:text-emerald-100 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-slate-800 dark:to-slate-900 border border-emerald-200/50 dark:border-emerald-700/50 px-2.5 py-1 rounded-lg shadow-sm">
                                             ${{ number_format($product->wholesale_price, 2) }} 
@@ -160,7 +160,7 @@ new class extends Component {
                                         </span>
                                     </div>
                                     <span class="text-[8px] font-semibold text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-wider">
-                                        Llevando {{ $product->wholesale_min_quantity }} o más
+                                        Llevando {{ \App\Services\PricingService::GLOBAL_WHOLESALE_MIN }} o más artículos en total
                                     </span>
                                 </div>
                             </div>

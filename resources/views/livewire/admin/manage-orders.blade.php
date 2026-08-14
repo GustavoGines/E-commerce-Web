@@ -70,20 +70,19 @@ new #[Layout('layouts.app')] class extends Component {
             // Si se marca como pagado/completado manualmente (WhatsApp o pago externo)
             if ($oldStatus === 'pendiente' && in_array($status, ['pagado', 'completado'])) {
                 if ($order->user) {
-                    // Lógica para convertir a mayorista de por vida si compra 10+ de algo
-                    $shouldUpgradeToWholesale = false;
+                    // Lógica para convertir a mayorista de por vida usando mínimo global
+                    $totalQty = 0;
                     foreach ($order->items as $item) {
-                        if ($item->quantity >= 10) {
-                            $shouldUpgradeToWholesale = true;
-                            break;
-                        }
+                        $totalQty += $item->quantity;
                     }
 
-                    if ($shouldUpgradeToWholesale && $order->user->role !== 'mayorista') {
+                    if ($totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN && $order->user->role !== 'mayorista') {
                         $order->user->role = 'mayorista';
                         $order->user->save();
-                        // Opcional: enviar correo avisando que ahora es mayorista VIP
                     }
+
+                    // Siempre limpiar la caché cuando se confirma manual
+                    \Illuminate\Support\Facades\Cache::forget("user.{$order->user->id}.wholesale");
 
                     if ($order->user->email) {
                         \Illuminate\Support\Facades\Mail::to($order->user->email)->queue(new \App\Mail\OrderPaid($order));

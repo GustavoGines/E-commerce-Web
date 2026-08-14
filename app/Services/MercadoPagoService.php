@@ -47,7 +47,8 @@ class MercadoPagoService
             }
 
             $product = $products[$productId];
-            $unitPrice = $pricingService->unitPrice($product, (int) $quantity, $user);
+            $cartTotalQuantity = array_sum($cartItems);
+            $unitPrice = $pricingService->unitPrice($product, (int) $quantity, $user, $cartTotalQuantity);
 
             $items[] = [
                 'id'          => (string) $product->id,
