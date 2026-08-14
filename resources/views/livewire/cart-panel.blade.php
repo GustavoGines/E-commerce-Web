@@ -297,10 +297,10 @@ new class extends Component {
                                                             </div>
                                                             <div class="mt-1 flex items-center flex-wrap gap-2">
                                                                 <template x-if="isWholesale">
-                                                                    <div class="flex items-center gap-2">
+                                                                    <div class="flex items-center flex-wrap gap-x-2 gap-y-1">
                                                                         <p class="text-xs text-gray-400 dark:text-gray-500 line-through" x-text="`$${formatMoney(retailPrice)} c/u`"></p>
                                                                         <p class="text-sm font-black text-emerald-600 dark:text-emerald-400" x-text="`$${formatMoney(wholesalePrice)} c/u`"></p>
-                                                                        <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-transparent border border-emerald-200 dark:border-emerald-500/50 px-1.5 py-0.5 rounded shadow-sm">
+                                                                        <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-transparent border border-emerald-200 dark:border-emerald-500/50 px-1.5 py-0.5 rounded shadow-sm shrink-0">
                                                                             🔥 Precio Mayorista
                                                                         </span>
                                                                     </div>
@@ -310,7 +310,7 @@ new class extends Component {
                                                                 </template>
                                                             </div>
                                                         </div>
-                                                        <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0">
+                                                        <div class="flex flex-1 items-end justify-between text-sm mt-3 sm:mt-0 gap-2 flex-wrap">
                                                             <div class="flex flex-col items-start gap-1.5">
                                                                 <div class="flex items-center border rounded-full overflow-hidden shadow-sm relative isolate {{ $theme === 'luxury' ? 'border-white/10 bg-white/5' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800' }}">
                                                                     <button @click="changeQty(-1)" type="button" class="px-3 py-1 font-bold transition-colors disabled:cursor-not-allowed {{ $theme === 'luxury' ? 'text-gray-400 hover:bg-white/10 disabled:text-gray-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:text-gray-300 dark:disabled:text-gray-600' }}" :disabled="qty <= 1">-</button>
