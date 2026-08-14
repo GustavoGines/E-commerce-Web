@@ -61,6 +61,9 @@ new class extends Component {
     {
         $query = Product::with(['category', 'brands']);
 
+        // Priorizar SIEMPRE los productos con stock, sin importar otros filtros
+        $query->orderByRaw('stock > 0 DESC');
+
         if ($this->selectedCategory) {
             $query->where('category_id', $this->selectedCategory);
         }
