@@ -32,9 +32,16 @@ class GoogleAuthController extends Controller
     public function redirect(): \Illuminate\Http\RedirectResponse
     {
         try {
-            // Store intended URL if not auth pages
+            // BUG-14 FIX: Validar que la URL anterior pertenezca al mismo dominio
+            // antes de guardarla en sesión. url()->previous() puede devolver una URL
+            // de un dominio externo si el usuario llegó desde otro sitio (Open Redirect).
             $previousUrl = url()->previous();
-            if (! Str::contains($previousUrl, ['/login', '/register', '/auth'])) {
+            $appHost     = parse_url(config('app.url'), PHP_URL_HOST);
+            $prevHost    = parse_url($previousUrl, PHP_URL_HOST);
+
+            $isSameDomain = $prevHost && $appHost && $prevHost === $appHost;
+
+            if ($isSameDomain && ! Str::contains($previousUrl, ['/login', '/register', '/auth'])) {
                 session(['url.intended' => $previousUrl]);
             }
 
