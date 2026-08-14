@@ -137,18 +137,31 @@ new #[Layout('layouts.app')] class extends Component {
 
             // Transacción DB para asegurar atomicidad
             DB::transaction(function () use (&$redirectUrl) {
+                // BUG-03 FIX: Recalcular el total con precios frescos de DB dentro de la transacción.
+                // Evita que un cambio de precio entre que el usuario abre el checkout y confirma
+                // resulte en un monto incorrecto guardado en la orden.
+                $freshProducts = Product::whereIn('id', array_keys($this->cart))->get()->keyBy('id');
+                $freshTotal = 0;
+                foreach ($this->cart as $productId => $quantity) {
+                    if (isset($freshProducts[$productId])) {
+                        $freshTotal += $this->getPrice($freshProducts[$productId], $quantity) * $quantity;
+                    }
+                }
+
                 // 1. Crear la Orden en DB con estado 'pendiente'
                 $order = Order::create([
-                    'user_id'        => auth()->id(),
-                    'status'         => 'pendiente',
-                    'total'          => $this->subtotal,
-                    'phone'          => $this->phone,
-                    'address_street' => $this->theme === 'modern-light' ? 'Retiro en Local' : $this->address_street,
-                    'address_number' => $this->theme === 'modern-light' ? '-' : $this->address_number,
-                    'city'           => $this->theme === 'modern-light' ? '-' : $this->city,
-                    'state'          => $this->theme === 'modern-light' ? '-' : $this->state,
-                    'zip_code'       => $this->theme === 'modern-light' ? '-' : $this->zip_code,
-                    'role_applied'   => (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'vip_mayorista' : 'por_volumen',
+                    'user_id'         => auth()->id(),
+                    'status'          => 'pendiente',
+                    'total'           => $freshTotal, // BUG-03 FIX: precio calculado desde DB
+                    'phone'           => $this->phone,
+                    'address_street'  => $this->theme === 'modern-light' ? 'Retiro en Local' : $this->address_street,
+                    'address_number'  => $this->theme === 'modern-light' ? '-' : $this->address_number,
+                    'city'            => $this->theme === 'modern-light' ? '-' : $this->city,
+                    'state'           => $this->theme === 'modern-light' ? '-' : $this->state,
+                    'zip_code'        => $this->theme === 'modern-light' ? '-' : $this->zip_code,
+                    'role_applied'    => (auth()->user() && auth()->user()->isWholesaleCustomer()) ? 'vip_mayorista' : 'por_volumen',
+                    'delivery_method' => $this->theme === 'modern-light' ? 'retiro' : 'envio',   // BUG-12 FIX
+                    'payment_method'  => $this->theme === 'modern-light' ? 'whatsapp' : 'mercadopago', // BUG-12 FIX
                 ]);
 
                 // 2. Crear Items y descontar stock
@@ -177,6 +190,11 @@ new #[Layout('layouts.app')] class extends Component {
                     }
                 }
 
+                // BUG-05 FIX: Guardar snapshot del carrito ANTES de limpiarlo.
+                // El foreach del mensaje de WhatsApp (más abajo) necesita los productos;
+                // si se itera $this->cart después de clear(), el carrito ya está vacío.
+                $cartSnapshot = $this->cart;
+
                 // Limpiar carrito
                 app(\App\Services\CartService::class)->clear();
                 $this->dispatch('cart-updated');
@@ -202,7 +220,7 @@ new #[Layout('layouts.app')] class extends Component {
                     $sellerPhone = $whatsappNumber;
                     $message = "Hola {$settings->store_name}! 🚀\n\nAcabo de realizar el pedido *#{$order->id}* en la web.\n\n*Detalle del pedido:*\n";
                     
-                    foreach ($this->cart as $productId => $quantity) {
+                    foreach ($cartSnapshot as $productId => $quantity) { // BUG-05 FIX: usar snapshot
                         if (isset($this->products[$productId])) {
                             $product = $this->products[$productId];
                             $price = $this->getPrice($product, $quantity);

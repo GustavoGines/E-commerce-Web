@@ -39,7 +39,9 @@ class PricingService
         }
 
         // Regla 2: Cantidad mínima alcanzada para este producto
-        if ($quantity >= $product->wholesale_min_quantity) {
+        // BUG-11 FIX: verificar que wholesale_min_quantity > 0 para evitar que el valor
+        // por defecto (0) active precio mayorista en cualquier cantidad o para invitados.
+        if ($product->wholesale_min_quantity > 0 && $quantity >= $product->wholesale_min_quantity) {
             return (float) $product->wholesale_price;
         }
 

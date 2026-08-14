@@ -16,6 +16,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // BUG-08 FIX: No ejecutar lógica de DB durante comandos Artisan (migrate, queue, etc.)
+        if (app()->runningInConsole()) {
+            return;
+        }
+
         $theme = 'stealth';
         try {
             $settings = \App\Models\StoreSetting::getSettings();

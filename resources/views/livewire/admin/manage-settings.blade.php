@@ -5,6 +5,7 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 new #[Layout('layouts.app')] class extends Component {
     use WithFileUploads;
@@ -54,6 +55,7 @@ new #[Layout('layouts.app')] class extends Component {
             Storage::disk('public')->delete($settings->favicon_url);
             $settings->favicon_url = null;
             $settings->save();
+            Cache::forget('store_settings'); // BUG-04 FIX
         }
         $this->current_favicon_url = null;
         $this->favicon = null;
@@ -67,6 +69,7 @@ new #[Layout('layouts.app')] class extends Component {
             Storage::disk('public')->delete($settings->logo_url);
             $settings->logo_url = null;
             $settings->save();
+            Cache::forget('store_settings'); // BUG-04 FIX
         }
         $this->current_logo_url = null;
         $this->logo = null;
@@ -132,6 +135,7 @@ new #[Layout('layouts.app')] class extends Component {
         }
 
         $settings->save();
+        Cache::forget('store_settings'); // BUG-04 FIX: invalidar caché al guardar
         session()->flash('message', 'Configuración guardada exitosamente.');
         
         // Redirigir (recargar) la página sin 'navigate' para que los cambios de layout se apliquen instantáneamente.

@@ -77,24 +77,30 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithTransactions
         }
 
         $productData = [
-            'name' => $name,
-            'retail_price' => (float) $retailPrice,
+            'name'            => $name,
+            'retail_price'    => (float) $retailPrice,
             'wholesale_price' => (float) $wholesalePrice,
-            'cost_price' => (float) $costPrice,
-            'stock' => $stock,
-            'category_id' => $categoryId,
-            'brand_id' => $brandId,
+            'cost_price'      => (float) $costPrice,
+            'stock'           => $stock,
+            'category_id'     => $categoryId,
+            // brand_id no existe en products — la relación es Many-to-Many vía brand_product
         ];
 
         // Lógica de actualización o creación
         if (!empty($sku)) {
             $productData['sku'] = $sku;
-            Product::updateOrCreate(
+            $product = Product::updateOrCreate(
                 ['sku' => $sku],
                 $productData
             );
         } else {
-            Product::create($productData);
+            $product = Product::create($productData);
+        }
+
+        // BUG-01 FIX: Sincronizar marca vía tabla pivote brand_product (relación Many-to-Many)
+        // sync() reemplaza las marcas existentes por la nueva; si no hay marca, limpia la relación.
+        if ($brandId) {
+            $product->brands()->sync([$brandId]);
         }
 
         $this->importedCount++;
