@@ -132,7 +132,8 @@ new class extends Component {
         itemTotals: {},
         itemQuantities: {},
         get globalSubtotal() {
-            return Object.values(this.itemTotals).reduce((a, b) => a + b, 0);
+            let total = Object.values(this.itemTotals).reduce((a, b) => a + (parseFloat(b) || 0), 0);
+            return isNaN(total) ? 0 : total;
         },
         get globalQuantity() {
             return Object.values(this.itemQuantities).reduce((a, b) => a + b, 0);
@@ -147,14 +148,16 @@ new class extends Component {
      @cart-badge-updated.window="isClearing = false"
      class="relative z-[100]"
      data-cart-ids="{{ json_encode(array_keys($cart)) }}"
-     x-effect="
-         let validIds = JSON.parse($el.dataset.cartIds || '[]');
-         for(let id in itemTotals) {
-             if(!validIds.includes(parseInt(id))) {
-                 delete itemTotals[id];
-                 delete itemQuantities[id];
+     @cart-updated.window="
+         $nextTick(() => {
+             let validIds = JSON.parse($el.dataset.cartIds || '[]');
+             for(let id in itemTotals) {
+                 if(!validIds.includes(parseInt(id))) {
+                     delete itemTotals[id];
+                     delete itemQuantities[id];
+                 }
              }
-         }
+         });
      "
      aria-labelledby="slide-over-title" role="dialog" aria-modal="true" x-cloak>
     
@@ -235,7 +238,8 @@ new class extends Component {
                                                             return this.isWholesale ? this.wholesalePrice : this.retailPrice;
                                                         },
                                                         get itemTotal() {
-                                                            return this.currentUnitPrice * this.qty;
+                                                            let total = this.currentUnitPrice * this.qty;
+                                                            return isNaN(total) ? 0 : total;
                                                         },
                                                         
                                                         formatMoney(value) {
