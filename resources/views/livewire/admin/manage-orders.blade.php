@@ -122,7 +122,7 @@ new #[Layout('layouts.app')] class extends Component {
                         $newTotal += ($item->price * $item->quantity);
                     }
                 }
-                $order->total_amount = $newTotal;
+                $order->total = $newTotal;
                 $order->role_applied = 'por_volumen';
                 $order->save();
 
@@ -246,14 +246,16 @@ new #[Layout('layouts.app')] class extends Component {
                                         
                                         @php
                                             $totalQty = $order->items->sum('quantity');
+                                            $actualTotal = 0;
                                             $isAlreadyWholesale = true;
                                             foreach($order->items as $item) {
+                                                $actualTotal += ($item->price * $item->quantity);
                                                 if($item->product && $item->price > $item->product->wholesale_price) {
                                                     $isAlreadyWholesale = false;
-                                                    break;
                                                 }
                                             }
-                                            $canRecalculate = $order->status === 'pendiente' && $totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN && !$isAlreadyWholesale;
+                                            $needsRecalculation = !$isAlreadyWholesale || abs($order->total - $actualTotal) > 0.01;
+                                            $canRecalculate = $order->status === 'pendiente' && $totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN && $needsRecalculation;
                                         @endphp
                                         @if($canRecalculate)
                                             <button wire:click="recalculateToWholesale({{ $order->id }})" wire:confirm="¿Aplicar descuento mayorista a esta orden? El total bajará automáticamente." class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors p-1" title="Aplicar Mayorista">
