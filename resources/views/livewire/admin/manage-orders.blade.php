@@ -104,6 +104,36 @@ new #[Layout('layouts.app')] class extends Component {
         }
     }
 
+    public function recalculateToWholesale($orderId)
+    {
+        $order = Order::with('items.product')->find($orderId);
+        if ($order && $order->status === 'pendiente') {
+            $totalQty = 0;
+            foreach ($order->items as $item) {
+                $totalQty += $item->quantity;
+            }
+
+            if ($totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN) {
+                $newTotal = 0;
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->price = $item->product->wholesale_price;
+                        $item->save();
+                        $newTotal += ($item->price * $item->quantity);
+                    }
+                }
+                $order->total_amount = $newTotal;
+                $order->role_applied = 'por_volumen';
+                $order->save();
+
+                $this->loadOrders();
+                $this->dispatch('notify', message: 'Orden recalculada a precios mayoristas exitosamente.');
+            } else {
+                $this->dispatch('notify', message: 'La orden no alcanza el mínimo global para ser mayorista.', type: 'error');
+            }
+        }
+    }
+
     public function deleteOrder($orderId)
     {
         $order = Order::with('items.product')->find($orderId);
@@ -213,6 +243,18 @@ new #[Layout('layouts.app')] class extends Component {
                                             <option value="completado" {{ $order->status === 'completado' ? 'selected' : '' }}>Completado</option>
                                             <option value="cancelado" {{ $order->status === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
                                         </select>
+                                        
+                                        @php
+                                            $totalQty = $order->items->sum('quantity');
+                                            $canRecalculate = $order->status === 'pendiente' && $totalQty >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN && $order->role_applied !== 'por_volumen' && $order->role_applied !== 'vip_mayorista';
+                                        @endphp
+                                        @if($canRecalculate)
+                                            <button wire:click="recalculateToWholesale({{ $order->id }})" wire:confirm="¿Aplicar descuento mayorista a esta orden? El total bajará automáticamente." class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors p-1" title="Aplicar Mayorista">
+                                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </button>
+                                        @endif
                                         
                                         <button wire:click="deleteOrder({{ $order->id }})" wire:confirm="¿Seguro que deseas eliminar esta orden del sistema?" class="text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors p-1" title="Eliminar Orden">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -152,6 +152,7 @@ new class extends Component {
          for(let id in itemTotals) {
              if(!validIds.includes(parseInt(id))) {
                  delete itemTotals[id];
+                 delete itemQuantities[id];
              }
          }
      "
@@ -257,8 +258,10 @@ new class extends Component {
                                                         }
                                                     }"
                                                     x-init="
+                                                        itemQuantities[{{ $productId }}] = parseInt(qty) || 0;
                                                         $watch('qty', val => { 
                                                             let parsed = parseInt(val);
+                                                            itemQuantities[{{ $productId }}] = parsed || 0;
                                                             if(isNaN(parsed)) return;
                                                             if(parsed > stock) { qty = stock; sync(); }
                                                             else if(parsed < 1) { qty = 1; sync(); }
@@ -266,7 +269,6 @@ new class extends Component {
                                                     "
                                                     x-effect="
                                                         itemTotals[{{ $productId }}] = itemTotal;
-                                                        itemQuantities[{{ $productId }}] = parseInt(qty) || 0;
                                                     "
                                                 >
                                                     <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border {{ $theme === 'luxury' ? 'border-white/10 bg-[#0a0f1c]/50' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800' }} p-2">
