@@ -15,7 +15,13 @@ class MercadoPagoService
 {
     public function __construct()
     {
-        MercadoPagoConfig::setAccessToken(config('services.mercadopago.access_token'));
+        $settings = \App\Models\StoreSetting::getSettings();
+        $accessToken = $settings->mp_access_token ?? config('services.mercadopago.access_token');
+
+        if ($accessToken) {
+            MercadoPagoConfig::setAccessToken($accessToken);
+        }
+        
         // SEC-03 FIX: TLS activo en prod (SERVER), desactivado solo en desarrollo (LOCAL).
         MercadoPagoConfig::setRuntimeEnviroment(
             app()->isProduction() ? MercadoPagoConfig::SERVER : MercadoPagoConfig::LOCAL
@@ -47,6 +53,8 @@ class MercadoPagoService
             }
 
             $product = $products[$productId];
+            // DRY-01 FIX: Calcular la cantidad total del carrito para aplicar descuentos por volumen.
+            // Sin este argumento, un cliente con 10+ unidades en carrito pagaba precio de lista en MP.
             $cartTotalQuantity = array_sum($cartItems);
             $unitPrice = $pricingService->unitPrice($product, (int) $quantity, $user, $cartTotalQuantity);
 
@@ -83,7 +91,7 @@ class MercadoPagoService
             'back_urls' => $backUrls,
             'external_reference' => (string) $order->id,
             'metadata' => $metadata,
-            'statement_descriptor' => config('app.name'),
+            'statement_descriptor' => \App\Models\StoreSetting::getSettings()->store_name ?? config('app.name'),
         ];
 
         // auto_return y notification_url requieren URLs públicas
@@ -103,11 +111,15 @@ class MercadoPagoService
                 'sandbox_init_point' => $preference->sandbox_init_point,
             ];
         } catch (MPApiException $e) {
-            Log::error('MercadoPago API Error al crear preferencia', [
-                'order_id' => $order->id,
+            $errorData = $e->getApiResponse()->getContent();
+            Log::error('Error creating MercadoPago preference', [
+                'error' => $errorData,
                 'status' => $e->getApiResponse()->getStatusCode(),
-                'content' => $e->getApiResponse()->getContent(),
+                'request' => $requestData
             ]);
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('General error creating MercadoPago preference: ' . $e->getMessage());
             throw $e;
         }
     }

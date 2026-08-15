@@ -25,12 +25,15 @@ new #[Layout('layouts.app')] class extends Component {
     public $phone = '';
     public $theme = 'stealth';
     public string $turnstileToken = '';
+    public string $payment_method = 'transfer'; // 'transfer' o 'mercadopago'
+    public bool $has_mp_token = false;
 
     public function mount()
     {
         $settings = \App\Models\StoreSetting::getSettings();
         if ($settings) {
             $this->theme = $settings->theme_name ?? 'stealth';
+            $this->has_mp_token = !empty($settings->mp_access_token);
         }
         $cartService = app(\App\Services\CartService::class);
         $this->cart = $cartService->getCartItemsArray();
@@ -214,7 +217,7 @@ new #[Layout('layouts.app')] class extends Component {
                     }
                 }
 
-                if ($this->theme === 'modern-light') {
+                if ($this->theme === 'modern-light' && $this->payment_method === 'transfer') {
                     $settings = \App\Models\StoreSetting::getSettings();
                     $social = is_string($settings->social_links) ? json_decode($settings->social_links, true) : ($settings->social_links ?? []);
                     $whatsappNumber = is_array($social) && !empty($social['whatsapp']) ? preg_replace('/[^0-9]/', '', $social['whatsapp']) : '5493705075839';
@@ -695,10 +698,49 @@ new #[Layout('layouts.app')] class extends Component {
                         <p class="text-xs text-gray-500 mt-1">Obligatorio para avisarte cuando despachemos tu pedido.</p>
                         @error('phone') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
+                    @if($has_mp_token)
+                        <div class="mb-6">
+                            <label class="block text-gray-700 dark:text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Método de Pago</label>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Transferencia / Efectivo -->
+                                <div class="relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-300"
+                                       :class="$wire.payment_method === 'transfer' ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 ring-1 ring-[var(--color-primary)]' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800'">
+                                    <input type="radio" wire:model.live="payment_method" value="transfer" class="sr-only">
+                                    <div class="flex-1 ml-3 flex justify-between items-center">
+                                        <div>
+                                            <span class="block text-sm font-bold text-gray-900 dark:text-white">Coordinar Pago</span>
+                                            <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">Efectivo o Transferencia</span>
+                                        </div>
+                                    </div>
+                                    <svg class="h-5 w-5 text-[var(--color-primary)] transition-opacity" :class="$wire.payment_method === 'transfer' ? 'opacity-100' : 'opacity-0'" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                </div>
+
+                                <!-- Mercado Pago -->
+                                <div class="relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-300"
+                                       :class="$wire.payment_method === 'mercadopago' ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 ring-1 ring-[var(--color-primary)]' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800'">
+                                    <input type="radio" wire:model.live="payment_method" value="mercadopago" class="sr-only">
+                                    <div class="flex-1 ml-3 flex justify-between items-center">
+                                        <div>
+                                            <span class="block text-sm font-bold text-gray-900 dark:text-white">Mercado Pago</span>
+                                            <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tarjetas o Dinero en cuenta</span>
+                                        </div>
+                                    </div>
+                                    <svg class="h-5 w-5 text-[var(--color-primary)] transition-opacity" :class="$wire.payment_method === 'mercadopago' ? 'opacity-100' : 'opacity-0'" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     
-                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4 mb-8">
+                    <div x-show="$wire.payment_method === 'transfer'" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4 mb-8">
                         <p class="text-sm text-blue-800 dark:text-blue-300">
-                            <strong>Confirmación Segura:</strong> Al enviar tu pedido, nos contactaremos por WhatsApp para coordinar los detalles de entrega y pago.
+                            <strong>Confirmación por WhatsApp:</strong> Al enviar tu pedido, nos contactaremos para coordinar los detalles de entrega y pago.
+                        </p>
+                    </div>
+
+                    <div x-show="$wire.payment_method === 'mercadopago'" x-cloak class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 mb-8">
+                        <p class="text-sm text-emerald-800 dark:text-emerald-300">
+                            <strong>Pago Seguro:</strong> Serás redirigido a MercadoPago para completar tu pago de forma segura.
                         </p>
                     </div>
 
@@ -737,7 +779,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </svg>
 
                         {{-- Texto normal --}}
-                        <span wire:loading.remove wire:target="placeOrder">Confirmar Pedido por WhatsApp</span>
+                        <span wire:loading.remove wire:target="placeOrder" x-text="$wire.payment_method === 'mercadopago' ? 'Pagar con MercadoPago' : 'Confirmar Pedido por WhatsApp'"></span>
 
                         {{-- Texto cargando --}}
                         <span wire:loading wire:target="placeOrder">Procesando...</span>
