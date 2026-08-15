@@ -229,7 +229,13 @@ new #[Layout('layouts.app')] class extends Component {
                         }
                     }
                     
-                    $message .= "\n*Total a abonar:* $" . number_format($this->subtotal, 0, ',', '.') . "\n\n";
+                    $message .= "\n*Total a abonar:* $" . number_format($this->subtotal, 0, ',', '.') . "\n";
+                    $totalUnits = array_sum($cartSnapshot);
+                    if ($totalUnits >= \App\Services\PricingService::GLOBAL_WHOLESALE_MIN || (auth()->check() && auth()->user()->isWholesaleCustomer())) {
+                        $message .= "_(¡Estás comprando con Precio Mayorista!)_\n\n";
+                    } else {
+                        $message .= "\n";
+                    }
                     $message .= "Mi nombre es: *" . auth()->user()->name . "*\n\n";
                     $message .= "Paso a retirarlo por el local. ¡Aguardamos confirmación!";
                     
@@ -690,9 +696,9 @@ new #[Layout('layouts.app')] class extends Component {
                         @error('phone') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     
-                    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 mb-8">
-                        <p class="text-sm text-emerald-800 dark:text-emerald-300">
-                            <strong>Pago seguro:</strong> Al confirmar, serás redirigido a MercadoPago para completar tu pago de forma segura.
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4 mb-8">
+                        <p class="text-sm text-blue-800 dark:text-blue-300">
+                            <strong>Confirmación Segura:</strong> Al enviar tu pedido, nos contactaremos por WhatsApp para coordinar los detalles de entrega y pago.
                         </p>
                     </div>
 
@@ -731,10 +737,10 @@ new #[Layout('layouts.app')] class extends Component {
                         </svg>
 
                         {{-- Texto normal --}}
-                        <span wire:loading.remove wire:target="placeOrder">Pagar con MercadoPago</span>
+                        <span wire:loading.remove wire:target="placeOrder">Confirmar Pedido por WhatsApp</span>
 
                         {{-- Texto cargando --}}
-                        <span wire:loading wire:target="placeOrder">Redirigiendo a MercadoPago...</span>
+                        <span wire:loading wire:target="placeOrder">Procesando...</span>
 
                     </button>
                 </form>
