@@ -136,7 +136,7 @@ new class extends Component {
             return isNaN(total) ? 0 : total;
         },
         get globalQuantity() {
-            return Object.values(this.itemQuantities).reduce((a, b) => a + b, 0);
+            return Object.values(this.itemQuantities).reduce((a, b) => Number(a) + Number(b), 0);
         },
         formatMoney(value) {
             return new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(value);
