@@ -375,7 +375,6 @@ new class extends Component {
                                     </div>
                                 </div>
 
-                                <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">Impuestos y envío calculados en el checkout.</p>
                                 <div class="mt-6">
                                     <button wire:click="goToCheckout"
                                        @click="$store.cart.hide()"
